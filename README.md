@@ -1,8 +1,6 @@
 # go-bitbucket
 
-# go-bitbucket
-
-It is bitbucket api library for golang.
+It is Bitbucket-API library for golang.
 
 Support Bitbucket-API Version 2.0. 
 
