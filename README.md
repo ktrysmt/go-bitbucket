@@ -20,6 +20,10 @@ go get github.com/aqafiam/go-bitbucket
 import "github.com/aqafiam/go-bitbucket"
 ```
 
+## Godoc
+
+- <http://godoc.org/github.com/aqafiam/go-bitbucket>
+
 
 ## Example
 
