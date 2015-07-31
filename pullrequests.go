@@ -21,20 +21,20 @@ func (p *PullRequests) buildPullRequestBody(po *PullRequestsOptions) string {
 		}
 	}
 
-	if po.SourceBranch != "" {
-		body["source"].(map[string]interface{})["branch"] = map[string]interface{}{"name": po.SourceBranch}
+	if po.Source_branch != "" {
+		body["source"].(map[string]interface{})["branch"] = map[string]interface{}{"name": po.Source_branch}
 	}
 
-	if po.SourceRepository != "" {
-		body["source"].(map[string]interface{})["repository"] = map[string]interface{}{"full_name": po.SourceRepository}
+	if po.Source_repository != "" {
+		body["source"].(map[string]interface{})["repository"] = map[string]interface{}{"full_name": po.Source_repository}
 	}
 
-	if po.SourceBranch != "" {
-		body["destination"].(map[string]interface{})["branch"] = map[string]interface{}{"name": po.DestinationBranch}
+	if po.Source_branch != "" {
+		body["destination"].(map[string]interface{})["branch"] = map[string]interface{}{"name": po.Destination_branch}
 	}
 
-	if po.DestinationCommit != "" {
-		body["destination"].(map[string]interface{})["commit"] = map[string]interface{}{"hash": po.DestinationCommit}
+	if po.Destination_commit != "" {
+		body["destination"].(map[string]interface{})["commit"] = map[string]interface{}{"hash": po.Destination_commit}
 	}
 
 	if po.Title != "" {
