@@ -4,15 +4,28 @@ import (
 	"testing"
 )
 
-func TestUsername(t *testing.T) {
+func TestBasicAuth(t *testing.T) {
 
-	c := New("example", "password")
+	c := NewBasicAuth("example", "password")
 
-	if c.app_id != "example" {
-		t.Error("username not equal")
+	if c.Auth.user != "example" {
+		t.Error("username is not equal")
 	}
 
-	if c.secret != "password" {
-		t.Error("password not equal")
+	if c.Auth.password != "password" {
+		t.Error("password is not equal")
+	}
+}
+
+func TestOAuth(t *testing.T) {
+
+	c := NewOAuth("aaaaaaaa", "11111111111111")
+
+	if c.Auth.user != "aaaaaaaa" {
+		t.Error("app_id is not equal")
+	}
+
+	if c.Auth.password != "11111111111111" {
+		t.Error("secret is not equal")
 	}
 }
