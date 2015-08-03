@@ -110,10 +110,10 @@ type PullRequestsOptions struct {
 	Title               string   `json:"title"`
 	Description         string   `json:"description"`
 	Close_source_branch bool     `json:"close_source_branch"`
-	Source_branch        string   `json:"source_branch"`
-	Source_repository    string   `json:"source_repository"`
-	Destination_branch   string   `json:"destination_branch"`
-	Destination_commit   string   `json:"destination_repository"`
+	Source_branch       string   `json:"source_branch"`
+	Source_repository   string   `json:"source_repository"`
+	Destination_branch  string   `json:"destination_branch"`
+	Destination_commit  string   `json:"destination_repository"`
 	Message             string   `json:"message"`
 	Reviewers           []string `json:"reviewers"`
 }

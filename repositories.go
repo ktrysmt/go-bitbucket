@@ -1,10 +1,17 @@
 package bitbucket
 
+import (
+//"github.com/k0kubun/pp"
+)
+
 type Repositories struct {
-	c            *Client
-	PullRequests pullrequests
-	Users        users
-	Repository   repository
+	c                  *Client
+	PullRequests       *PullRequests
+	Repository         *Repository
+	Commits            *Commits
+	Diff               *Diff
+	BranchRestrictions *BranchRestrictions
+	Webhooks           *Webhooks
 	repositories
 }
 

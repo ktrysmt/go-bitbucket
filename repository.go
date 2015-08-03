@@ -8,7 +8,32 @@ import (
 
 type Repository struct {
 	c *Client
-	r *Repositories
+}
+
+func (r *Repository) Create(ro *RepositoryOptions) interface{} {
+	data := r.buildRepositoryBody(ro)
+	url := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.Repo_slug)
+	return r.c.execute("POST", url, data)
+}
+
+func (r *Repository) Get(ro *RepositoryOptions) interface{} {
+	url := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.Repo_slug)
+	return r.c.execute("GET", url, "")
+}
+
+func (r *Repository) Delete(ro *RepositoryOptions) interface{} {
+	url := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.Repo_slug)
+	return r.c.execute("DELETE", url, "")
+}
+
+func (r *Repository) ListWatchers(ro *RepositoryOptions) interface{} {
+	url := r.c.requestUrl("/repositories/%s/%s/watchers", ro.Owner, ro.Repo_slug)
+	return r.c.execute("GET", url, "")
+}
+
+func (r *Repository) ListForks(ro *RepositoryOptions) interface{} {
+	url := r.c.requestUrl("/repositories/%s/%s/forks", ro.Owner, ro.Repo_slug)
+	return r.c.execute("GET", url, "")
 }
 
 func (r *Repository) buildRepositoryBody(ro *RepositoryOptions) string {
@@ -47,30 +72,4 @@ func (r *Repository) buildRepositoryBody(ro *RepositoryOptions) string {
 	}
 
 	return string(data)
-}
-
-func (r *Repository) Create(ro *RepositoryOptions) interface{} {
-	data := r.buildRepositoryBody(ro)
-	url := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.Repo_slug)
-	return r.c.execute("POST", url, data)
-}
-
-func (r *Repository) Get(ro *RepositoryOptions) interface{} {
-	url := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.Repo_slug)
-	return r.c.execute("GET", url, "")
-}
-
-func (r *Repository) Delete(ro *RepositoryOptions) interface{} {
-	url := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.Repo_slug)
-	return r.c.execute("DELETE", url, "")
-}
-
-func (r *Repository) ListWatchers(ro *RepositoryOptions) interface{} {
-	url := r.c.requestUrl("/repositories/%s/%s/watchers", ro.Owner, ro.Repo_slug)
-	return r.c.execute("GET", url, "")
-}
-
-func (r *Repository) ListForks(ro *RepositoryOptions) interface{} {
-	url := r.c.requestUrl("/repositories/%s/%s/forks", ro.Owner, ro.Repo_slug)
-	return r.c.execute("GET", url, "")
 }

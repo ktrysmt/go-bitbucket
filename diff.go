@@ -2,7 +2,6 @@ package bitbucket
 
 type Diff struct {
 	c *Client
-	r *Repositories
 }
 
 func (d *Diff) GetDiff(do *DiffOptions) interface{} {

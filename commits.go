@@ -6,7 +6,6 @@ import (
 
 type Commits struct {
 	c *Client
-	r *Repositories
 }
 
 func (cm *Commits) GetCommits(cmo *CommitsOptions) interface{} {

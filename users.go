@@ -10,6 +10,12 @@ func (u *Users) Get(t string) interface{} {
 	return u.c.execute("GET", url, "")
 }
 
+func (c *Client) Get(t string) interface{} {
+
+	url := API_BASE_URL + "/users/" + t + "/"
+	return c.execute("GET", url, "")
+}
+
 func (u *Users) Followers(t string) interface{} {
 
 	url := API_BASE_URL + "/users/" + t + "/followers"

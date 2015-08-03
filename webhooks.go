@@ -8,7 +8,6 @@ import (
 
 type Webhooks struct {
 	c *Client
-	r *Repositories
 }
 
 func (r *Webhooks) buildWebhooksBody(ro *WebhooksOptions) string {

@@ -8,7 +8,6 @@ import (
 
 type BranchRestrictions struct {
 	c *Client
-	r *Repositories
 }
 
 func (b *BranchRestrictions) Gets(bo *BranchRestrictionsOptions) interface{} {

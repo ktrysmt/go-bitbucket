@@ -8,58 +8,6 @@ import (
 
 type PullRequests struct {
 	c *Client
-	r *Repositories
-}
-
-func (p *PullRequests) buildPullRequestBody(po *PullRequestsOptions) string {
-
-	body := map[string]interface{}{}
-
-	if n := len(po.Reviewers); n > 0 {
-		for i, user := range po.Reviewers {
-			body["reviewers"].([]map[string]string)[i] = map[string]string{"username": user}
-		}
-	}
-
-	if po.Source_branch != "" {
-		body["source"].(map[string]interface{})["branch"] = map[string]interface{}{"name": po.Source_branch}
-	}
-
-	if po.Source_repository != "" {
-		body["source"].(map[string]interface{})["repository"] = map[string]interface{}{"full_name": po.Source_repository}
-	}
-
-	if po.Source_branch != "" {
-		body["destination"].(map[string]interface{})["branch"] = map[string]interface{}{"name": po.Destination_branch}
-	}
-
-	if po.Destination_commit != "" {
-		body["destination"].(map[string]interface{})["commit"] = map[string]interface{}{"hash": po.Destination_commit}
-	}
-
-	if po.Title != "" {
-		body["title"] = po.Title
-	}
-
-	if po.Description != "" {
-		body["description"] = po.Description
-	}
-
-	if po.Message != "" {
-		body["message"] = po.Message
-	}
-
-	if po.Close_source_branch == true || po.Close_source_branch == false {
-		body["close_source_branch"] = po.Close_source_branch
-	}
-
-	data, err := json.Marshal(body)
-	if err != nil {
-		pp.Println(err)
-		os.Exit(9)
-	}
-
-	return string(data)
 }
 
 func (p *PullRequests) Create(po *PullRequestsOptions) interface{} {
@@ -122,8 +70,69 @@ func (p *PullRequests) Decline(po *PullRequestsOptions) interface{} {
 }
 
 func (p *PullRequests) GetComments(po *PullRequestsOptions) interface{} {
+	url := API_BASE_URL + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id + "/comments/"
+	return p.c.execute("GET", url, "")
+}
+
+func (p *PullRequests) GetComment(po *PullRequestsOptions) interface{} {
 	url := API_BASE_URL + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id + "/comments/" + po.Comment_id
 	return p.c.execute("GET", url, "")
 }
 
-//
+func (p *PullRequests) buildPullRequestBody(po *PullRequestsOptions) string {
+
+	body := map[string]interface{}{}
+	body["source"] = map[string]interface{}{}
+	body["destination"] = map[string]interface{}{}
+	body["reviewers"] = []map[string]string{}
+	body["title"] = ""
+	body["description"] = ""
+	body["message"] = ""
+	body["close_source_branch"] = false
+
+	if n := len(po.Reviewers); n > 0 {
+		for i, user := range po.Reviewers {
+			body["reviewers"].([]map[string]string)[i] = map[string]string{"username": user}
+		}
+	}
+
+	if po.Source_branch != "" {
+		body["source"].(map[string]interface{})["branch"] = map[string]string{"name": po.Source_branch}
+	}
+
+	if po.Source_repository != "" {
+		body["source"].(map[string]interface{})["repository"] = map[string]interface{}{"full_name": po.Source_repository}
+	}
+
+	if po.Destination_branch != "" {
+		body["destination"].(map[string]interface{})["branch"] = map[string]interface{}{"name": po.Destination_branch}
+	}
+
+	if po.Destination_commit != "" {
+		body["destination"].(map[string]interface{})["commit"] = map[string]interface{}{"hash": po.Destination_commit}
+	}
+
+	if po.Title != "" {
+		body["title"] = po.Title
+	}
+
+	if po.Description != "" {
+		body["description"] = po.Description
+	}
+
+	if po.Message != "" {
+		body["message"] = po.Message
+	}
+
+	if po.Close_source_branch == true || po.Close_source_branch == false {
+		body["close_source_branch"] = po.Close_source_branch
+	}
+
+	data, err := json.Marshal(body)
+	if err != nil {
+		pp.Println(err)
+		os.Exit(9)
+	}
+
+	return string(data)
+}
