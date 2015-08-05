@@ -4,7 +4,7 @@ It is Bitbucket-API library for golang.
 
 Support Bitbucket-API Version 2.0. 
 
-And the response type is json format as defined Bitbucket-API.
+And the response type is json format defined Bitbucket-API.
 
 - ref) <https://confluence.atlassian.com/display/BITBUCKET/Version+2>
 
