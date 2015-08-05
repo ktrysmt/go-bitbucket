@@ -40,7 +40,7 @@ func main() {
         c := bitbucket.NewBasicAuth("username", "password")
 
         opt := bitbucket.PullRequestsOptions{
-                Owner:      "username",
+                Owner:      "your-team",
                 Repo_slug:  "awesome-project",
                 Source_branch: "develop",
                 Destination_branch: "master",
