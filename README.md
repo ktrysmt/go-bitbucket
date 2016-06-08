@@ -11,18 +11,18 @@ And the response type is json format defined Bitbucket-API.
 ## Install
 
 ```
-go get github.com/aqafiam/go-bitbucket
+go get github.com/ktrysmt/go-bitbucket
 ```
 
 ## How to use
 
 ```
-import "github.com/aqafiam/go-bitbucket"
+import "github.com/ktrysmt/go-bitbucket"
 ```
 
 ## Godoc
 
-- <http://godoc.org/github.com/aqafiam/go-bitbucket>
+- <http://godoc.org/github.com/ktrysmt/go-bitbucket>
 
 
 ## Example
@@ -31,7 +31,7 @@ import "github.com/aqafiam/go-bitbucket"
 package main
 
 import (
-        "github.com/aqafiam/go-bitbucket" 
+        "github.com/ktrysmt/go-bitbucket" 
         "fmt"
 )
 
@@ -59,4 +59,4 @@ MIT
 
 ## Author
 
-[keidrip](https://github.com/keidrip)
+[ktrysmt](https://github.com/ktrysmt)
