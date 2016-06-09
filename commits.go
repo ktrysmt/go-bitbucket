@@ -1,8 +1,6 @@
 package bitbucket
 
-import (
-	"net/url"
-)
+import "net/url"
 
 type Commits struct {
 	c *Client
@@ -26,6 +24,11 @@ func (cm *Commits) GetCommitComments(cmo *CommitsOptions) interface{} {
 
 func (cm *Commits) GetCommitComment(cmo *CommitsOptions) interface{} {
 	url := cm.c.requestUrl("/repositories/%s/%s/commit/%s/comments/%s", cmo.Owner, cmo.Repo_slug, cmo.Revision, cmo.Comment_id)
+	return cm.c.execute("GET", url, "")
+}
+
+func (cm *Commits) GetCommitStatus(cmo *CommitsOptions, commitStatusKey string) interface{} {
+	url := cm.c.requestUrl("/repositories/%s/%s/commit/%s/statuses/build/%s", cmo.Owner, cmo.Repo_slug, cmo.Revision, commitStatusKey)
 	return cm.c.execute("GET", url, "")
 }
 

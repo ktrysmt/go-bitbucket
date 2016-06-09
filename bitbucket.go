@@ -49,6 +49,7 @@ type commits interface {
 	GetCommit(opt CommitsOptions) interface{}
 	GetCommitComments(opt CommitsOptions) interface{}
 	GetCommitComment(opt CommitsOptions) interface{}
+	GetCommitStatus(opt CommitsOptions) interface{}
 	GiveApprove(opt CommitsOptions) interface{}
 	RemoveApprove(opt CommitsOptions) interface{}
 }
