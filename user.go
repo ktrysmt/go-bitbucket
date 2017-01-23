@@ -10,12 +10,12 @@ type User struct {
 
 func (u *User) Profile() interface{} {
 
-	url := API_BASE_URL + "/user/"
+	url := GetApiBaseUrl() + "/user/"
 	return u.c.execute("GET", url, "")
 }
 
 func (u *User) Emails() interface{} {
 
-	url := API_BASE_URL + "/user/emails"
+	url := GetApiBaseUrl() + "/user/emails"
 	return u.c.execute("GET", url, "")
 }

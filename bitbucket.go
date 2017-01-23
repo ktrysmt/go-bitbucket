@@ -1,8 +1,13 @@
 package bitbucket
 
-const (
-	API_BASE_URL = "https://bitbucket.org/api/2.0"
-)
+var apiBaseUrl = "https://bitbucket.org/api/2.0"
+func GetApiBaseUrl() string {
+	return apiBaseUrl
+}
+
+func SetApiBaseUrl(url string) {
+	apiBaseUrl = url
+}
 
 type users interface {
 	Get(username string) interface{}
