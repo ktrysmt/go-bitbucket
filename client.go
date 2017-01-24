@@ -89,8 +89,8 @@ func (c *Client) execute(method, url, text string) interface{} {
 func (c *Client) requestUrl(template string, args ...interface{}) string {
 
 	if len(args) == 1 && args[0] == "" {
-		return API_BASE_URL + template
+		return GetApiBaseUrl() + template
 	} else {
-		return API_BASE_URL + fmt.Sprintf(template, args...)
+		return GetApiBaseUrl() + fmt.Sprintf(template, args...)
 	}
 }
