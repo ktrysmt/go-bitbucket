@@ -2,8 +2,9 @@ package bitbucket
 
 import (
 	"encoding/json"
-	"github.com/k0kubun/pp"
 	"os"
+
+	"github.com/k0kubun/pp"
 )
 
 type PullRequests struct {
@@ -18,64 +19,64 @@ func (p *PullRequests) Create(po *PullRequestsOptions) interface{} {
 
 func (p *PullRequests) Update(po *PullRequestsOptions) interface{} {
 	data := p.buildPullRequestBody(po)
-	url := GetApiBaseUrl() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id
+	url := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id
 	return p.c.execute("PUT", url, data)
 }
 
 func (p *PullRequests) Gets(po *PullRequestsOptions) interface{} {
-	url := GetApiBaseUrl() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/"
+	url := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/"
 	return p.c.execute("GET", url, "")
 }
 
 func (p *PullRequests) Get(po *PullRequestsOptions) interface{} {
-	url := GetApiBaseUrl() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id
+	url := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id
 	return p.c.execute("GET", url, "")
 }
 
 func (p *PullRequests) Activities(po *PullRequestsOptions) interface{} {
-	url := GetApiBaseUrl() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/activity"
+	url := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/activity"
 	return p.c.execute("GET", url, "")
 }
 
 func (p *PullRequests) Activity(po *PullRequestsOptions) interface{} {
-	url := GetApiBaseUrl() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id + "/activity"
+	url := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id + "/activity"
 	return p.c.execute("GET", url, "")
 }
 
 func (p *PullRequests) Commits(po *PullRequestsOptions) interface{} {
-	url := GetApiBaseUrl() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id + "/commits"
+	url := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id + "/commits"
 	return p.c.execute("GET", url, "")
 }
 
 func (p *PullRequests) Patch(po *PullRequestsOptions) interface{} {
-	url := GetApiBaseUrl() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id + "/patch"
+	url := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id + "/patch"
 	return p.c.execute("GET", url, "")
 }
 
 func (p *PullRequests) Diff(po *PullRequestsOptions) interface{} {
-	url := GetApiBaseUrl() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id + "/diff"
+	url := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id + "/diff"
 	return p.c.execute("GET", url, "")
 }
 
 func (p *PullRequests) Merge(po *PullRequestsOptions) interface{} {
 	data := p.buildPullRequestBody(po)
-	url := GetApiBaseUrl() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id + "/merge"
+	url := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id + "/merge"
 	return p.c.execute("POST", url, data)
 }
 
 func (p *PullRequests) Decline(po *PullRequestsOptions) interface{} {
 	data := p.buildPullRequestBody(po)
-	url := GetApiBaseUrl() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id + "/decline"
+	url := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id + "/decline"
 	return p.c.execute("POST", url, data)
 }
 
 func (p *PullRequests) GetComments(po *PullRequestsOptions) interface{} {
-	url := GetApiBaseUrl() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id + "/comments/"
+	url := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id + "/comments/"
 	return p.c.execute("GET", url, "")
 }
 
 func (p *PullRequests) GetComment(po *PullRequestsOptions) interface{} {
-	url := GetApiBaseUrl() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id + "/comments/" + po.Comment_id
+	url := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id + "/comments/" + po.Comment_id
 	return p.c.execute("GET", url, "")
 }
 
