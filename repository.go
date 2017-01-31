@@ -2,8 +2,9 @@ package bitbucket
 
 import (
 	"encoding/json"
-	"github.com/k0kubun/pp"
 	"os"
+
+	"github.com/k0kubun/pp"
 )
 
 type Repository struct {
@@ -12,27 +13,27 @@ type Repository struct {
 
 func (r *Repository) Create(ro *RepositoryOptions) interface{} {
 	data := r.buildRepositoryBody(ro)
-	url := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.Repo_slug)
+	url := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.RepoSlug)
 	return r.c.execute("POST", url, data)
 }
 
 func (r *Repository) Get(ro *RepositoryOptions) interface{} {
-	url := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.Repo_slug)
+	url := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.RepoSlug)
 	return r.c.execute("GET", url, "")
 }
 
 func (r *Repository) Delete(ro *RepositoryOptions) interface{} {
-	url := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.Repo_slug)
+	url := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.RepoSlug)
 	return r.c.execute("DELETE", url, "")
 }
 
 func (r *Repository) ListWatchers(ro *RepositoryOptions) interface{} {
-	url := r.c.requestUrl("/repositories/%s/%s/watchers", ro.Owner, ro.Repo_slug)
+	url := r.c.requestUrl("/repositories/%s/%s/watchers", ro.Owner, ro.RepoSlug)
 	return r.c.execute("GET", url, "")
 }
 
 func (r *Repository) ListForks(ro *RepositoryOptions) interface{} {
-	url := r.c.requestUrl("/repositories/%s/%s/forks", ro.Owner, ro.Repo_slug)
+	url := r.c.requestUrl("/repositories/%s/%s/forks", ro.Owner, ro.RepoSlug)
 	return r.c.execute("GET", url, "")
 }
 
@@ -46,23 +47,23 @@ func (r *Repository) buildRepositoryBody(ro *RepositoryOptions) string {
 	//if ro.Scm != "" {
 	//		body["name"] = ro.Name
 	//}
-	if ro.Is_private != "" {
-		body["is_private"] = ro.Is_private
+	if ro.IsPrivate != "" {
+		body["is_private"] = ro.IsPrivate
 	}
 	if ro.Description != "" {
 		body["description"] = ro.Description
 	}
-	if ro.Fork_policy != "" {
-		body["fork_policy"] = ro.Fork_policy
+	if ro.ForkPolicy != "" {
+		body["fork_policy"] = ro.ForkPolicy
 	}
 	if ro.Language != "" {
 		body["language"] = ro.Language
 	}
-	if ro.Has_issues != "" {
-		body["has_issues"] = ro.Has_issues
+	if ro.HasIssues != "" {
+		body["has_issues"] = ro.HasIssues
 	}
-	if ro.Has_wiki != "" {
-		body["has_wiki"] = ro.Has_wiki
+	if ro.HasWiki != "" {
+		body["has_wiki"] = ro.HasWiki
 	}
 
 	data, err := json.Marshal(body)

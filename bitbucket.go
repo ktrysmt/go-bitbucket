@@ -92,76 +92,82 @@ type teams interface {
 	Repositories(teamname string) interface{}
 }
 
-// RepositoriesOptions is configuration for 'repositories' resource
+// RepositoriesOptions is configuration for resource
 type RepositoriesOptions struct {
 	Owner string `json:"owner"`
 	Team  string `json:"team"`
 	Role  string `json:"role"` // role=[owner|admin|contributor|member]
 }
 
+// RepositoryOptions is configuration for resource
 type RepositoryOptions struct {
-	Owner     string `json:"owner"`
-	Repo_slug string `json:"repo_slug"`
-	Scm       string `json:"scm"`
+	Owner    string `json:"owner"`
+	RepoSlug string `json:"repo_slug"`
+	Scm      string `json:"scm"`
 	//	Name        string `json:"name"`
-	Is_private  string `json:"is_private"`
+	IsPrivate   string `json:"is_private"`
 	Description string `json:"description"`
-	Fork_policy string `json:"fork_policy"`
+	ForkPolicy  string `json:"fork_policy"`
 	Language    string `json:"language"`
-	Has_issues  string `json:"has_issues"`
-	Has_wiki    string `json:"has_wiki"`
+	HasIssues   string `json:"has_issues"`
+	HasWiki     string `json:"has_wiki"`
 }
 
+// PullRequestsOptions is configuration for resource
 type PullRequestsOptions struct {
-	Id                  string   `json:"id"`
-	Comment_id          string   `json:"comment_id"`
-	Owner               string   `json:"owner"`
-	Repo_slug           string   `json:"repo_slug"`
-	Title               string   `json:"title"`
-	Description         string   `json:"description"`
-	Close_source_branch bool     `json:"close_source_branch"`
-	Source_branch       string   `json:"source_branch"`
-	Source_repository   string   `json:"source_repository"`
-	Destination_branch  string   `json:"destination_branch"`
-	Destination_commit  string   `json:"destination_repository"`
-	Message             string   `json:"message"`
-	Reviewers           []string `json:"reviewers"`
+	ID                string   `json:"id"`
+	CommentID         string   `json:"comment_id"`
+	Owner             string   `json:"owner"`
+	RepoSlug          string   `json:"repo_slug"`
+	Title             string   `json:"title"`
+	Description       string   `json:"description"`
+	CloseSourceBranch bool     `json:"close_source_branch"`
+	SourceBranch      string   `json:"source_branch"`
+	SourceRepository  string   `json:"source_repository"`
+	DestinationBranch string   `json:"destination_branch"`
+	DestinationCommit string   `json:"destination_repository"`
+	Message           string   `json:"message"`
+	Reviewers         []string `json:"reviewers"`
 }
 
+// CommitsOptions is configuration for resource
 type CommitsOptions struct {
 	Owner       string `json:"owner"`
-	Repo_slug   string `json:"repo_slug"`
+	RepoSlug    string `json:"repo_slug"`
 	Revision    string `json:"revision"`
 	Branchortag string `json:"branchortag"`
 	Include     string `json:"include"`
 	Exclude     string `json:"exclude"`
-	Comment_id  string `json:"comment_id"`
+	CommentID   string `json:"comment_id"`
 }
 
+// BranchRestrictionsOptions is configuration for resource
 type BranchRestrictionsOptions struct {
-	Owner     string            `json:"owner"`
-	Repo_slug string            `json:"repo_slug"`
-	Id        string            `json:"id"`
-	Groups    map[string]string `json:"groups"`
-	Pattern   string            `json:"pattern"`
-	Users     []string          `json:"users"`
-	Kind      string            `json:"kind"`
-	Full_slug string            `json:"full_slug"`
-	Name      string            `json:"name"`
+	Owner    string            `json:"owner"`
+	RepoSlug string            `json:"repo_slug"`
+	ID       string            `json:"id"`
+	Groups   map[string]string `json:"groups"`
+	Pattern  string            `json:"pattern"`
+	Users    []string          `json:"users"`
+	Kind     string            `json:"kind"`
+	FullSlug string            `json:"full_slug"`
+	Name     string            `json:"name"`
 }
 
+// DiffOptions is configuration for resource
 type DiffOptions struct {
-	Owner     string `json:"owner"`
-	Repo_slug string `json:"repo_slug"`
-	Spec      string `json:"spec"`
+	Owner    string `json:"owner"`
+	RepoSlug string `json:"repo_slug"`
+	Spec     string `json:"spec"`
 }
 
+// WebhooksOptions is configuration for resource
 type WebhooksOptions struct {
 	Owner       string   `json:"owner"`
-	Repo_slug   string   `json:"repo_slug"`
-	Uuid        string   `json:"uuid"`
+	RepoSlug    string   `json:"repo_slug"`
+	UUID        string   `json:"uuid"`
 	Description string   `json:"description"`
-	Url         string   `json:"url"`
+	URL         string   `json:"url"`
 	Active      bool     `json:"active"`
 	Events      []string `json:"events"` // EX) {'repo:push','issue:created',..} REF) https://goo.gl/VTj93b
 }

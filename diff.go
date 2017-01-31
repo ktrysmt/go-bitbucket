@@ -5,11 +5,11 @@ type Diff struct {
 }
 
 func (d *Diff) GetDiff(do *DiffOptions) interface{} {
-	url := d.c.requestUrl("/repositories/%s/%s/diff/%s", do.Owner, do.Repo_slug, do.Spec)
+	url := d.c.requestUrl("/repositories/%s/%s/diff/%s", do.Owner, do.RepoSlug, do.Spec)
 	return d.c.execute("GET", url, "")
 }
 
 func (d *Diff) GetPatch(do *DiffOptions) interface{} {
-	url := d.c.requestUrl("/repositories/%s/%s/patch/%s", do.Owner, do.Repo_slug, do.Spec)
+	url := d.c.requestUrl("/repositories/%s/%s/patch/%s", do.Owner, do.RepoSlug, do.Spec)
 	return d.c.execute("GET", url, "")
 }
