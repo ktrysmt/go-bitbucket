@@ -2,12 +2,13 @@ package bitbucket
 
 var apiBaseURL = "https://bitbucket.org/api/2.0"
 
-//
-func GetApiBaseURL() string {
+// GetAPIBaseURL returns the given URL.
+func GetAPIBaseURL() string {
 	return apiBaseURL
 }
 
-func SetApiBaseURL(url string) {
+// SetAPIBaseURL recieves the URL.
+func SetAPIBaseURL(url string) {
 	apiBaseURL = url
 }
 
@@ -91,6 +92,7 @@ type teams interface {
 	Repositories(teamname string) interface{}
 }
 
+// RepositoriesOptions is configuration for 'repositories' resource
 type RepositoriesOptions struct {
 	Owner string `json:"owner"`
 	Team  string `json:"team"`
