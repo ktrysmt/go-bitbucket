@@ -6,29 +6,29 @@ type Users struct {
 
 func (u *Users) Get(t string) interface{} {
 
-	url := GetApiBaseURL() + "/users/" + t + "/"
+	url := GetAPIBaseURL() + "/users/" + t + "/"
 	return u.c.execute("GET", url, "")
 }
 
 func (c *Client) Get(t string) interface{} {
 
-	url := GetApiBaseURL() + "/users/" + t + "/"
+	url := GetAPIBaseURL() + "/users/" + t + "/"
 	return c.execute("GET", url, "")
 }
 
 func (u *Users) Followers(t string) interface{} {
 
-	url := GetApiBaseURL() + "/users/" + t + "/followers"
+	url := GetAPIBaseURL() + "/users/" + t + "/followers"
 	return u.c.execute("GET", url, "")
 }
 
 func (u *Users) Following(t string) interface{} {
 
-	url := GetApiBaseURL() + "/users/" + t + "/following"
+	url := GetAPIBaseURL() + "/users/" + t + "/following"
 	return u.c.execute("GET", url, "")
 }
 func (u *Users) Repositories(t string) interface{} {
 
-	url := GetApiBaseURL() + "/users/" + t + "/repositories"
+	url := GetAPIBaseURL() + "/users/" + t + "/repositories"
 	return u.c.execute("GET", url, "")
 }

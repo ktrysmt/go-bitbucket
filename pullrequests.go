@@ -19,64 +19,64 @@ func (p *PullRequests) Create(po *PullRequestsOptions) interface{} {
 
 func (p *PullRequests) Update(po *PullRequestsOptions) interface{} {
 	data := p.buildPullRequestBody(po)
-	url := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID
+	url := GetAPIBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID
 	return p.c.execute("PUT", url, data)
 }
 
 func (p *PullRequests) Gets(po *PullRequestsOptions) interface{} {
-	url := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/"
+	url := GetAPIBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/"
 	return p.c.execute("GET", url, "")
 }
 
 func (p *PullRequests) Get(po *PullRequestsOptions) interface{} {
-	url := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID
+	url := GetAPIBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID
 	return p.c.execute("GET", url, "")
 }
 
 func (p *PullRequests) Activities(po *PullRequestsOptions) interface{} {
-	url := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/activity"
+	url := GetAPIBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/activity"
 	return p.c.execute("GET", url, "")
 }
 
 func (p *PullRequests) Activity(po *PullRequestsOptions) interface{} {
-	url := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/activity"
+	url := GetAPIBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/activity"
 	return p.c.execute("GET", url, "")
 }
 
 func (p *PullRequests) Commits(po *PullRequestsOptions) interface{} {
-	url := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/commits"
+	url := GetAPIBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/commits"
 	return p.c.execute("GET", url, "")
 }
 
 func (p *PullRequests) Patch(po *PullRequestsOptions) interface{} {
-	url := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/patch"
+	url := GetAPIBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/patch"
 	return p.c.execute("GET", url, "")
 }
 
 func (p *PullRequests) Diff(po *PullRequestsOptions) interface{} {
-	url := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/diff"
+	url := GetAPIBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/diff"
 	return p.c.execute("GET", url, "")
 }
 
 func (p *PullRequests) Merge(po *PullRequestsOptions) interface{} {
 	data := p.buildPullRequestBody(po)
-	url := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/merge"
+	url := GetAPIBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/merge"
 	return p.c.execute("POST", url, data)
 }
 
 func (p *PullRequests) Decline(po *PullRequestsOptions) interface{} {
 	data := p.buildPullRequestBody(po)
-	url := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/decline"
+	url := GetAPIBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/decline"
 	return p.c.execute("POST", url, data)
 }
 
 func (p *PullRequests) GetComments(po *PullRequestsOptions) interface{} {
-	url := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/comments/"
+	url := GetAPIBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/comments/"
 	return p.c.execute("GET", url, "")
 }
 
 func (p *PullRequests) GetComment(po *PullRequestsOptions) interface{} {
-	url := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/comments/" + po.CommentID
+	url := GetAPIBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/comments/" + po.CommentID
 	return p.c.execute("GET", url, "")
 }
 
@@ -101,8 +101,8 @@ func (p *PullRequests) buildPullRequestBody(po *PullRequestsOptions) string {
 		body["source"].(map[string]interface{})["branch"] = map[string]string{"name": po.SourceBranch}
 	}
 
-	if po.Source_repository != "" {
-		body["source"].(map[string]interface{})["repository"] = map[string]interface{}{"full_name": po.Source_repository}
+	if po.SourceRepository != "" {
+		body["source"].(map[string]interface{})["repository"] = map[string]interface{}{"full_name": po.SourceRepository}
 	}
 
 	if po.DestinationBranch != "" {

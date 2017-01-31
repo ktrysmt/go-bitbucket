@@ -18,8 +18,8 @@ func (r *Webhooks) buildWebhooksBody(ro *WebhooksOptions) string {
 	if ro.Description != "" {
 		body["description"] = ro.Description
 	}
-	if ro.Url != "" {
-		body["url"] = ro.Url
+	if ro.URL != "" {
+		body["url"] = ro.URL
 	}
 	if ro.Active == true || ro.Active == false {
 		body["active"] = ro.Active
