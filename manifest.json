@@ -1,0 +1,7 @@
+{
+    "dependencies": {
+        "github.com/k0kubun/pp": {
+            "branch": "master"
+        }
+    }
+}
