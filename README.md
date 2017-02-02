@@ -57,7 +57,7 @@ func main() {
 
 ### v0.2.1
 
-- Support Bitbucket Server
+- ~~Support Bitbucket Server~~
 
 ## License
 
