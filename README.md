@@ -56,13 +56,13 @@ func main() {
 
 ### Support Bitbucket API 1.0 ?
 
-> It does not correspond yet. Because there are many differences between 2.0 and 1.0.
+It does not correspond yet. Because there are many differences between 2.0 and 1.0.
 
 - Bitbucket API v1.0 <https://confluence.atlassian.com/bitbucket/version-1-423626337.html>
 
 It is officially recommended to use 2.0.  
-The API 1.0 covers resources that the 2.0 API and API 2.0 is yet to cover.  
-But unfortunately Bitbucket Server (formerly: Stash) API is still v1.0. 
+But unfortunately Bitbucket Server (formerly: Stash) API is still v1.0.   
+And The API 1.0 covers resources that the 2.0 API and API 2.0 is yet to cover.
 
 ## License
 
