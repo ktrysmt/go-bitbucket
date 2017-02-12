@@ -1,12 +1,13 @@
 # go-bitbucket
 
-It is Bitbucket-API library for golang.
+Bitbucket-API library for golang.
 
 Support Bitbucket-API Version 2.0. 
 
 And the response type is json format defined Bitbucket-API.
 
-- ref) <https://confluence.atlassian.com/display/BITBUCKET/Version+2>
+- Bitbucket API 2.0 <https://developer.atlassian.com/bitbucket/api/2/reference/>
+- Swagger for v2.0 <https://api.bitbucket.org/swagger.json>
 
 ## Install
 
@@ -53,15 +54,19 @@ func main() {
 }
 ```
 
-## Change Log
+### Support Bitbucket API 1.0 ?
 
-### v0.2.1
+> It does not correspond yet. Because there are many differences between 2.0 and 1.0.
 
-- Support Bitbucket Server
+- Bitbucket API v1.0 <https://confluence.atlassian.com/bitbucket/version-1-423626337.html>
+
+It is officially recommended to use 2.0.  
+The API 1.0 covers resources that the 2.0 API and API 2.0 is yet to cover.  
+But unfortunately Bitbucket Server (formerly: Stash) API is still v1.0. 
 
 ## License
 
-MIT
+Apache License v2.0
 
 ## Author
 
