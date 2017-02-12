@@ -54,6 +54,8 @@ func main() {
 }
 ```
 
+## FAQ
+
 ### Support Bitbucket API 1.0 ?
 
 It does not correspond yet. Because there are many differences between 2.0 and 1.0.
