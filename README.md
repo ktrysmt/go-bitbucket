@@ -68,7 +68,7 @@ And The API 1.0 covers resources that the 2.0 API and API 2.0 is yet to cover.
 
 ## License
 
-Apache License v2.0
+[Apache License 2.0](./LICENSE)
 
 ## Author
 
