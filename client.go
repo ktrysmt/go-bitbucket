@@ -3,8 +3,6 @@ package bitbucket
 import (
 	"encoding/json"
 	"fmt"
-	//	"github.com/k0kubun/pp"
-	//	"os"
 
 	"io/ioutil"
 	"net/http"
