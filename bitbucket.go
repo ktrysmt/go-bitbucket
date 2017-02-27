@@ -108,6 +108,7 @@ type RepositoryOptions struct {
 	Language    string `json:"language"`
 	Has_issues  string `json:"has_issues"`
 	Has_wiki    string `json:"has_wiki"`
+	Project     string `json:"project"`
 }
 
 type PullRequestsOptions struct {

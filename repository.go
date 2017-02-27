@@ -64,6 +64,11 @@ func (r *Repository) buildRepositoryBody(ro *RepositoryOptions) string {
 	if ro.Has_wiki != "" {
 		body["has_wiki"] = ro.Has_wiki
 	}
+	if ro.Project != "" {
+		body["project"] = map[string]string{
+			"key": ro.Project,
+		}
+	}
 
 	data, err := json.Marshal(body)
 	if err != nil {
