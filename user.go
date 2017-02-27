@@ -7,12 +7,12 @@ type User struct {
 
 // Profile is getting the user data
 func (u *User) Profile() interface{} {
-	url := GetApiBaseURL() + "/user/"
+	url := GetAPIBaseURL() + "/user/"
 	return u.c.execute("GET", url, "")
 }
 
 // Emails is getting user's emails
 func (u *User) Emails() interface{} {
-	url := GetApiBaseURL() + "/user/emails"
+	url := GetAPIBaseURL() + "/user/emails"
 	return u.c.execute("GET", url, "")
 }
