@@ -1,4 +1,4 @@
-package tests
+package bitbucket
 
 import (
 	"fmt"
