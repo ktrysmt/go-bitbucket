@@ -2,23 +2,43 @@ package bitbucket
 
 import (
 	"encoding/json"
-	"github.com/k0kubun/pp"
 	"os"
+
+	"github.com/k0kubun/pp"
+	"github.com/mitchellh/mapstructure"
 )
+
+type Project struct {
+	Key  string
+	Name string
+}
 
 type Repository struct {
 	c *Client
+
+	Project     Project
+	Slug        string
+	Full_name   string
+	Description string
+	Fork_policy string
+	Type        string
+	Owner       map[string]interface{}
+	Links       map[string]interface{}
 }
 
-func (r *Repository) Create(ro *RepositoryOptions) interface{} {
+func (r *Repository) Create(ro *RepositoryOptions) (error, Repository) {
 	data := r.buildRepositoryBody(ro)
 	url := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.Repo_slug)
-	return r.c.execute("POST", url, data)
+	response := r.c.execute("POST", url, data)
+
+	return decodeRepository(response)
 }
 
-func (r *Repository) Get(ro *RepositoryOptions) interface{} {
+func (r *Repository) Get(ro *RepositoryOptions) (error, Repository) {
 	url := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.Repo_slug)
-	return r.c.execute("GET", url, "")
+	response := r.c.execute("GET", url, "")
+
+	return decodeRepository(response)
 }
 
 func (r *Repository) Delete(ro *RepositoryOptions) interface{} {
@@ -77,4 +97,20 @@ func (r *Repository) buildRepositoryBody(ro *RepositoryOptions) string {
 	}
 
 	return string(data)
+}
+
+func decodeRepository(json interface{}) (error, Repository) {
+	jsonMap := json.(map[string]interface{})
+
+	if jsonMap["type"] == "error" {
+		return DecodeError(jsonMap), Repository{}
+	}
+
+	var repository Repository
+	err := mapstructure.Decode(jsonMap, &repository)
+	if err != nil {
+		return err, Repository{}
+	}
+
+	return nil, repository
 }

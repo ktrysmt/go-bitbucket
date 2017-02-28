@@ -38,8 +38,8 @@ type pullrequests interface {
 }
 
 type repository interface {
-	Get(opt RepositoryOptions) interface{}
-	Create(opt RepositoryOptions) interface{}
+	Get(opt RepositoryOptions) (error, Repository)
+	Create(opt RepositoryOptions) (error, Repository)
 	Delete(opt RepositoryOptions) interface{}
 	ListWatchers(opt RepositoryOptions) interface{}
 	ListForks(opt RepositoryOptions) interface{}
