@@ -78,7 +78,20 @@ dep ensure
 
 ### Testing
 
+Set your available user account to Global Env.
+
+```sh
+export BITBUCKET_TEST_USERNAME=<your_username> 
+export BITBUCKET_TEST_PASSWORD=<your_password> 
+export BITBUCKET_TEST_OWNER=<your_repo_owner>  
+export BITBUCKET_TEST_REPOSLUG=<your_repo_name>
 ```
+
+Refs; URL Syntax is `https://<your_username>:<your_password>@bitbucket.org/<your_repo_owner>/<your_repo_name>.git`. 
+
+And just run,
+
+```sh
 make test
 ```
 
