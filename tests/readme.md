@@ -9,6 +9,6 @@ export BITBUCKET_TEST_USERNAME=<your_username>
 export BITBUCKET_TEST_PASSWORD=<your_password> 
 export BITBUCKET_TEST_OWNER=<your_repo_owner>  
 export BITBUCKET_TEST_REPOSLUG=<your_repo_name>
-cd ./test
+cd ./tests
 go test
 ```

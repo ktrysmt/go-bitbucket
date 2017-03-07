@@ -2,7 +2,6 @@ package bitbucket
 
 var apiBaseURL = "https://bitbucket.org/api/2.0"
 
-//
 func GetApiBaseURL() string {
 	return apiBaseURL
 }

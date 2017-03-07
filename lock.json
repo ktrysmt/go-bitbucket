@@ -1,0 +1,45 @@
+{
+    "memo": "07cc088b6d9ce7bbf075d7c06442cb2fb2864b9fa70b7f5d3f72489936640a8f",
+    "projects": [
+        {
+            "name": "github.com/k0kubun/pp",
+            "branch": "master",
+            "revision": "f5dce6ed0ccf6c350f1679964ff6b61f3d6d2033",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "github.com/mattn/go-colorable",
+            "branch": "master",
+            "revision": "d228849504861217f796da67fae4f6e347643f15",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "github.com/mattn/go-isatty",
+            "branch": "master",
+            "revision": "9622e0cc9d8f9be434ca605520ff9a16808fee47",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "github.com/mitchellh/mapstructure",
+            "branch": "master",
+            "revision": "db1efb556f84b25a0a13a04aad883943538ad2e0",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "golang.org/x/sys",
+            "branch": "master",
+            "revision": "e48874b42435b4347fc52bdee0424a52abc974d7",
+            "packages": [
+                "unix"
+            ]
+        }
+    ]
+}
