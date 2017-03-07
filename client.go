@@ -88,7 +88,6 @@ func (c *Client) requestUrl(template string, args ...interface{}) string {
 
 	if len(args) == 1 && args[0] == "" {
 		return GetApiBaseURL() + template
-	} else {
-		return GetApiBaseURL() + fmt.Sprintf(template, args...)
 	}
+	return GetApiBaseURL() + fmt.Sprintf(template, args...)
 }

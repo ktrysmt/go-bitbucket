@@ -11,13 +11,13 @@ And the response type is json format defined Bitbucket API.
 
 ## Install
 
-```
+```sh
 go get github.com/ktrysmt/go-bitbucket
 ```
 
 ## How to use
 
-```
+```go
 import "github.com/ktrysmt/go-bitbucket"
 ```
 
@@ -28,7 +28,7 @@ import "github.com/ktrysmt/go-bitbucket"
 
 ## Example
 
-```
+```go
 package main
 
 import (
@@ -65,6 +65,35 @@ It does not correspond yet. Because there are many differences between v2.0 and 
 It is officially recommended to use v2.0.  
 But unfortunately Bitbucket Server (formerly: Stash) API is still v1.0.   
 And The API v1.0 covers resources that the v2.0 API and API v2.0 is yet to cover.
+
+## Development
+
+### Install Dependencies
+
+```sh
+go get https://github.com/golang/dep
+cd ./go-bitbucket
+dep ensure 
+```
+
+### Testing
+
+Set your available user account to Global Env.
+
+```sh
+export BITBUCKET_TEST_USERNAME=<your_username> 
+export BITBUCKET_TEST_PASSWORD=<your_password> 
+export BITBUCKET_TEST_OWNER=<your_repo_owner>  
+export BITBUCKET_TEST_REPOSLUG=<your_repo_name>
+```
+
+Refs; URL Syntax is `https://<your_username>:<your_password>@bitbucket.org/<your_repo_owner>/<your_repo_name>.git`. 
+
+And just run,
+
+```sh
+make test
+```
 
 ## License
 

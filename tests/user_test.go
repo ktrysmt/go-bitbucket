@@ -1,7 +1,6 @@
-package bitbucket
+package tests
 
 import (
-	"fmt"
 	"github.com/ktrysmt/go-bitbucket"
 	"os"
 	"testing"
@@ -13,16 +12,20 @@ func TestProfile(t *testing.T) {
 	pass := os.Getenv("BITBUCKET_TEST_PASSWORD")
 
 	if user == "" {
-		t.Error("username is empty.")
+		t.Error("BITBUCKET_TEST_USERNAME is empty.")
 	}
 
 	if pass == "" {
-		t.Error("password is empty.")
+		t.Error("BITBUCKET_TEST_PASSWORD is empty.")
 	}
 
 	c := bitbucket.NewBasicAuth(user, pass)
 
 	res := c.User.Profile()
 
-	fmt.Println(res) // receive the data as json format
+	jsonMap := res.(map[string]interface{})
+
+	if jsonMap["username"] != user {
+		t.Error("Cannot catch the Profile.username.")
+	}
 }
