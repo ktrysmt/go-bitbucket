@@ -37,33 +37,86 @@ func (b *BranchRestrictions) Delete(bo *BranchRestrictionsOptions) interface{} {
 	return b.c.execute("DELETE", url, "")
 }
 
+type branchRestrictionsBody struct {
+	Kind    string `json:"kind"`
+	Pattern string `json:"pattern"`
+	Links   struct {
+		Self struct {
+			Href string `json:"href"`
+		} `json:"self"`
+	} `json:"links"`
+	Value  interface{}                   `json:"value"`
+	Id     int                           `json:"id"`
+	Users  []branchRestrictionsBodyUser  `json:"users"`
+	Groups []branchRestrictionsBodyGroup `json:"groups"`
+}
+
+type branchRestrictionsBodyGroup struct {
+	Name  string `json:"name"`
+	Links struct {
+		Self struct {
+			Href string `json:"href"`
+		} `json:"self"`
+		Html struct {
+			Href string `json:"href"`
+		} `json:"html"`
+		Full_slug string `json:"full_slug"`
+		Members   int    `json:"members"`
+		Slug      string `json:"slug"`
+	} `json:"links"`
+}
+
+type branchRestrictionsBodyUser struct {
+	Username     string `json:"username"`
+	Website      string `json:"website"`
+	Display_name string `json:"display_name"`
+	UUID         string `json:"uuid"`
+	Created_on   string `json:"created_on"`
+	Links        struct {
+		Self struct {
+			Href string `json:"href"`
+		} `json:"self"`
+		Repositories struct {
+			Href string `json:"href"`
+		} `json:"repositories"`
+		Html struct {
+			Href string `json:"href"`
+		} `json:"html"`
+		Followers struct {
+			Href string `json:"href"`
+		} `json:"followers"`
+		Avatar struct {
+			Href string `json:"href"`
+		} `json:"avatar"`
+		Following struct {
+			Href string `json:"href"`
+		} `json:"following"`
+	} `json:"links"`
+}
+
 func (b *BranchRestrictions) buildBranchRestrictionsBody(bo *BranchRestrictionsOptions) string {
 
-	body := map[string]interface{}{}
-	body["groups"] = map[string]string{}
-	body["users"] = map[string]string{}
-
-	if bo.Pattern != "" {
-		body["pattern"] = bo.Pattern
-	}
-	if bo.Kind != "" {
-		body["kind"] = bo.Kind
-	}
-
-	if bo.Kind == "push" {
-		if n := len(bo.Users); n > 0 {
-			for i, user := range bo.Users {
-				body["users"].([]map[string]string)[i] = map[string]string{"username": user}
-			}
+	var users []branchRestrictionsBodyUser
+	var groups []branchRestrictionsBodyGroup
+	for _, u := range bo.Users {
+		user := branchRestrictionsBodyUser{
+			Username: u,
 		}
-		if n := len(bo.Groups); n > 0 {
-			i := 0
-			for username, slug := range bo.Groups {
-				body["groups"].([]map[string]interface{})[i] = map[string]interface{}{"slug": slug}
-				body["groups"].([]map[string]interface{})[i]["owner"] = map[string]string{"username": username}
-				i++
-			}
+		users = append(users, user)
+	}
+	for _, g := range bo.Groups {
+		group := branchRestrictionsBodyGroup{
+			Name: g,
 		}
+		groups = append(groups, group)
+	}
+
+	body := branchRestrictionsBody{
+		Kind:    bo.Kind,
+		Pattern: bo.Pattern,
+		Users:   users,
+		Groups:  groups,
+		Value:   bo.Value,
 	}
 
 	data, err := json.Marshal(body)

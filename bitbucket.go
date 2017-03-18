@@ -146,6 +146,7 @@ type BranchRestrictionsOptions struct {
 	Kind      string            `json:"kind"`
 	Full_slug string            `json:"full_slug"`
 	Name      string            `json:"name"`
+	Value     interface{}       `json:"value"`
 }
 
 type DiffOptions struct {
