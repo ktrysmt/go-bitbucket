@@ -26,7 +26,7 @@ type Repository struct {
 	Links       map[string]interface{}
 }
 
-func (r *Repository) Create(ro *RepositoryOptions) (error, Repository) {
+func (r *Repository) Create(ro *RepositoryOptions) (Repository, error) {
 	data := r.buildRepositoryBody(ro)
 	url := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.Repo_slug)
 	response := r.c.execute("POST", url, data)
@@ -34,7 +34,7 @@ func (r *Repository) Create(ro *RepositoryOptions) (error, Repository) {
 	return decodeRepository(response)
 }
 
-func (r *Repository) Get(ro *RepositoryOptions) (error, Repository) {
+func (r *Repository) Get(ro *RepositoryOptions) (Repository, error) {
 	url := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.Repo_slug)
 	response := r.c.execute("GET", url, "")
 
@@ -99,18 +99,18 @@ func (r *Repository) buildRepositoryBody(ro *RepositoryOptions) string {
 	return string(data)
 }
 
-func decodeRepository(json interface{}) (error, Repository) {
+func decodeRepository(json interface{}) (Repository, error) {
 	jsonMap := json.(map[string]interface{})
 
 	if jsonMap["type"] == "error" {
-		return DecodeError(jsonMap), Repository{}
+		return Repository{}, DecodeError(jsonMap)
 	}
 
 	var repository Repository
 	err := mapstructure.Decode(jsonMap, &repository)
 	if err != nil {
-		return err, Repository{}
+		return Repository{}, err
 	}
 
-	return nil, repository
+	return repository, nil
 }

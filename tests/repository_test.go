@@ -34,7 +34,7 @@ func TestGetRepositoryRepositories(t *testing.T) {
 		Repo_slug: repo,
 	}
 
-	err, res := c.Repositories.Repository.Get(opt)
+	res, err := c.Repositories.Repository.Get(opt)
 	if err != nil {
 		t.Error("The repository is not found.")
 	}
