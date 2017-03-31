@@ -71,7 +71,7 @@ And The API v1.0 covers resources that the v2.0 API and API v2.0 is yet to cover
 ### Install Dependencies
 
 ```sh
-go get https://github.com/golang/dep
+go get github.com/golang/dep/...
 cd ./go-bitbucket
 dep ensure 
 ```
