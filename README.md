@@ -1,5 +1,8 @@
 # go-bitbucket
 
+<a class="repo-badge" href="https://godoc.org/github.com/ktrysmt/go-bitbucket"><img src="https://godoc.org/github.com/ktrysmt/go-bitbucket?status.svg" alt="go-bitbucket?status"></a>
+<a href="https://goreportcard.com/report/github.com/ktrysmt/go-bitbucket"><img class="badge" tag="github.com/ktrysmt/go-bitbucket" src="/badge/github.com/ktrysmt/go-bitbucket"></a>
+
 > Bitbucket-API library for golang.
 
 Support Bitbucket API v2.0. 
