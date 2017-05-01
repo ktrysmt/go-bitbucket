@@ -27,6 +27,11 @@ func (cm *Commits) GetCommitComment(cmo *CommitsOptions) interface{} {
 	return cm.c.execute("GET", url, "")
 }
 
+func (cm *Commits) GetCommitStatuses(cmo *CommitsOptions) interface{} {
+	url := cm.c.requestUrl("/repositories/%s/%s/commit/%s/statuses", cmo.Owner, cmo.Repo_slug, cmo.Revision)
+	return cm.c.execute("GET", url, "")
+}
+
 func (cm *Commits) GetCommitStatus(cmo *CommitsOptions, commitStatusKey string) interface{} {
 	url := cm.c.requestUrl("/repositories/%s/%s/commit/%s/statuses/build/%s", cmo.Owner, cmo.Repo_slug, cmo.Revision, commitStatusKey)
 	return cm.c.execute("GET", url, "")
