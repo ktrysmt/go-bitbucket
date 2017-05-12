@@ -6,6 +6,8 @@ import (
 
 	"io/ioutil"
 	"net/http"
+	urls "net/url"
+	"strconv"
 	"strings"
 )
 
@@ -15,6 +17,7 @@ type Client struct {
 	User         user
 	Teams        teams
 	Repositories *Repositories
+	Pagelen      uint64
 }
 
 type auth struct {
@@ -32,8 +35,10 @@ func NewBasicAuth(u, p string) *Client {
 	return injectClient(a)
 }
 
+const DEFAULT_PAGE_LENGHT = 10
+
 func injectClient(a *auth) *Client {
-	c := &Client{Auth: a}
+	c := &Client{Auth: a, Pagelen: DEFAULT_PAGE_LENGHT}
 	c.Repositories = &Repositories{
 		c:                  c,
 		PullRequests:       &PullRequests{c: c},
@@ -50,6 +55,21 @@ func injectClient(a *auth) *Client {
 }
 
 func (c *Client) execute(method, url, text string) interface{} {
+
+	// Use pagination if changed from default value
+	const DEC_RADIX = 10
+	if strings.Contains(url, "/repositories/") {
+		if c.Pagelen != DEFAULT_PAGE_LENGHT {
+			urlObj, err := urls.Parse(url)
+			if err != nil {
+				return err
+			}
+			q := urlObj.Query()
+			q.Set("pagelen", strconv.FormatUint(c.Pagelen, DEC_RADIX))
+			urlObj.RawQuery = q.Encode()
+			url = urlObj.String()
+		}
+	}
 
 	body := strings.NewReader(text)
 	req, err := http.NewRequest(method, url, body)
