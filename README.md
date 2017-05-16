@@ -18,18 +18,7 @@ And the response type is json format defined Bitbucket API.
 go get github.com/ktrysmt/go-bitbucket
 ```
 
-## How to use
-
-```go
-import "github.com/ktrysmt/go-bitbucket"
-```
-
-## Godoc
-
-- <http://godoc.org/github.com/ktrysmt/go-bitbucket>
-
-
-## Example
+## Usage
 
 ```go
 package main
@@ -71,15 +60,18 @@ And The API v1.0 covers resources that the v2.0 API and API v2.0 is yet to cover
 
 ## Development
 
-### Install Dependencies
+### Install dependencies
+
+It's using dep.
 
 ```sh
 go get github.com/golang/dep/...
+git clone https://github.com/ktrysmt/go-bitbucket 
 cd ./go-bitbucket
 dep ensure 
 ```
 
-### Testing
+### How to testing
 
 Set your available user account to Global Env.
 
