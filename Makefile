@@ -1,6 +1,6 @@
 .PHONY: test
 
-test:
+env:
 ifndef BITBUCKET_TEST_USERNAME
   $(error `BITBUCKET_TEST_USERNAME` is not set)
 endif
@@ -14,5 +14,6 @@ ifndef BITBUCKET_TEST_REPOSLUG
   $(error `BITBUCKET_TEST_REPOSLUG` is not set)
 endif
 
+test: env
 	go test -v ./tests
 
