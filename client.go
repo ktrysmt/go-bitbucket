@@ -90,16 +90,28 @@ func (c *Client) execute(method, url, text string) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+	if resp.Body != nil {
+		defer resp.Body.Close()
+	}
 
-	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(resp.Status)
+	}
 
-	buf, err := ioutil.ReadAll(resp.Body)
+	if resp.Body == nil {
+		return nil, fmt.Errorf("response body is nil")
+	}
+
+	resBodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 
 	var result interface{}
-	json.Unmarshal(buf, &result)
+	err = json.Unmarshal(resBodyBytes, &result)
+	if err != nil {
+		return nil, err
+	}
 
 	return result, nil
 }
