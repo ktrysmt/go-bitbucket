@@ -55,7 +55,6 @@ func injectClient(a *auth) *Client {
 }
 
 func (c *Client) execute(method, url, text string) (interface{}, error) {
-
 	// Use pagination if changed from default value
 	const DEC_RADIX = 10
 	if strings.Contains(url, "/repositories/") {
@@ -111,6 +110,42 @@ func (c *Client) execute(method, url, text string) (interface{}, error) {
 	err = json.Unmarshal(resBodyBytes, &result)
 	if err != nil {
 		return nil, err
+	}
+
+	resultMap, isMap := result.(map[string]interface{})
+	if isMap {
+		nextIn := resultMap["next"]
+		valuesIn := resultMap["values"]
+		if nextIn != nil && valuesIn != nil {
+			nextUrl := nextIn.(string)
+			if nextUrl != "" {
+				valuesSlice := valuesIn.([]interface{})
+				if valuesSlice != nil {
+					nextResult, err := c.execute(method, nextUrl, text)
+					if err != nil {
+						return nil, err
+					}
+					nextResultMap, isNextMap := nextResult.(map[string]interface{})
+					if !isNextMap {
+						return nil, fmt.Errorf("next page result is not map, it's %T", nextResult)
+					}
+					nextValuesIn := nextResultMap["values"]
+					if nextValuesIn == nil {
+						return nil, fmt.Errorf("next page result has no values")
+					}
+					nextValuesSlice, isSlice := nextValuesIn.([]interface{})
+					if !isSlice {
+						return nil, fmt.Errorf("next page result 'values' is not slice")
+					}
+					valuesSlice = append(valuesSlice, nextValuesSlice...)
+					resultMap["values"] = valuesSlice
+					delete(resultMap, "page")
+					delete(resultMap, "pagelen")
+					delete(resultMap, "size")
+					result = resultMap
+				}
+			}
+		}
 	}
 
 	return result, nil
