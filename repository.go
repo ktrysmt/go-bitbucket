@@ -105,15 +105,15 @@ func (r *Repository) buildRepositoryBody(ro *RepositoryOptions) string {
 	return string(data)
 }
 
-func decodeRepository(json interface{}) (*Repository, error) {
-	jsonMap := json.(map[string]interface{})
+func decodeRepository(repoResponse interface{}) (*Repository, error) {
+	repoMap := repoResponse.(map[string]interface{})
 
-	if jsonMap["type"] == "error" {
-		return nil, DecodeError(jsonMap)
+	if repoMap["type"] == "error" {
+		return nil, DecodeError(repoMap)
 	}
 
 	var repository *Repository
-	err := mapstructure.Decode(jsonMap, repository)
+	err := mapstructure.Decode(repoMap, repository)
 	if err != nil {
 		return nil, err
 	}
