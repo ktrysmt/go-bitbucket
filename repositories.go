@@ -1,8 +1,6 @@
 package bitbucket
 
-import (
 //"github.com/k0kubun/pp"
-)
 
 type Repositories struct {
 	c                  *Client
@@ -15,7 +13,7 @@ type Repositories struct {
 	repositories
 }
 
-func (r *Repositories) ListForAccount(ro *RepositoriesOptions) interface{} {
+func (r *Repositories) ListForAccount(ro *RepositoriesOptions) (interface{}, error) {
 	url := r.c.requestUrl("/repositories/%s", ro.Owner)
 	if ro.Role != "" {
 		url += "?role=" + ro.Role
@@ -23,7 +21,7 @@ func (r *Repositories) ListForAccount(ro *RepositoriesOptions) interface{} {
 	return r.c.execute("GET", url, "")
 }
 
-func (r *Repositories) ListForTeam(ro *RepositoriesOptions) interface{} {
+func (r *Repositories) ListForTeam(ro *RepositoriesOptions) (interface{}, error) {
 	url := r.c.requestUrl("/repositories/%s", ro.Owner)
 	if ro.Role != "" {
 		url += "?role=" + ro.Role
@@ -31,7 +29,7 @@ func (r *Repositories) ListForTeam(ro *RepositoriesOptions) interface{} {
 	return r.c.execute("GET", url, "")
 }
 
-func (r *Repositories) ListPublic() interface{} {
+func (r *Repositories) ListPublic() (interface{}, error) {
 	url := r.c.requestUrl("/repositories/", "")
 	return r.c.execute("GET", url, "")
 }

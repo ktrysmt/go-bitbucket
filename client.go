@@ -54,7 +54,7 @@ func injectClient(a *auth) *Client {
 	return c
 }
 
-func (c *Client) execute(method, url, text string) interface{} {
+func (c *Client) execute(method, url, text string) (interface{}, error) {
 
 	// Use pagination if changed from default value
 	const DEC_RADIX = 10
@@ -62,7 +62,7 @@ func (c *Client) execute(method, url, text string) interface{} {
 		if c.Pagelen != DEFAULT_PAGE_LENGHT {
 			urlObj, err := urls.Parse(url)
 			if err != nil {
-				return err
+				return nil, err
 			}
 			q := urlObj.Query()
 			q.Set("pagelen", strconv.FormatUint(c.Pagelen, DEC_RADIX))
@@ -78,7 +78,7 @@ func (c *Client) execute(method, url, text string) interface{} {
 	}
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if c.Auth.user != "" && c.Auth.password != "" {
@@ -88,20 +88,20 @@ func (c *Client) execute(method, url, text string) interface{} {
 	client := new(http.Client)
 	resp, err := client.Do(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	defer resp.Body.Close()
 
 	buf, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	var result interface{}
 	json.Unmarshal(buf, &result)
 
-	return result
+	return result, nil
 }
 
 func (c *Client) requestUrl(template string, args ...interface{}) string {

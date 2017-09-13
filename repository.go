@@ -26,32 +26,38 @@ type Repository struct {
 	Links       map[string]interface{}
 }
 
-func (r *Repository) Create(ro *RepositoryOptions) (Repository, error) {
+func (r *Repository) Create(ro *RepositoryOptions) (*Repository, error) {
 	data := r.buildRepositoryBody(ro)
 	url := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.Repo_slug)
-	response := r.c.execute("POST", url, data)
+	response, err := r.c.execute("POST", url, data)
+	if err != nil {
+		return nil, err
+	}
 
 	return decodeRepository(response)
 }
 
-func (r *Repository) Get(ro *RepositoryOptions) (Repository, error) {
+func (r *Repository) Get(ro *RepositoryOptions) (*Repository, error) {
 	url := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.Repo_slug)
-	response := r.c.execute("GET", url, "")
+	response, err := r.c.execute("GET", url, "")
+	if err != nil {
+		return nil, err
+	}
 
 	return decodeRepository(response)
 }
 
-func (r *Repository) Delete(ro *RepositoryOptions) interface{} {
+func (r *Repository) Delete(ro *RepositoryOptions) (interface{}, error) {
 	url := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.Repo_slug)
 	return r.c.execute("DELETE", url, "")
 }
 
-func (r *Repository) ListWatchers(ro *RepositoryOptions) interface{} {
+func (r *Repository) ListWatchers(ro *RepositoryOptions) (interface{}, error) {
 	url := r.c.requestUrl("/repositories/%s/%s/watchers", ro.Owner, ro.Repo_slug)
 	return r.c.execute("GET", url, "")
 }
 
-func (r *Repository) ListForks(ro *RepositoryOptions) interface{} {
+func (r *Repository) ListForks(ro *RepositoryOptions) (interface{}, error) {
 	url := r.c.requestUrl("/repositories/%s/%s/forks", ro.Owner, ro.Repo_slug)
 	return r.c.execute("GET", url, "")
 }
@@ -99,17 +105,17 @@ func (r *Repository) buildRepositoryBody(ro *RepositoryOptions) string {
 	return string(data)
 }
 
-func decodeRepository(json interface{}) (Repository, error) {
+func decodeRepository(json interface{}) (*Repository, error) {
 	jsonMap := json.(map[string]interface{})
 
 	if jsonMap["type"] == "error" {
-		return Repository{}, DecodeError(jsonMap)
+		return nil, DecodeError(jsonMap)
 	}
 
-	var repository Repository
-	err := mapstructure.Decode(jsonMap, &repository)
+	var repository *Repository
+	err := mapstructure.Decode(jsonMap, repository)
 	if err != nil {
-		return Repository{}, err
+		return nil, err
 	}
 
 	return repository, nil
