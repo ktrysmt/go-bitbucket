@@ -6,8 +6,8 @@ func GetApiBaseURL() string {
 	return apiBaseURL
 }
 
-func SetApiBaseURL(url string) {
-	apiBaseURL = url
+func SetApiBaseURL(urlStr string) {
+	apiBaseURL = urlStr
 }
 
 type users interface {

@@ -6,7 +6,7 @@ import (
 
 	"io/ioutil"
 	"net/http"
-	urls "net/url"
+	"net/url"
 	"strconv"
 	"strings"
 )
@@ -54,24 +54,24 @@ func injectClient(a *auth) *Client {
 	return c
 }
 
-func (c *Client) execute(method, url, text string) (interface{}, error) {
+func (c *Client) execute(method string, urlStr string, text string) (interface{}, error) {
 	// Use pagination if changed from default value
 	const DEC_RADIX = 10
-	if strings.Contains(url, "/repositories/") {
+	if strings.Contains(urlStr, "/repositories/") {
 		if c.Pagelen != DEFAULT_PAGE_LENGHT {
-			urlObj, err := urls.Parse(url)
+			urlObj, err := url.Parse(urlStr)
 			if err != nil {
 				return nil, err
 			}
 			q := urlObj.Query()
 			q.Set("pagelen", strconv.FormatUint(c.Pagelen, DEC_RADIX))
 			urlObj.RawQuery = q.Encode()
-			url = urlObj.String()
+			urlStr = urlObj.String()
 		}
 	}
 
 	body := strings.NewReader(text)
-	req, err := http.NewRequest(method, url, body)
+	req, err := http.NewRequest(method, urlStr, body)
 	if text != "" {
 		req.Header.Set("Content-Type", "application/json")
 	}

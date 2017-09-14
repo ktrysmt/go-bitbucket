@@ -41,30 +41,30 @@ func (r *Webhooks) buildWebhooksBody(ro *WebhooksOptions) string {
 }
 
 func (r *Webhooks) Gets(ro *WebhooksOptions) (interface{}, error) {
-	url := r.c.requestUrl("/repositories/%s/%s/hooks/", ro.Owner, ro.Repo_slug)
-	return r.c.execute("GET", url, "")
+	urlStr := r.c.requestUrl("/repositories/%s/%s/hooks/", ro.Owner, ro.Repo_slug)
+	return r.c.execute("GET", urlStr, "")
 }
 
 func (r *Webhooks) Create(ro *WebhooksOptions) (interface{}, error) {
 	data := r.buildWebhooksBody(ro)
-	url := r.c.requestUrl("/repositories/%s/%s/hooks", ro.Owner, ro.Repo_slug)
-	return r.c.execute("POST", url, data)
+	urlStr := r.c.requestUrl("/repositories/%s/%s/hooks", ro.Owner, ro.Repo_slug)
+	return r.c.execute("POST", urlStr, data)
 }
 
 func (r *Webhooks) Get(ro *WebhooksOptions) (interface{}, error) {
-	url := r.c.requestUrl("/repositories/%s/%s/hooks/%s", ro.Owner, ro.Repo_slug, ro.Uuid)
-	return r.c.execute("GET", url, "")
+	urlStr := r.c.requestUrl("/repositories/%s/%s/hooks/%s", ro.Owner, ro.Repo_slug, ro.Uuid)
+	return r.c.execute("GET", urlStr, "")
 }
 
 func (r *Webhooks) Update(ro *WebhooksOptions) (interface{}, error) {
 	data := r.buildWebhooksBody(ro)
-	url := r.c.requestUrl("/repositories/%s/%s/hooks/%s", ro.Owner, ro.Repo_slug, ro.Uuid)
-	return r.c.execute("PUT", url, data)
+	urlStr := r.c.requestUrl("/repositories/%s/%s/hooks/%s", ro.Owner, ro.Repo_slug, ro.Uuid)
+	return r.c.execute("PUT", urlStr, data)
 }
 
 func (r *Webhooks) Delete(ro *WebhooksOptions) (interface{}, error) {
-	url := r.c.requestUrl("/repositories/%s/%s/hooks/%s", ro.Owner, ro.Repo_slug, ro.Uuid)
-	return r.c.execute("DELETE", url, "")
+	urlStr := r.c.requestUrl("/repositories/%s/%s/hooks/%s", ro.Owner, ro.Repo_slug, ro.Uuid)
+	return r.c.execute("DELETE", urlStr, "")
 }
 
 //

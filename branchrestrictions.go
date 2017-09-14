@@ -12,30 +12,30 @@ type BranchRestrictions struct {
 }
 
 func (b *BranchRestrictions) Gets(bo *BranchRestrictionsOptions) (interface{}, error) {
-	url := b.c.requestUrl("/repositories/%s/%s/branch-restrictions", bo.Owner, bo.Repo_slug)
-	return b.c.execute("GET", url, "")
+	urlStr := b.c.requestUrl("/repositories/%s/%s/branch-restrictions", bo.Owner, bo.Repo_slug)
+	return b.c.execute("GET", urlStr, "")
 }
 
 func (b *BranchRestrictions) Create(bo *BranchRestrictionsOptions) (interface{}, error) {
 	data := b.buildBranchRestrictionsBody(bo)
-	url := b.c.requestUrl("/repositories/%s/%s/branch-restrictions", bo.Owner, bo.Repo_slug)
-	return b.c.execute("POST", url, data)
+	urlStr := b.c.requestUrl("/repositories/%s/%s/branch-restrictions", bo.Owner, bo.Repo_slug)
+	return b.c.execute("POST", urlStr, data)
 }
 
 func (b *BranchRestrictions) Get(bo *BranchRestrictionsOptions) (interface{}, error) {
-	url := b.c.requestUrl("/repositories/%s/%s/branch-restrictions/%s", bo.Owner, bo.Repo_slug, bo.Id)
-	return b.c.execute("GET", url, "")
+	urlStr := b.c.requestUrl("/repositories/%s/%s/branch-restrictions/%s", bo.Owner, bo.Repo_slug, bo.Id)
+	return b.c.execute("GET", urlStr, "")
 }
 
 func (b *BranchRestrictions) Update(bo *BranchRestrictionsOptions) (interface{}, error) {
 	data := b.buildBranchRestrictionsBody(bo)
-	url := b.c.requestUrl("/repositories/%s/%s/branch-restrictions/%s", bo.Owner, bo.Repo_slug, bo.Id)
-	return b.c.execute("PUT", url, data)
+	urlStr := b.c.requestUrl("/repositories/%s/%s/branch-restrictions/%s", bo.Owner, bo.Repo_slug, bo.Id)
+	return b.c.execute("PUT", urlStr, data)
 }
 
 func (b *BranchRestrictions) Delete(bo *BranchRestrictionsOptions) (interface{}, error) {
-	url := b.c.requestUrl("/repositories/%s/%s/branch-restrictions/%s", bo.Owner, bo.Repo_slug, bo.Id)
-	return b.c.execute("DELETE", url, "")
+	urlStr := b.c.requestUrl("/repositories/%s/%s/branch-restrictions/%s", bo.Owner, bo.Repo_slug, bo.Id)
+	return b.c.execute("DELETE", urlStr, "")
 }
 
 type branchRestrictionsBody struct {

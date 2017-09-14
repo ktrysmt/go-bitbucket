@@ -28,8 +28,8 @@ type Repository struct {
 
 func (r *Repository) Create(ro *RepositoryOptions) (*Repository, error) {
 	data := r.buildRepositoryBody(ro)
-	url := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.Repo_slug)
-	response, err := r.c.execute("POST", url, data)
+	urlStr := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.Repo_slug)
+	response, err := r.c.execute("POST", urlStr, data)
 	if err != nil {
 		return nil, err
 	}
@@ -38,8 +38,8 @@ func (r *Repository) Create(ro *RepositoryOptions) (*Repository, error) {
 }
 
 func (r *Repository) Get(ro *RepositoryOptions) (*Repository, error) {
-	url := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.Repo_slug)
-	response, err := r.c.execute("GET", url, "")
+	urlStr := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.Repo_slug)
+	response, err := r.c.execute("GET", urlStr, "")
 	if err != nil {
 		return nil, err
 	}
@@ -48,18 +48,18 @@ func (r *Repository) Get(ro *RepositoryOptions) (*Repository, error) {
 }
 
 func (r *Repository) Delete(ro *RepositoryOptions) (interface{}, error) {
-	url := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.Repo_slug)
-	return r.c.execute("DELETE", url, "")
+	urlStr := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.Repo_slug)
+	return r.c.execute("DELETE", urlStr, "")
 }
 
 func (r *Repository) ListWatchers(ro *RepositoryOptions) (interface{}, error) {
-	url := r.c.requestUrl("/repositories/%s/%s/watchers", ro.Owner, ro.Repo_slug)
-	return r.c.execute("GET", url, "")
+	urlStr := r.c.requestUrl("/repositories/%s/%s/watchers", ro.Owner, ro.Repo_slug)
+	return r.c.execute("GET", urlStr, "")
 }
 
 func (r *Repository) ListForks(ro *RepositoryOptions) (interface{}, error) {
-	url := r.c.requestUrl("/repositories/%s/%s/forks", ro.Owner, ro.Repo_slug)
-	return r.c.execute("GET", url, "")
+	urlStr := r.c.requestUrl("/repositories/%s/%s/forks", ro.Owner, ro.Repo_slug)
+	return r.c.execute("GET", urlStr, "")
 }
 
 func (r *Repository) buildRepositoryBody(ro *RepositoryOptions) string {
