@@ -6,7 +6,7 @@ import (
 
 	"io/ioutil"
 	"net/http"
-	urls "net/url"
+	"net/url"
 	"strconv"
 	"strings"
 )
@@ -54,31 +54,30 @@ func injectClient(a *auth) *Client {
 	return c
 }
 
-func (c *Client) execute(method, url, text string) interface{} {
-
+func (c *Client) execute(method string, urlStr string, text string) (interface{}, error) {
 	// Use pagination if changed from default value
 	const DEC_RADIX = 10
-	if strings.Contains(url, "/repositories/") {
+	if strings.Contains(urlStr, "/repositories/") {
 		if c.Pagelen != DEFAULT_PAGE_LENGHT {
-			urlObj, err := urls.Parse(url)
+			urlObj, err := url.Parse(urlStr)
 			if err != nil {
-				return err
+				return nil, err
 			}
 			q := urlObj.Query()
 			q.Set("pagelen", strconv.FormatUint(c.Pagelen, DEC_RADIX))
 			urlObj.RawQuery = q.Encode()
-			url = urlObj.String()
+			urlStr = urlObj.String()
 		}
 	}
 
 	body := strings.NewReader(text)
-	req, err := http.NewRequest(method, url, body)
+	req, err := http.NewRequest(method, urlStr, body)
 	if text != "" {
 		req.Header.Set("Content-Type", "application/json")
 	}
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if c.Auth.user != "" && c.Auth.password != "" {
@@ -88,20 +87,68 @@ func (c *Client) execute(method, url, text string) interface{} {
 	client := new(http.Client)
 	resp, err := client.Do(req)
 	if err != nil {
-		return err
+		return nil, err
+	}
+	if resp.Body != nil {
+		defer resp.Body.Close()
 	}
 
-	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(resp.Status)
+	}
 
-	buf, err := ioutil.ReadAll(resp.Body)
+	if resp.Body == nil {
+		return nil, fmt.Errorf("response body is nil")
+	}
+
+	resBodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	var result interface{}
-	json.Unmarshal(buf, &result)
+	err = json.Unmarshal(resBodyBytes, &result)
+	if err != nil {
+		return nil, err
+	}
 
-	return result
+	resultMap, isMap := result.(map[string]interface{})
+	if isMap {
+		nextIn := resultMap["next"]
+		valuesIn := resultMap["values"]
+		if nextIn != nil && valuesIn != nil {
+			nextUrl := nextIn.(string)
+			if nextUrl != "" {
+				valuesSlice := valuesIn.([]interface{})
+				if valuesSlice != nil {
+					nextResult, err := c.execute(method, nextUrl, text)
+					if err != nil {
+						return nil, err
+					}
+					nextResultMap, isNextMap := nextResult.(map[string]interface{})
+					if !isNextMap {
+						return nil, fmt.Errorf("next page result is not map, it's %T", nextResult)
+					}
+					nextValuesIn := nextResultMap["values"]
+					if nextValuesIn == nil {
+						return nil, fmt.Errorf("next page result has no values")
+					}
+					nextValuesSlice, isSlice := nextValuesIn.([]interface{})
+					if !isSlice {
+						return nil, fmt.Errorf("next page result 'values' is not slice")
+					}
+					valuesSlice = append(valuesSlice, nextValuesSlice...)
+					resultMap["values"] = valuesSlice
+					delete(resultMap, "page")
+					delete(resultMap, "pagelen")
+					delete(resultMap, "size")
+					result = resultMap
+				}
+			}
+		}
+	}
+
+	return result, nil
 }
 
 func (c *Client) requestUrl(template string, args ...interface{}) string {

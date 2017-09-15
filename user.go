@@ -6,13 +6,13 @@ type User struct {
 }
 
 // Profile is getting the user data
-func (u *User) Profile() interface{} {
-	url := GetApiBaseURL() + "/user/"
-	return u.c.execute("GET", url, "")
+func (u *User) Profile() (interface{}, error) {
+	urlStr := GetApiBaseURL() + "/user/"
+	return u.c.execute("GET", urlStr, "")
 }
 
 // Emails is getting user's emails
-func (u *User) Emails() interface{} {
-	url := GetApiBaseURL() + "/user/emails"
-	return u.c.execute("GET", url, "")
+func (u *User) Emails() (interface{}, error) {
+	urlStr := GetApiBaseURL() + "/user/emails"
+	return u.c.execute("GET", urlStr, "")
 }

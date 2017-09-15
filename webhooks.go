@@ -2,8 +2,9 @@ package bitbucket
 
 import (
 	"encoding/json"
-	"github.com/k0kubun/pp"
 	"os"
+
+	"github.com/k0kubun/pp"
 )
 
 type Webhooks struct {
@@ -39,31 +40,31 @@ func (r *Webhooks) buildWebhooksBody(ro *WebhooksOptions) string {
 	return string(data)
 }
 
-func (r *Webhooks) Gets(ro *WebhooksOptions) interface{} {
-	url := r.c.requestUrl("/repositories/%s/%s/hooks/", ro.Owner, ro.Repo_slug)
-	return r.c.execute("GET", url, "")
+func (r *Webhooks) Gets(ro *WebhooksOptions) (interface{}, error) {
+	urlStr := r.c.requestUrl("/repositories/%s/%s/hooks/", ro.Owner, ro.Repo_slug)
+	return r.c.execute("GET", urlStr, "")
 }
 
-func (r *Webhooks) Create(ro *WebhooksOptions) interface{} {
+func (r *Webhooks) Create(ro *WebhooksOptions) (interface{}, error) {
 	data := r.buildWebhooksBody(ro)
-	url := r.c.requestUrl("/repositories/%s/%s/hooks", ro.Owner, ro.Repo_slug)
-	return r.c.execute("POST", url, data)
+	urlStr := r.c.requestUrl("/repositories/%s/%s/hooks", ro.Owner, ro.Repo_slug)
+	return r.c.execute("POST", urlStr, data)
 }
 
-func (r *Webhooks) Get(ro *WebhooksOptions) interface{} {
-	url := r.c.requestUrl("/repositories/%s/%s/hooks/%s", ro.Owner, ro.Repo_slug, ro.Uuid)
-	return r.c.execute("GET", url, "")
+func (r *Webhooks) Get(ro *WebhooksOptions) (interface{}, error) {
+	urlStr := r.c.requestUrl("/repositories/%s/%s/hooks/%s", ro.Owner, ro.Repo_slug, ro.Uuid)
+	return r.c.execute("GET", urlStr, "")
 }
 
-func (r *Webhooks) Update(ro *WebhooksOptions) interface{} {
+func (r *Webhooks) Update(ro *WebhooksOptions) (interface{}, error) {
 	data := r.buildWebhooksBody(ro)
-	url := r.c.requestUrl("/repositories/%s/%s/hooks/%s", ro.Owner, ro.Repo_slug, ro.Uuid)
-	return r.c.execute("PUT", url, data)
+	urlStr := r.c.requestUrl("/repositories/%s/%s/hooks/%s", ro.Owner, ro.Repo_slug, ro.Uuid)
+	return r.c.execute("PUT", urlStr, data)
 }
 
-func (r *Webhooks) Delete(ro *WebhooksOptions) interface{} {
-	url := r.c.requestUrl("/repositories/%s/%s/hooks/%s", ro.Owner, ro.Repo_slug, ro.Uuid)
-	return r.c.execute("DELETE", url, "")
+func (r *Webhooks) Delete(ro *WebhooksOptions) (interface{}, error) {
+	urlStr := r.c.requestUrl("/repositories/%s/%s/hooks/%s", ro.Owner, ro.Repo_slug, ro.Uuid)
+	return r.c.execute("DELETE", urlStr, "")
 }
 
 //

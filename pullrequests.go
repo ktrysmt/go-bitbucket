@@ -11,73 +11,73 @@ type PullRequests struct {
 	c *Client
 }
 
-func (p *PullRequests) Create(po *PullRequestsOptions) interface{} {
+func (p *PullRequests) Create(po *PullRequestsOptions) (interface{}, error) {
 	data := p.buildPullRequestBody(po)
-	url := p.c.requestUrl("/repositories/%s/%s/pullrequests/", po.Owner, po.Repo_slug)
-	return p.c.execute("POST", url, data)
+	urlStr := p.c.requestUrl("/repositories/%s/%s/pullrequests/", po.Owner, po.Repo_slug)
+	return p.c.execute("POST", urlStr, data)
 }
 
-func (p *PullRequests) Update(po *PullRequestsOptions) interface{} {
+func (p *PullRequests) Update(po *PullRequestsOptions) (interface{}, error) {
 	data := p.buildPullRequestBody(po)
-	url := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id
-	return p.c.execute("PUT", url, data)
+	urlStr := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id
+	return p.c.execute("PUT", urlStr, data)
 }
 
-func (p *PullRequests) Gets(po *PullRequestsOptions) interface{} {
-	url := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/"
-	return p.c.execute("GET", url, "")
+func (p *PullRequests) Gets(po *PullRequestsOptions) (interface{}, error) {
+	urlStr := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/"
+	return p.c.execute("GET", urlStr, "")
 }
 
-func (p *PullRequests) Get(po *PullRequestsOptions) interface{} {
-	url := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id
-	return p.c.execute("GET", url, "")
+func (p *PullRequests) Get(po *PullRequestsOptions) (interface{}, error) {
+	urlStr := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id
+	return p.c.execute("GET", urlStr, "")
 }
 
-func (p *PullRequests) Activities(po *PullRequestsOptions) interface{} {
-	url := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/activity"
-	return p.c.execute("GET", url, "")
+func (p *PullRequests) Activities(po *PullRequestsOptions) (interface{}, error) {
+	urlStr := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/activity"
+	return p.c.execute("GET", urlStr, "")
 }
 
-func (p *PullRequests) Activity(po *PullRequestsOptions) interface{} {
-	url := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id + "/activity"
-	return p.c.execute("GET", url, "")
+func (p *PullRequests) Activity(po *PullRequestsOptions) (interface{}, error) {
+	urlStr := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id + "/activity"
+	return p.c.execute("GET", urlStr, "")
 }
 
-func (p *PullRequests) Commits(po *PullRequestsOptions) interface{} {
-	url := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id + "/commits"
-	return p.c.execute("GET", url, "")
+func (p *PullRequests) Commits(po *PullRequestsOptions) (interface{}, error) {
+	urlStr := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id + "/commits"
+	return p.c.execute("GET", urlStr, "")
 }
 
-func (p *PullRequests) Patch(po *PullRequestsOptions) interface{} {
-	url := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id + "/patch"
-	return p.c.execute("GET", url, "")
+func (p *PullRequests) Patch(po *PullRequestsOptions) (interface{}, error) {
+	urlStr := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id + "/patch"
+	return p.c.execute("GET", urlStr, "")
 }
 
-func (p *PullRequests) Diff(po *PullRequestsOptions) interface{} {
-	url := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id + "/diff"
-	return p.c.execute("GET", url, "")
+func (p *PullRequests) Diff(po *PullRequestsOptions) (interface{}, error) {
+	urlStr := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id + "/diff"
+	return p.c.execute("GET", urlStr, "")
 }
 
-func (p *PullRequests) Merge(po *PullRequestsOptions) interface{} {
+func (p *PullRequests) Merge(po *PullRequestsOptions) (interface{}, error) {
 	data := p.buildPullRequestBody(po)
-	url := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id + "/merge"
-	return p.c.execute("POST", url, data)
+	urlStr := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id + "/merge"
+	return p.c.execute("POST", urlStr, data)
 }
 
-func (p *PullRequests) Decline(po *PullRequestsOptions) interface{} {
+func (p *PullRequests) Decline(po *PullRequestsOptions) (interface{}, error) {
 	data := p.buildPullRequestBody(po)
-	url := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id + "/decline"
-	return p.c.execute("POST", url, data)
+	urlStr := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id + "/decline"
+	return p.c.execute("POST", urlStr, data)
 }
 
-func (p *PullRequests) GetComments(po *PullRequestsOptions) interface{} {
-	url := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id + "/comments/"
-	return p.c.execute("GET", url, "")
+func (p *PullRequests) GetComments(po *PullRequestsOptions) (interface{}, error) {
+	urlStr := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id + "/comments/"
+	return p.c.execute("GET", urlStr, "")
 }
 
-func (p *PullRequests) GetComment(po *PullRequestsOptions) interface{} {
-	url := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id + "/comments/" + po.Comment_id
-	return p.c.execute("GET", url, "")
+func (p *PullRequests) GetComment(po *PullRequestsOptions) (interface{}, error) {
+	urlStr := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.Repo_slug + "/pullrequests/" + po.Id + "/comments/" + po.Comment_id
+	return p.c.execute("GET", urlStr, "")
 }
 
 func (p *PullRequests) buildPullRequestBody(po *PullRequestsOptions) string {

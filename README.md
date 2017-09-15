@@ -40,7 +40,10 @@ func main() {
                 Title: "fix bug. #9999",
                 Close_source_branch: true,
         }
-        res := c.Repositories.PullRequests.Create(opt)
+        res, err := c.Repositories.PullRequests.Create(opt)
+        if err != nil {
+                panic(err)
+        }
 
         fmt.Println(res) // receive the data as json format
 }

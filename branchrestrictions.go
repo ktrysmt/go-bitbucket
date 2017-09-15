@@ -2,39 +2,40 @@ package bitbucket
 
 import (
 	"encoding/json"
-	"github.com/k0kubun/pp"
 	"os"
+
+	"github.com/k0kubun/pp"
 )
 
 type BranchRestrictions struct {
 	c *Client
 }
 
-func (b *BranchRestrictions) Gets(bo *BranchRestrictionsOptions) interface{} {
-	url := b.c.requestUrl("/repositories/%s/%s/branch-restrictions", bo.Owner, bo.Repo_slug)
-	return b.c.execute("GET", url, "")
+func (b *BranchRestrictions) Gets(bo *BranchRestrictionsOptions) (interface{}, error) {
+	urlStr := b.c.requestUrl("/repositories/%s/%s/branch-restrictions", bo.Owner, bo.Repo_slug)
+	return b.c.execute("GET", urlStr, "")
 }
 
-func (b *BranchRestrictions) Create(bo *BranchRestrictionsOptions) interface{} {
+func (b *BranchRestrictions) Create(bo *BranchRestrictionsOptions) (interface{}, error) {
 	data := b.buildBranchRestrictionsBody(bo)
-	url := b.c.requestUrl("/repositories/%s/%s/branch-restrictions", bo.Owner, bo.Repo_slug)
-	return b.c.execute("POST", url, data)
+	urlStr := b.c.requestUrl("/repositories/%s/%s/branch-restrictions", bo.Owner, bo.Repo_slug)
+	return b.c.execute("POST", urlStr, data)
 }
 
-func (b *BranchRestrictions) Get(bo *BranchRestrictionsOptions) interface{} {
-	url := b.c.requestUrl("/repositories/%s/%s/branch-restrictions/%s", bo.Owner, bo.Repo_slug, bo.Id)
-	return b.c.execute("GET", url, "")
+func (b *BranchRestrictions) Get(bo *BranchRestrictionsOptions) (interface{}, error) {
+	urlStr := b.c.requestUrl("/repositories/%s/%s/branch-restrictions/%s", bo.Owner, bo.Repo_slug, bo.Id)
+	return b.c.execute("GET", urlStr, "")
 }
 
-func (b *BranchRestrictions) Update(bo *BranchRestrictionsOptions) interface{} {
+func (b *BranchRestrictions) Update(bo *BranchRestrictionsOptions) (interface{}, error) {
 	data := b.buildBranchRestrictionsBody(bo)
-	url := b.c.requestUrl("/repositories/%s/%s/branch-restrictions/%s", bo.Owner, bo.Repo_slug, bo.Id)
-	return b.c.execute("PUT", url, data)
+	urlStr := b.c.requestUrl("/repositories/%s/%s/branch-restrictions/%s", bo.Owner, bo.Repo_slug, bo.Id)
+	return b.c.execute("PUT", urlStr, data)
 }
 
-func (b *BranchRestrictions) Delete(bo *BranchRestrictionsOptions) interface{} {
-	url := b.c.requestUrl("/repositories/%s/%s/branch-restrictions/%s", bo.Owner, bo.Repo_slug, bo.Id)
-	return b.c.execute("DELETE", url, "")
+func (b *BranchRestrictions) Delete(bo *BranchRestrictionsOptions) (interface{}, error) {
+	urlStr := b.c.requestUrl("/repositories/%s/%s/branch-restrictions/%s", bo.Owner, bo.Repo_slug, bo.Id)
+	return b.c.execute("DELETE", urlStr, "")
 }
 
 type branchRestrictionsBody struct {
