@@ -93,7 +93,7 @@ func (c *Client) execute(method string, urlStr string, text string) (interface{}
 		defer resp.Body.Close()
 	}
 
-	if resp.StatusCode != http.StatusOK {
+	if (resp.StatusCode != http.StatusOK) && (resp.StatusCode != http.StatusCreated) {
 		return nil, fmt.Errorf(resp.Status)
 	}
 
