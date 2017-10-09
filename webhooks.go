@@ -25,11 +25,7 @@ func (r *Webhooks) buildWebhooksBody(ro *WebhooksOptions) string {
 		body["active"] = ro.Active
 	}
 
-	if n := len(ro.Events); n > 0 {
-		for i, event := range ro.Events {
-			body["events"].([]string)[i] = event
-		}
-	}
+	body["events"] = ro.Events
 
 	data, err := json.Marshal(body)
 	if err != nil {
