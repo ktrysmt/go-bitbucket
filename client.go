@@ -3,6 +3,8 @@ package bitbucket
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+	"os"
 
 	"io/ioutil"
 	"net/http"
@@ -31,6 +33,17 @@ func NewOAuth(i, s string) *Client {
 }
 
 func NewBasicAuth(u, p string) *Client {
+	a := &auth{user: u, password: p}
+	return injectClient(a)
+}
+
+// NewEnvVarAuth creates a client using the environment
+// variables BITBUCKET_USERNAME and BITBUCKET_PASSWORD
+func NewEnvVarAuth() *Client {
+	u, p := os.Getenv("BITBUCKET_USERNAME"), os.Getenv("BITBUCKET_PASSWORD")
+	if u == "" || p == "" {
+		log.Fatal("BITBUCKET_USERNAME or BITBUCKET_PASSWORD not set")
+	}
 	a := &auth{user: u, password: p}
 	return injectClient(a)
 }
