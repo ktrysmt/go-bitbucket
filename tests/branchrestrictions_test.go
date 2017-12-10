@@ -1,9 +1,10 @@
 package tests
 
 import (
-	"github.com/ktrysmt/go-bitbucket"
 	"os"
 	"testing"
+
+	"github.com/ktrysmt/go-bitbucket"
 )
 
 var (
@@ -43,7 +44,7 @@ func TestCreateBranchRestrictionsKindPush(t *testing.T) {
 		Kind:      "push",
 		Users:     []string{user},
 	}
-	res := c.Repositories.BranchRestrictions.Create(opt)
+	res, _ := c.Repositories.BranchRestrictions.Create(opt)
 	jsonMap := res.(map[string]interface{})
 	if jsonMap["type"] != "branchrestriction" {
 		t.Error("is not branchrestriction type")
@@ -64,7 +65,7 @@ func TestCreateBranchRestrictionsKindRequirePassingBuilds(t *testing.T) {
 		Kind:      "require_passing_builds_to_merge",
 		Value:     2,
 	}
-	res := c.Repositories.BranchRestrictions.Create(opt)
+	res, _ := c.Repositories.BranchRestrictions.Create(opt)
 	jsonMap := res.(map[string]interface{})
 	if jsonMap["type"] != "branchrestriction" {
 		t.Error("is not branchrestriction type")

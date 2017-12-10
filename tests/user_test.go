@@ -1,9 +1,10 @@
 package tests
 
 import (
-	"github.com/ktrysmt/go-bitbucket"
 	"os"
 	"testing"
+
+	"github.com/ktrysmt/go-bitbucket"
 )
 
 func TestProfile(t *testing.T) {
@@ -21,7 +22,7 @@ func TestProfile(t *testing.T) {
 
 	c := bitbucket.NewBasicAuth(user, pass)
 
-	res := c.User.Profile()
+	res, _ := c.User.Profile()
 
 	jsonMap := res.(map[string]interface{})
 

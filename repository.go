@@ -112,7 +112,7 @@ func decodeRepository(repoResponse interface{}) (*Repository, error) {
 		return nil, DecodeError(repoMap)
 	}
 
-	var repository *Repository
+	var repository = new(Repository)
 	err := mapstructure.Decode(repoMap, repository)
 	if err != nil {
 		return nil, err
