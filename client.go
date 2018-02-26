@@ -4,7 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"golang.org/x/net/context"
+	"golang.org/x/oauth2"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -23,10 +26,39 @@ type Client struct {
 type auth struct {
 	app_id, secret string
 	user, password string
+	token          oauth2.Token
 }
 
 func NewOAuth(i, s string) *Client {
 	a := &auth{app_id: i, secret: s}
+	ctx := context.Background()
+	conf := &oauth2.Config{
+		ClientID:     i,
+		ClientSecret: "s",
+		Endpoint: oauth2.Endpoint{
+			AuthURL:  "https://bitbucket.org/site/oauth2/authorize",
+			TokenURL: "https://bitbucket.org/site/oauth2/access_token",
+		},
+	}
+
+	// Redirect user to consent page to ask for permission
+	// for the scopes specified above.
+	url := conf.AuthCodeURL("state", oauth2.AccessTypeOffline)
+	fmt.Printf("Visit the URL for the auth dialog: %v", url)
+
+	// Use the authorization code that is pushed to the redirect
+	// URL. Exchange will do the handshake to retrieve the
+	// initial access token. The HTTP Client returned by
+	// conf.Client will refresh the token as necessary.
+	var code string
+	if _, err := fmt.Scan(&code); err != nil {
+		log.Fatal(err)
+	}
+	tok, err := conf.Exchange(ctx, code)
+	if err != nil {
+		log.Fatal(err)
+	}
+	a.token = *tok
 	return injectClient(a)
 }
 
@@ -82,6 +114,8 @@ func (c *Client) execute(method string, urlStr string, text string) (interface{}
 
 	if c.Auth.user != "" && c.Auth.password != "" {
 		req.SetBasicAuth(c.Auth.user, c.Auth.password)
+	} else if c.Auth.token.Valid() {
+		c.Auth.token.SetAuthHeader(req)
 	}
 
 	client := new(http.Client)
