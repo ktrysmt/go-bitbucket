@@ -36,8 +36,7 @@ func NewOAuth(i, s string) *Client {
 	conf := &oauth2.Config{
 		ClientID:     i,
 		ClientSecret: s,
-		Endpoint: oauth2.bitbucket.Endpoint,
-		},
+		Endpoint:     bitbucket.Endpoint,
 	}
 
 	// Redirect user to consent page to ask for permission
