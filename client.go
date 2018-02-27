@@ -34,10 +34,8 @@ func NewOAuth(i, s string) *Client {
 	ctx := context.Background()
 	conf := &oauth2.Config{
 		ClientID:     i,
-		ClientSecret: "s",
-		Endpoint: oauth2.Endpoint{
-			AuthURL:  "https://bitbucket.org/site/oauth2/authorize",
-			TokenURL: "https://bitbucket.org/site/oauth2/access_token",
+		ClientSecret: s,
+		Endpoint: oauth2.bitbucket.Endpoint,
 		},
 	}
 
@@ -54,6 +52,7 @@ func NewOAuth(i, s string) *Client {
 	if _, err := fmt.Scan(&code); err != nil {
 		log.Fatal(err)
 	}
+	log.Println(code)
 	tok, err := conf.Exchange(ctx, code)
 	if err != nil {
 		log.Fatal(err)
