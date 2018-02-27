@@ -45,9 +45,10 @@
   name = "golang.org/x/oauth2"
   packages = [
     ".",
+    "bitbucket",
     "internal"
   ]
-  revision = "543e37812f10c46c622c9575afd7ad22f22a12ba"
+  revision = "d7d64896b5ff88e703f289390e3e98cd010a837e"
 
 [[projects]]
   branch = "master"
@@ -72,6 +73,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "b64f2ab2cc33efafe581bbd7f71e954e74021ad129b293a432171612b174b268"
+  inputs-digest = "3d3aa0f6c5fa4977e4e5f2ac717ded5a4acf280247779bd4e38687bfa2e5e323"
   solver-name = "gps-cdcl"
   solver-version = 1
