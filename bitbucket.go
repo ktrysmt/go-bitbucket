@@ -1,6 +1,6 @@
 package bitbucket
 
-var apiBaseURL = "https://bitbucket.org/api/2.0"
+var apiBaseURL = "https://api.bitbucket.org/2.0"
 
 func GetApiBaseURL() string {
 	return apiBaseURL
@@ -42,6 +42,9 @@ type repository interface {
 	Delete(opt RepositoryOptions) (interface{}, error)
 	ListWatchers(opt RepositoryOptions) (interface{}, error)
 	ListForks(opt RepositoryOptions) (interface{}, error)
+	UpdatePipelineConfig(opt RepositoryPipelineOptions) (*Pipeline, error)
+	AddPipelineVariable(opt RepositoryPipelineVariableOptions) (*PipelineVariable, error)
+	AddPipelineKeyPair(opt RepositoryPipelineKeyPairOptions) (*PipelineKeyPair, error)
 }
 
 type repositories interface {
@@ -163,4 +166,26 @@ type WebhooksOptions struct {
 	Url         string   `json:"url"`
 	Active      bool     `json:"active"`
 	Events      []string `json:"events"` // EX) {'repo:push','issue:created',..} REF) https://goo.gl/VTj93b
+}
+
+type RepositoryPipelineOptions struct {
+	Owner     string `json:"owner"`
+	Repo_slug string `json:"repo_slug"`
+	Enabled   bool   `json:"has_pipelines"`
+}
+
+type RepositoryPipelineVariableOptions struct {
+	Owner     string `json:"owner"`
+	Repo_slug string `json:"repo_slug"`
+	Uuid      string `json:"uuid"`
+	Key       string `json:"key"`
+	Value     string `json:"value"`
+	Secured   bool   `json:"secured"`
+}
+
+type RepositoryPipelineKeyPairOptions struct {
+	Owner       string `json:"owner"`
+	Repo_slug   string `json:"repo_slug"`
+	Private_key string `json:"private_key"`
+	Public_key  string `json:"public_key"`
 }

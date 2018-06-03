@@ -26,6 +26,27 @@ type Repository struct {
 	Links       map[string]interface{}
 }
 
+type Pipeline struct {
+	Type       string
+	Enabled    bool
+	Repository Repository
+}
+
+type PipelineVariable struct {
+	Type    string
+	Uuid    string
+	Key     string
+	Value   string
+	Secured bool
+}
+
+type PipelineKeyPair struct {
+	Type        string
+	Uuid        string
+	PublicKey  string
+	PrivateKey string
+}
+
 func (r *Repository) Create(ro *RepositoryOptions) (*Repository, error) {
 	data := r.buildRepositoryBody(ro)
 	urlStr := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.Repo_slug)
@@ -62,6 +83,53 @@ func (r *Repository) ListForks(ro *RepositoryOptions) (interface{}, error) {
 	return r.c.execute("GET", urlStr, "")
 }
 
+
+func (r *Repository) UpdatePipelineConfig(rpo *RepositoryPipelineOptions) (*Pipeline, error) {
+	data := r.buildPipelineBody(rpo)
+	urlStr := r.c.requestUrl("/repositories/%s/%s/pipelines_config", rpo.Owner, rpo.Repo_slug)
+	response, err := r.c.execute("PUT", urlStr, data)
+	if err != nil {
+		return nil, err
+	}
+
+	return decodePipelineRepository(response)
+}
+
+func (r *Repository) AddPipelineVariable(rpvo *RepositoryPipelineVariableOptions) (*PipelineVariable, error) {
+	data := r.buildPipelineVariableBody(rpvo)
+	urlStr := r.c.requestUrl("/repositories/%s/%s/pipelines_config/variables/", rpvo.Owner, rpvo.Repo_slug)
+
+	response, err := r.c.execute("POST", urlStr, data)
+	if err != nil {
+		return nil, err
+	}
+
+	return decodePipelineVariableRepository(response)
+}
+
+func (r *Repository) AddPipelineKeyPair(rpkpo *RepositoryPipelineKeyPairOptions) (*PipelineKeyPair, error) {
+	data := r.buildPipelineKeyPairBody(rpkpo)
+	urlStr := r.c.requestUrl("/repositories/%s/%s/pipelines_config/ssh/key_pair", rpkpo.Owner, rpkpo.Repo_slug)
+
+	response, err := r.c.execute("PUT", urlStr, data)
+	if err != nil {
+		return nil, err
+	}
+
+	return decodePipelineKeyPairRepository(response)
+}
+
+func (r *Repository) buildJsonBody(body map[string]interface{}) string {
+
+	data, err := json.Marshal(body)
+	if err != nil {
+		pp.Println(err)
+		os.Exit(9)
+	}
+
+	return string(data)
+}
+
 func (r *Repository) buildRepositoryBody(ro *RepositoryOptions) string {
 
 	body := map[string]interface{}{}
@@ -96,13 +164,44 @@ func (r *Repository) buildRepositoryBody(ro *RepositoryOptions) string {
 		}
 	}
 
-	data, err := json.Marshal(body)
-	if err != nil {
-		pp.Println(err)
-		os.Exit(9)
+	return r.buildJsonBody(body)
+}
+
+func (r *Repository) buildPipelineBody(rpo *RepositoryPipelineOptions) string {
+
+	body := map[string]interface{}{}
+
+	body["enabled"] = rpo.Enabled
+
+	return r.buildJsonBody(body)
+}
+
+func (r *Repository) buildPipelineVariableBody(rpvo *RepositoryPipelineVariableOptions) string {
+
+	body := map[string]interface{}{}
+
+	if rpvo.Uuid != "" {
+		body["uuid"] = rpvo.Uuid
+	}
+	body["key"] = rpvo.Key
+	body["value"] = rpvo.Value
+	body["secured"] = rpvo.Secured
+
+	return r.buildJsonBody(body)
+}
+
+func (r *Repository) buildPipelineKeyPairBody(rpkpo *RepositoryPipelineKeyPairOptions) string {
+
+	body := map[string]interface{}{}
+
+	if rpkpo.Private_key != "" {
+		body["private_key"] = rpkpo.Private_key
+	}
+	if rpkpo.Public_key != "" {
+		body["public_key"] = rpkpo.Public_key
 	}
 
-	return string(data)
+	return r.buildJsonBody(body)
 }
 
 func decodeRepository(repoResponse interface{}) (*Repository, error) {
@@ -119,4 +218,52 @@ func decodeRepository(repoResponse interface{}) (*Repository, error) {
 	}
 
 	return repository, nil
+}
+
+func decodePipelineRepository(repoResponse interface{}) (*Pipeline, error) {
+	repoMap := repoResponse.(map[string]interface{})
+
+	if repoMap["type"] == "error" {
+		return nil, DecodeError(repoMap)
+	}
+
+	var pipeline = new(Pipeline)
+	err := mapstructure.Decode(repoMap, pipeline)
+	if err != nil {
+		return nil, err
+	}
+
+	return pipeline, nil
+}
+
+func decodePipelineVariableRepository(repoResponse interface{}) (*PipelineVariable, error) {
+	repoMap := repoResponse.(map[string]interface{})
+
+	if repoMap["type"] == "error" {
+		return nil, DecodeError(repoMap)
+	}
+
+	var pipelineVariable = new(PipelineVariable)
+	err := mapstructure.Decode(repoMap, pipelineVariable)
+	if err != nil {
+		return nil, err
+	}
+
+	return pipelineVariable, nil
+}
+
+func decodePipelineKeyPairRepository(repoResponse interface{}) (*PipelineKeyPair, error) {
+	repoMap := repoResponse.(map[string]interface{})
+
+	if repoMap["type"] == "error" {
+		return nil, DecodeError(repoMap)
+	}
+
+	var pipelineKeyPair = new(PipelineKeyPair)
+	err := mapstructure.Decode(repoMap, pipelineKeyPair)
+	if err != nil {
+		return nil, err
+	}
+
+	return pipelineKeyPair, nil
 }
