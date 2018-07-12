@@ -85,6 +85,7 @@ func (p *PullRequests) buildPullRequestBody(po *PullRequestsOptions) string {
 	body := map[string]interface{}{}
 	body["source"] = map[string]interface{}{}
 	body["destination"] = map[string]interface{}{}
+	body["reviewers"] = []map[string]string{}
 	body["title"] = ""
 	body["description"] = ""
 	body["message"] = ""
@@ -95,8 +96,6 @@ func (p *PullRequests) buildPullRequestBody(po *PullRequestsOptions) string {
 		for i, user := range po.Reviewers {
 			body["reviewers"].([]map[string]string)[i] = map[string]string{"username": user}
 		}
-	} else {
-		body["reviewers"] = []map[string]string{}
 	}
 
 	if po.Source_branch != "" {
