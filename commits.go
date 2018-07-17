@@ -58,5 +58,8 @@ func (cm *Commits) buildCommitsQuery(include, exclude string) string {
 		p.Add("exclude", exclude)
 	}
 
-	return p.Encode()
+	if res := p.Encode(); len(res) > 0 {
+		return "?" + res
+	}
+	return ""
 }
