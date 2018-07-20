@@ -9,7 +9,7 @@ Support Bitbucket API v2.0.
 
 And the response type is json format defined Bitbucket API.
 
-- Bitbucket API v2.0 <https://developer.atlassian.com/bitbucket/api/2/reference/>
+- Bitbucket API v2.0 <https://developer.atlassian.com/bitbucket/api/2/reference/resource/>
 - Swagger for API v2.0 <https://api.bitbucket.org/swagger.json>
 
 ## Install

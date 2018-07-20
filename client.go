@@ -79,10 +79,10 @@ func NewEnvVarAuth() *Client {
 	return injectClient(a)
 }
 
-const DEFAULT_PAGE_LENGHT = 10
+const DEFAULT_PAGE_LENGTH = 10
 
 func injectClient(a *auth) *Client {
-	c := &Client{Auth: a, Pagelen: DEFAULT_PAGE_LENGHT}
+	c := &Client{Auth: a, Pagelen: DEFAULT_PAGE_LENGTH}
 	c.Repositories = &Repositories{
 		c:                  c,
 		PullRequests:       &PullRequests{c: c},
@@ -102,7 +102,7 @@ func (c *Client) execute(method string, urlStr string, text string) (interface{}
 	// Use pagination if changed from default value
 	const DEC_RADIX = 10
 	if strings.Contains(urlStr, "/repositories/") {
-		if c.Pagelen != DEFAULT_PAGE_LENGHT {
+		if c.Pagelen != DEFAULT_PAGE_LENGTH {
 			urlObj, err := url.Parse(urlStr)
 			if err != nil {
 				return nil, err
