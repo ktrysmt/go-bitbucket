@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"os"
 
 	"io/ioutil"
 	"net/http"
@@ -17,6 +16,8 @@ import (
 	"golang.org/x/oauth2/bitbucket"
 )
 
+const DEFAULT_PAGE_LENGTH = 10
+
 type Client struct {
 	Auth         *auth
 	Users        users
@@ -27,13 +28,13 @@ type Client struct {
 }
 
 type auth struct {
-	app_id, secret string
+	appID, secret  string
 	user, password string
 	token          oauth2.Token
 }
 
 func NewOAuth(i, s string) *Client {
-	a := &auth{app_id: i, secret: s}
+	a := &auth{appID: i, secret: s}
 	ctx := context.Background()
 	conf := &oauth2.Config{
 		ClientID:     i,
@@ -67,19 +68,6 @@ func NewBasicAuth(u, p string) *Client {
 	a := &auth{user: u, password: p}
 	return injectClient(a)
 }
-
-// NewEnvVarAuth creates a client using the environment
-// variables BITBUCKET_USERNAME and BITBUCKET_PASSWORD
-func NewEnvVarAuth() *Client {
-	u, p := os.Getenv("BITBUCKET_USERNAME"), os.Getenv("BITBUCKET_PASSWORD")
-	if u == "" || p == "" {
-		log.Fatal("BITBUCKET_USERNAME or BITBUCKET_PASSWORD not set")
-	}
-	a := &auth{user: u, password: p}
-	return injectClient(a)
-}
-
-const DEFAULT_PAGE_LENGTH = 10
 
 func injectClient(a *auth) *Client {
 	c := &Client{Auth: a, Pagelen: DEFAULT_PAGE_LENGTH}
