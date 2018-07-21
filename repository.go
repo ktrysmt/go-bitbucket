@@ -20,7 +20,7 @@ type Repository struct {
 	Slug        string
 	Full_name   string
 	Description string
-	Fork_policy string
+	ForkPolicy  string
 	Type        string
 	Owner       map[string]interface{}
 	Links       map[string]interface{}
@@ -41,15 +41,15 @@ type PipelineVariable struct {
 }
 
 type PipelineKeyPair struct {
-	Type        string
-	Uuid        string
+	Type       string
+	Uuid       string
 	PublicKey  string
 	PrivateKey string
 }
 
 func (r *Repository) Create(ro *RepositoryOptions) (*Repository, error) {
 	data := r.buildRepositoryBody(ro)
-	urlStr := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.Repo_slug)
+	urlStr := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.RepoSlug)
 	response, err := r.c.execute("POST", urlStr, data)
 	if err != nil {
 		return nil, err
@@ -59,7 +59,7 @@ func (r *Repository) Create(ro *RepositoryOptions) (*Repository, error) {
 }
 
 func (r *Repository) Get(ro *RepositoryOptions) (*Repository, error) {
-	urlStr := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.Repo_slug)
+	urlStr := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.RepoSlug)
 	response, err := r.c.execute("GET", urlStr, "")
 	if err != nil {
 		return nil, err
@@ -69,24 +69,23 @@ func (r *Repository) Get(ro *RepositoryOptions) (*Repository, error) {
 }
 
 func (r *Repository) Delete(ro *RepositoryOptions) (interface{}, error) {
-	urlStr := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.Repo_slug)
+	urlStr := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.RepoSlug)
 	return r.c.execute("DELETE", urlStr, "")
 }
 
 func (r *Repository) ListWatchers(ro *RepositoryOptions) (interface{}, error) {
-	urlStr := r.c.requestUrl("/repositories/%s/%s/watchers", ro.Owner, ro.Repo_slug)
+	urlStr := r.c.requestUrl("/repositories/%s/%s/watchers", ro.Owner, ro.RepoSlug)
 	return r.c.execute("GET", urlStr, "")
 }
 
 func (r *Repository) ListForks(ro *RepositoryOptions) (interface{}, error) {
-	urlStr := r.c.requestUrl("/repositories/%s/%s/forks", ro.Owner, ro.Repo_slug)
+	urlStr := r.c.requestUrl("/repositories/%s/%s/forks", ro.Owner, ro.RepoSlug)
 	return r.c.execute("GET", urlStr, "")
 }
 
-
 func (r *Repository) UpdatePipelineConfig(rpo *RepositoryPipelineOptions) (*Pipeline, error) {
 	data := r.buildPipelineBody(rpo)
-	urlStr := r.c.requestUrl("/repositories/%s/%s/pipelines_config", rpo.Owner, rpo.Repo_slug)
+	urlStr := r.c.requestUrl("/repositories/%s/%s/pipelines_config", rpo.Owner, rpo.RepoSlug)
 	response, err := r.c.execute("PUT", urlStr, data)
 	if err != nil {
 		return nil, err
@@ -97,7 +96,7 @@ func (r *Repository) UpdatePipelineConfig(rpo *RepositoryPipelineOptions) (*Pipe
 
 func (r *Repository) AddPipelineVariable(rpvo *RepositoryPipelineVariableOptions) (*PipelineVariable, error) {
 	data := r.buildPipelineVariableBody(rpvo)
-	urlStr := r.c.requestUrl("/repositories/%s/%s/pipelines_config/variables/", rpvo.Owner, rpvo.Repo_slug)
+	urlStr := r.c.requestUrl("/repositories/%s/%s/pipelines_config/variables/", rpvo.Owner, rpvo.RepoSlug)
 
 	response, err := r.c.execute("POST", urlStr, data)
 	if err != nil {
@@ -109,7 +108,7 @@ func (r *Repository) AddPipelineVariable(rpvo *RepositoryPipelineVariableOptions
 
 func (r *Repository) AddPipelineKeyPair(rpkpo *RepositoryPipelineKeyPairOptions) (*PipelineKeyPair, error) {
 	data := r.buildPipelineKeyPairBody(rpkpo)
-	urlStr := r.c.requestUrl("/repositories/%s/%s/pipelines_config/ssh/key_pair", rpkpo.Owner, rpkpo.Repo_slug)
+	urlStr := r.c.requestUrl("/repositories/%s/%s/pipelines_config/ssh/key_pair", rpkpo.Owner, rpkpo.RepoSlug)
 
 	response, err := r.c.execute("PUT", urlStr, data)
 	if err != nil {
@@ -140,23 +139,23 @@ func (r *Repository) buildRepositoryBody(ro *RepositoryOptions) string {
 	//if ro.Scm != "" {
 	//		body["name"] = ro.Name
 	//}
-	if ro.Is_private != "" {
-		body["is_private"] = ro.Is_private
+	if ro.IsPrivate != "" {
+		body["is_private"] = ro.IsPrivate
 	}
 	if ro.Description != "" {
 		body["description"] = ro.Description
 	}
-	if ro.Fork_policy != "" {
-		body["fork_policy"] = ro.Fork_policy
+	if ro.ForkPolicy != "" {
+		body["fork_policy"] = ro.ForkPolicy
 	}
 	if ro.Language != "" {
 		body["language"] = ro.Language
 	}
-	if ro.Has_issues != "" {
-		body["has_issues"] = ro.Has_issues
+	if ro.HasIssues != "" {
+		body["has_issues"] = ro.HasIssues
 	}
-	if ro.Has_wiki != "" {
-		body["has_wiki"] = ro.Has_wiki
+	if ro.HasWiki != "" {
+		body["has_wiki"] = ro.HasWiki
 	}
 	if ro.Project != "" {
 		body["project"] = map[string]string{
@@ -194,11 +193,11 @@ func (r *Repository) buildPipelineKeyPairBody(rpkpo *RepositoryPipelineKeyPairOp
 
 	body := map[string]interface{}{}
 
-	if rpkpo.Private_key != "" {
-		body["private_key"] = rpkpo.Private_key
+	if rpkpo.PrivateKey != "" {
+		body["private_key"] = rpkpo.PrivateKey
 	}
-	if rpkpo.Public_key != "" {
-		body["public_key"] = rpkpo.Public_key
+	if rpkpo.PublicKey != "" {
+		body["public_key"] = rpkpo.PublicKey
 	}
 
 	return r.buildJsonBody(body)

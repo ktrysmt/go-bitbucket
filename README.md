@@ -34,11 +34,11 @@ func main() {
 
         opt := &bitbucket.PullRequestsOptions{
                 Owner:      "your-team",
-                Repo_slug:  "awesome-project",
-                Source_branch: "develop",
-                Destination_branch: "master",
+                RepoSlug:  "awesome-project",
+                SourceBranch: "develop",
+                DestinationBranch: "master",
                 Title: "fix bug. #9999",
-                Close_source_branch: true,
+                CloseSourceBranch: true,
         }
         res, err := c.Repositories.PullRequests.Create(opt)
         if err != nil {

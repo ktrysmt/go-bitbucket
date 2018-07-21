@@ -38,11 +38,11 @@ func TestCreateBranchRestrictionsKindPush(t *testing.T) {
 	c := setup(t)
 
 	opt := &bitbucket.BranchRestrictionsOptions{
-		Owner:     owner,
-		Pattern:   "develop",
-		Repo_slug: repo,
-		Kind:      "push",
-		Users:     []string{user},
+		Owner:    owner,
+		Pattern:  "develop",
+		RepoSlug: repo,
+		Kind:     "push",
+		Users:    []string{user},
 	}
 	res, _ := c.Repositories.BranchRestrictions.Create(opt)
 	jsonMap := res.(map[string]interface{})
@@ -59,11 +59,11 @@ func TestCreateBranchRestrictionsKindRequirePassingBuilds(t *testing.T) {
 	c := setup(t)
 
 	opt := &bitbucket.BranchRestrictionsOptions{
-		Owner:     owner,
-		Pattern:   "master",
-		Repo_slug: repo,
-		Kind:      "require_passing_builds_to_merge",
-		Value:     2,
+		Owner:    owner,
+		Pattern:  "master",
+		RepoSlug: repo,
+		Kind:     "require_passing_builds_to_merge",
+		Value:    2,
 	}
 	res, _ := c.Repositories.BranchRestrictions.Create(opt)
 	jsonMap := res.(map[string]interface{})

@@ -12,29 +12,29 @@ type BranchRestrictions struct {
 }
 
 func (b *BranchRestrictions) Gets(bo *BranchRestrictionsOptions) (interface{}, error) {
-	urlStr := b.c.requestUrl("/repositories/%s/%s/branch-restrictions", bo.Owner, bo.Repo_slug)
+	urlStr := b.c.requestUrl("/repositories/%s/%s/branch-restrictions", bo.Owner, bo.RepoSlug)
 	return b.c.execute("GET", urlStr, "")
 }
 
 func (b *BranchRestrictions) Create(bo *BranchRestrictionsOptions) (interface{}, error) {
 	data := b.buildBranchRestrictionsBody(bo)
-	urlStr := b.c.requestUrl("/repositories/%s/%s/branch-restrictions", bo.Owner, bo.Repo_slug)
+	urlStr := b.c.requestUrl("/repositories/%s/%s/branch-restrictions", bo.Owner, bo.RepoSlug)
 	return b.c.execute("POST", urlStr, data)
 }
 
 func (b *BranchRestrictions) Get(bo *BranchRestrictionsOptions) (interface{}, error) {
-	urlStr := b.c.requestUrl("/repositories/%s/%s/branch-restrictions/%s", bo.Owner, bo.Repo_slug, bo.Id)
+	urlStr := b.c.requestUrl("/repositories/%s/%s/branch-restrictions/%s", bo.Owner, bo.RepoSlug, bo.ID)
 	return b.c.execute("GET", urlStr, "")
 }
 
 func (b *BranchRestrictions) Update(bo *BranchRestrictionsOptions) (interface{}, error) {
 	data := b.buildBranchRestrictionsBody(bo)
-	urlStr := b.c.requestUrl("/repositories/%s/%s/branch-restrictions/%s", bo.Owner, bo.Repo_slug, bo.Id)
+	urlStr := b.c.requestUrl("/repositories/%s/%s/branch-restrictions/%s", bo.Owner, bo.RepoSlug, bo.ID)
 	return b.c.execute("PUT", urlStr, data)
 }
 
 func (b *BranchRestrictions) Delete(bo *BranchRestrictionsOptions) (interface{}, error) {
-	urlStr := b.c.requestUrl("/repositories/%s/%s/branch-restrictions/%s", bo.Owner, bo.Repo_slug, bo.Id)
+	urlStr := b.c.requestUrl("/repositories/%s/%s/branch-restrictions/%s", bo.Owner, bo.RepoSlug, bo.ID)
 	return b.c.execute("DELETE", urlStr, "")
 }
 
@@ -47,7 +47,7 @@ type branchRestrictionsBody struct {
 		} `json:"self"`
 	} `json:"links"`
 	Value  interface{}                   `json:"value"`
-	Id     int                           `json:"id"`
+	ID     int                           `json:"id"`
 	Users  []branchRestrictionsBodyUser  `json:"users"`
 	Groups []branchRestrictionsBodyGroup `json:"groups"`
 }
@@ -61,9 +61,9 @@ type branchRestrictionsBodyGroup struct {
 		Html struct {
 			Href string `json:"href"`
 		} `json:"html"`
-		Full_slug string `json:"full_slug"`
-		Members   int    `json:"members"`
-		Slug      string `json:"slug"`
+		FullSlug string `json:"full_slug"`
+		Members  int    `json:"members"`
+		Slug     string `json:"slug"`
 	} `json:"links"`
 }
 

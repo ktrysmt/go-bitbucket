@@ -100,67 +100,67 @@ type RepositoriesOptions struct {
 }
 
 type RepositoryOptions struct {
-	Owner     string `json:"owner"`
-	Repo_slug string `json:"repo_slug"`
-	Scm       string `json:"scm"`
+	Owner    string `json:"owner"`
+	RepoSlug string `json:"repo_slug"`
+	Scm      string `json:"scm"`
 	//	Name        string `json:"name"`
-	Is_private  string `json:"is_private"`
+	IsPrivate   string `json:"is_private"`
 	Description string `json:"description"`
-	Fork_policy string `json:"fork_policy"`
+	ForkPolicy  string `json:"fork_policy"`
 	Language    string `json:"language"`
-	Has_issues  string `json:"has_issues"`
-	Has_wiki    string `json:"has_wiki"`
+	HasIssues   string `json:"has_issues"`
+	HasWiki     string `json:"has_wiki"`
 	Project     string `json:"project"`
 }
 
 type PullRequestsOptions struct {
-	Id                  string   `json:"id"`
-	Comment_id          string   `json:"comment_id"`
-	Owner               string   `json:"owner"`
-	Repo_slug           string   `json:"repo_slug"`
-	Title               string   `json:"title"`
-	Description         string   `json:"description"`
-	Close_source_branch bool     `json:"close_source_branch"`
-	Source_branch       string   `json:"source_branch"`
-	Source_repository   string   `json:"source_repository"`
-	Destination_branch  string   `json:"destination_branch"`
-	Destination_commit  string   `json:"destination_repository"`
-	Message             string   `json:"message"`
-	Reviewers           []string `json:"reviewers"`
+	ID                string   `json:"id"`
+	CommentID         string   `json:"comment_id"`
+	Owner             string   `json:"owner"`
+	RepoSlug          string   `json:"repo_slug"`
+	Title             string   `json:"title"`
+	Description       string   `json:"description"`
+	CloseSourceBranch bool     `json:"close_source_branch"`
+	SourceBranch      string   `json:"source_branch"`
+	SourceRepository  string   `json:"source_repository"`
+	DestinationBranch string   `json:"destination_branch"`
+	DestinationCommit string   `json:"destination_repository"`
+	Message           string   `json:"message"`
+	Reviewers         []string `json:"reviewers"`
 }
 
 type CommitsOptions struct {
 	Owner       string `json:"owner"`
-	Repo_slug   string `json:"repo_slug"`
+	RepoSlug    string `json:"repo_slug"`
 	Revision    string `json:"revision"`
 	Branchortag string `json:"branchortag"`
 	Include     string `json:"include"`
 	Exclude     string `json:"exclude"`
-	Comment_id  string `json:"comment_id"`
+	CommentID   string `json:"comment_id"`
 }
 
 type BranchRestrictionsOptions struct {
-	Owner     string            `json:"owner"`
-	Repo_slug string            `json:"repo_slug"`
-	Id        string            `json:"id"`
-	Groups    map[string]string `json:"groups"`
-	Pattern   string            `json:"pattern"`
-	Users     []string          `json:"users"`
-	Kind      string            `json:"kind"`
-	Full_slug string            `json:"full_slug"`
-	Name      string            `json:"name"`
-	Value     interface{}       `json:"value"`
+	Owner    string            `json:"owner"`
+	RepoSlug string            `json:"repo_slug"`
+	ID       string            `json:"id"`
+	Groups   map[string]string `json:"groups"`
+	Pattern  string            `json:"pattern"`
+	Users    []string          `json:"users"`
+	Kind     string            `json:"kind"`
+	FullSlug string            `json:"full_slug"`
+	Name     string            `json:"name"`
+	Value    interface{}       `json:"value"`
 }
 
 type DiffOptions struct {
-	Owner     string `json:"owner"`
-	Repo_slug string `json:"repo_slug"`
-	Spec      string `json:"spec"`
+	Owner    string `json:"owner"`
+	RepoSlug string `json:"repo_slug"`
+	Spec     string `json:"spec"`
 }
 
 type WebhooksOptions struct {
 	Owner       string   `json:"owner"`
-	Repo_slug   string   `json:"repo_slug"`
+	RepoSlug    string   `json:"repo_slug"`
 	Uuid        string   `json:"uuid"`
 	Description string   `json:"description"`
 	Url         string   `json:"url"`
@@ -169,23 +169,23 @@ type WebhooksOptions struct {
 }
 
 type RepositoryPipelineOptions struct {
-	Owner     string `json:"owner"`
-	Repo_slug string `json:"repo_slug"`
-	Enabled   bool   `json:"has_pipelines"`
+	Owner    string `json:"owner"`
+	RepoSlug string `json:"repo_slug"`
+	Enabled  bool   `json:"has_pipelines"`
 }
 
 type RepositoryPipelineVariableOptions struct {
-	Owner     string `json:"owner"`
-	Repo_slug string `json:"repo_slug"`
-	Uuid      string `json:"uuid"`
-	Key       string `json:"key"`
-	Value     string `json:"value"`
-	Secured   bool   `json:"secured"`
+	Owner    string `json:"owner"`
+	RepoSlug string `json:"repo_slug"`
+	Uuid     string `json:"uuid"`
+	Key      string `json:"key"`
+	Value    string `json:"value"`
+	Secured  bool   `json:"secured"`
 }
 
 type RepositoryPipelineKeyPairOptions struct {
-	Owner       string `json:"owner"`
-	Repo_slug   string `json:"repo_slug"`
-	Private_key string `json:"private_key"`
-	Public_key  string `json:"public_key"`
+	Owner      string `json:"owner"`
+	RepoSlug   string `json:"repo_slug"`
+	PrivateKey string `json:"private_key"`
+	PublicKey  string `json:"public_key"`
 }

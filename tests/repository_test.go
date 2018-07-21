@@ -1,10 +1,11 @@
 package tests
 
 import (
-	_ "github.com/k0kubun/pp"
-	"github.com/ktrysmt/go-bitbucket"
 	"os"
 	"testing"
+
+	_ "github.com/k0kubun/pp"
+	"github.com/ktrysmt/go-bitbucket"
 )
 
 func TestGetRepositoryRepositories(t *testing.T) {
@@ -30,8 +31,8 @@ func TestGetRepositoryRepositories(t *testing.T) {
 	c := bitbucket.NewBasicAuth(user, pass)
 
 	opt := &bitbucket.RepositoryOptions{
-		Owner:     owner,
-		Repo_slug: repo,
+		Owner:    owner,
+		RepoSlug: repo,
 	}
 
 	res, err := c.Repositories.Repository.Get(opt)
