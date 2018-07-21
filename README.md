@@ -24,8 +24,9 @@ go get github.com/ktrysmt/go-bitbucket
 package main
 
 import (
-        "github.com/ktrysmt/go-bitbucket" 
         "fmt"
+
+        "github.com/ktrysmt/go-bitbucket" 
 )
 
 func main() {
@@ -33,19 +34,20 @@ func main() {
         c := bitbucket.NewBasicAuth("username", "password")
 
         opt := &bitbucket.PullRequestsOptions{
-                Owner:      "your-team",
-                RepoSlug:  "awesome-project",
-                SourceBranch: "develop",
+                Owner:             "your-team",
+                RepoSlug:          "awesome-project",
+                SourceBranch:      "develop",
                 DestinationBranch: "master",
-                Title: "fix bug. #9999",
+                Title:             "fix bug. #9999",
                 CloseSourceBranch: true,
         }
+
         res, err := c.Repositories.PullRequests.Create(opt)
         if err != nil {
                 panic(err)
         }
 
-        fmt.Println(res) // receive the data as json format
+        fmt.Println(res) 
 }
 ```
 
