@@ -14,6 +14,7 @@ import (
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/bitbucket"
+	"golang.org/x/oauth2/clientcredentials"
 )
 
 const DEFAULT_PAGE_LENGTH = 10
@@ -31,6 +32,25 @@ type auth struct {
 	appID, secret  string
 	user, password string
 	token          oauth2.Token
+}
+
+// Uses the Client Credentials Grant oauth2 flow to authenticate to Bitbucket
+func NewOAuthClientCredentials(i, s string) *Client {
+	a := &auth{app_id: i, secret: s}
+	ctx := context.Background()
+	conf := &clientcredentials.Config{
+		ClientID:     i,
+		ClientSecret: s,
+		TokenURL:     bitbucket.Endpoint.TokenURL,
+	}
+
+	tok, err := conf.Token(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	a.token = *tok
+	return injectClient(a)
+
 }
 
 func NewOAuth(i, s string) *Client {
