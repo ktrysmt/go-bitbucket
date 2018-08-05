@@ -36,7 +36,7 @@ type auth struct {
 
 // Uses the Client Credentials Grant oauth2 flow to authenticate to Bitbucket
 func NewOAuthClientCredentials(i, s string) *Client {
-	a := &auth{app_id: i, secret: s}
+	a := &auth{appID: i, secret: s}
 	ctx := context.Background()
 	conf := &clientcredentials.Config{
 		ClientID:     i,
