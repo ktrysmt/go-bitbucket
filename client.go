@@ -32,6 +32,7 @@ type auth struct {
 	appID, secret  string
 	user, password string
 	token          oauth2.Token
+	bearerToken    string
 }
 
 // Uses the Client Credentials Grant oauth2 flow to authenticate to Bitbucket
@@ -84,6 +85,11 @@ func NewOAuth(i, s string) *Client {
 	return injectClient(a)
 }
 
+func NewOAuthbearerToken(t string) *Client {
+	a := &auth{bearerToken: t}
+	return injectClient(a)
+}
+
 func NewBasicAuth(u, p string) *Client {
 	a := &auth{user: u, password: p}
 	return injectClient(a)
@@ -123,13 +129,17 @@ func (c *Client) execute(method string, urlStr string, text string) (interface{}
 	}
 
 	body := strings.NewReader(text)
+
 	req, err := http.NewRequest(method, urlStr, body)
+	if err != nil {
+		return nil, err
+	}
 	if text != "" {
 		req.Header.Set("Content-Type", "application/json")
 	}
 
-	if err != nil {
-		return nil, err
+	if c.Auth.bearerToken != "" {
+		req.Header.Set("Authorization", "Bearer "+c.Auth.bearerToken)
 	}
 
 	if c.Auth.user != "" && c.Auth.password != "" {
