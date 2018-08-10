@@ -91,6 +91,7 @@ type teams interface {
 	Followers(teamname string) (interface{}, error)
 	Following(teamname string) (interface{}, error)
 	Repositories(teamname string) (interface{}, error)
+	Projects(teamname string) (interface{}, error)
 }
 
 type RepositoriesOptions struct {
