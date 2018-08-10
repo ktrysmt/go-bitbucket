@@ -35,7 +35,7 @@ func (t *Teams) Repositories(teamname string) (interface{}, error) {
 }
 
 func (t *Teams) Projects(teamname string) (interface{}, error) {
-        urlStr := t.c.requestUrl("/teams/%s/projects", teamname)
+        urlStr := t.c.requestUrl("/teams/%s/projects/", teamname)
         return t.c.execute("GET", urlStr, "")
 }
 
