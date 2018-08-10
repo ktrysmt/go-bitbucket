@@ -95,7 +95,6 @@ type teams interface {
 
 type RepositoriesOptions struct {
 	Owner string `json:"owner"`
-	Team  string `json:"team"`
 	Role  string `json:"role"` // role=[owner|admin|contributor|member]
 }
 
