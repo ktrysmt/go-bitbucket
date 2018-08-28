@@ -26,6 +26,8 @@ type Client struct {
 	Teams        teams
 	Repositories *Repositories
 	Pagelen      uint64
+
+	HttpClient 	 *http.Client
 }
 
 type auth struct {
@@ -109,6 +111,7 @@ func injectClient(a *auth) *Client {
 	c.Users = &Users{c: c}
 	c.User = &User{c: c}
 	c.Teams = &Teams{c: c}
+	c.HttpClient = new(http.Client)
 	return c
 }
 
@@ -148,8 +151,7 @@ func (c *Client) execute(method string, urlStr string, text string) (interface{}
 		c.Auth.token.SetAuthHeader(req)
 	}
 
-	client := new(http.Client)
-	resp, err := client.Do(req)
+	resp, err := c.HttpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
