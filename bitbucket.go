@@ -61,6 +61,7 @@ type commits interface {
 	GetCommitStatus(opt CommitsOptions) (interface{}, error)
 	GiveApprove(opt CommitsOptions) (interface{}, error)
 	RemoveApprove(opt CommitsOptions) (interface{}, error)
+	CreateCommitStatus(opt CommitStatusOptions) (interface{}, error)
 }
 
 type branchrestrictions interface {
@@ -137,6 +138,15 @@ type CommitsOptions struct {
 	Include     string `json:"include"`
 	Exclude     string `json:"exclude"`
 	CommentID   string `json:"comment_id"`
+}
+
+type CommitStatusOptions struct {
+	Key 		string `json:"key"`
+	Url 		string `json:"url"`
+	State 		string `json:"state"`
+	Name 		string `json:"name"`
+	Description string `json:"description"`
+
 }
 
 type BranchRestrictionsOptions struct {
