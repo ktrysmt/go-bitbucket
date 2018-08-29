@@ -25,6 +25,7 @@ type Client struct {
 	User         user
 	Teams        teams
 	Repositories *Repositories
+	Commits      commits
 	Pagelen      uint64
 
 	HttpClient 	 *http.Client
