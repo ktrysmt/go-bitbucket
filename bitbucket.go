@@ -61,7 +61,7 @@ type commits interface {
 	GetCommitStatus(opt CommitsOptions) (interface{}, error)
 	GiveApprove(opt CommitsOptions) (interface{}, error)
 	RemoveApprove(opt CommitsOptions) (interface{}, error)
-	CreateCommitStatus(opt CommitStatusOptions) (interface{}, error)
+	CreateCommitStatus(cmo CommitsOptions, cso CommitStatusOptions) (interface{}, error)
 }
 
 type branchrestrictions interface {
