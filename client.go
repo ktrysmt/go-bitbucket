@@ -15,6 +15,10 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/bitbucket"
 	"golang.org/x/oauth2/clientcredentials"
+	"bytes"
+	"mime/multipart"
+	"io"
+	"os"
 )
 
 const DEFAULT_PAGE_LENGTH = 10
@@ -107,6 +111,7 @@ func injectClient(a *auth) *Client {
 		Diff:               &Diff{c: c},
 		BranchRestrictions: &BranchRestrictions{c: c},
 		Webhooks:           &Webhooks{c: c},
+		Downloads:			&Downloads{c: c},
 	}
 	c.Users = &Users{c: c}
 	c.User = &User{c: c}
@@ -141,43 +146,10 @@ func (c *Client) execute(method string, urlStr string, text string) (interface{}
 		req.Header.Set("Content-Type", "application/json")
 	}
 
-	if c.Auth.bearerToken != "" {
-		req.Header.Set("Authorization", "Bearer "+c.Auth.bearerToken)
-	}
+	c.authenticateRequest(req)
+	result, err := c.doRequest(req, false)
 
-	if c.Auth.user != "" && c.Auth.password != "" {
-		req.SetBasicAuth(c.Auth.user, c.Auth.password)
-	} else if c.Auth.token.Valid() {
-		c.Auth.token.SetAuthHeader(req)
-	}
-
-	resp, err := c.HttpClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-
-	if (resp.StatusCode != http.StatusOK) && (resp.StatusCode != http.StatusCreated) {
-		return nil, fmt.Errorf(resp.Status)
-	}
-
-	if resp.Body == nil {
-		return nil, fmt.Errorf("response body is nil")
-	}
-
-	resBodyBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	var result interface{}
-	err = json.Unmarshal(resBodyBytes, &result)
-	if err != nil {
-		return nil, err
-	}
-
+	//autopaginate.
 	resultMap, isMap := result.(map[string]interface{})
 	if isMap {
 		nextIn := resultMap["next"]
@@ -216,6 +188,94 @@ func (c *Client) execute(method string, urlStr string, text string) (interface{}
 
 	return result, nil
 }
+
+func (c *Client) executeFileUpload(method string, urlStr string, filePath string, fileName string) (interface{}, error) {
+	fileReader, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+	defer fileReader.Close()
+
+	// Prepare a form that you will submit to that URL.
+	var b bytes.Buffer
+	w := multipart.NewWriter(&b)
+
+	var fw io.Writer
+	if fw, err = w.CreateFormFile("files", fileName); err != nil {
+		return nil , err
+	}
+
+	if _, err = io.Copy(fw, fileReader); err != nil {
+		return nil, err
+	}
+
+	// Don't forget to close the multipart writer.
+	// If you don't close it, your request will be missing the terminating boundary.
+	w.Close()
+
+	// Now that you have a form, you can submit it to your handler.
+	req, err := http.NewRequest(method, urlStr, &b)
+	if err != nil {
+		return nil, err
+	}
+	// Don't forget to set the content type, this will contain the boundary.
+	req.Header.Set("Content-Type", w.FormDataContentType())
+
+	c.authenticateRequest(req)
+	return c.doRequest(req, true)
+
+}
+
+func (c *Client) authenticateRequest(req *http.Request){
+	if c.Auth.bearerToken != "" {
+		req.Header.Set("Authorization", "Bearer "+c.Auth.bearerToken)
+	}
+
+	if c.Auth.user != "" && c.Auth.password != "" {
+		req.SetBasicAuth(c.Auth.user, c.Auth.password)
+	} else if c.Auth.token.Valid() {
+		c.Auth.token.SetAuthHeader(req)
+	}
+	return
+}
+
+
+func (c *Client) doRequest(req *http.Request, emptyResponse bool) (interface{}, error){
+
+	resp, err := c.HttpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	if resp.Body != nil {
+		defer resp.Body.Close()
+	}
+
+	if (resp.StatusCode != http.StatusOK) && (resp.StatusCode != http.StatusCreated) {
+		return nil, fmt.Errorf(resp.Status)
+	}
+
+	if emptyResponse {
+		return nil, nil
+	}
+
+	if resp.Body == nil {
+		return nil, fmt.Errorf("response body is nil")
+	}
+
+	resBodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var result interface{}
+	err = json.Unmarshal(resBodyBytes, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 
 func (c *Client) requestUrl(template string, args ...interface{}) string {
 

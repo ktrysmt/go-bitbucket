@@ -199,3 +199,10 @@ type RepositoryPipelineKeyPairOptions struct {
 	PrivateKey string `json:"private_key"`
 	PublicKey  string `json:"public_key"`
 }
+
+type DownloadsOptions struct {
+	Owner       string `json:"owner"`
+	RepoSlug    string `json:"repo_slug"`
+	FilePath    string `json:"filepath"`
+	FileName    string `json:"filename"`
+}
