@@ -91,6 +91,25 @@ func NewOAuth(i, s string) *Client {
 	return injectClient(a)
 }
 
+// NewOAuthWithCode finishes the OAuth handshake with a given code
+// and returns a *Client
+func NewOAuthWithCode(i, s, c string) (*Client, string) {
+	a := &auth{appID: i, secret: s}
+	ctx := context.Background()
+	conf := &oauth2.Config{
+		ClientID:     i,
+		ClientSecret: s,
+		Endpoint:     bitbucket.Endpoint,
+	}
+
+	tok, err := conf.Exchange(ctx, c)
+	if err != nil {
+		log.Fatal(err)
+	}
+	a.token = *tok
+	return injectClient(a), tok.AccessToken
+}
+
 func NewOAuthbearerToken(t string) *Client {
 	a := &auth{bearerToken: t}
 	return injectClient(a)
