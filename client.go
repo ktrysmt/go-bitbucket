@@ -12,14 +12,14 @@ import (
 	"strings"
 
 	"bytes"
-	"io"
-	"mime/multipart"
-	"os"
-
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/bitbucket"
 	"golang.org/x/oauth2/clientcredentials"
+
+	"io"
+	"mime/multipart"
+	"os"
 )
 
 const DEFAULT_PAGE_LENGTH = 10
@@ -109,6 +109,11 @@ func NewOAuthWithCode(i, s, c string) (*Client, string) {
 	}
 	a.token = *tok
 	return injectClient(a), tok.AccessToken
+}
+
+func NewOAuthToken(t oauth2.Token) *Client {
+	a := &auth{token: t}
+	return injectClient(a)
 }
 
 func NewOAuthbearerToken(t string) *Client {
