@@ -130,6 +130,7 @@ func injectClient(a *auth) *Client {
 	c := &Client{Auth: a, Pagelen: DEFAULT_PAGE_LENGTH}
 	c.Repositories = &Repositories{
 		c:                  c,
+		Issues:             &Issues{c: c},
 		PullRequests:       &PullRequests{c: c},
 		Repository:         &Repository{c: c},
 		Commits:            &Commits{c: c},
