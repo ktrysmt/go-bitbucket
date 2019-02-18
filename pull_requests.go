@@ -2,9 +2,8 @@ package bitbucket
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
-
-	"github.com/k0kubun/pp"
 )
 
 type PullRequests struct {
@@ -132,7 +131,7 @@ func (p *PullRequests) buildPullRequestBody(po *PullRequestsOptions) string {
 
 	data, err := json.Marshal(body)
 	if err != nil {
-		pp.Println(err)
+		fmt.Println(err)
 		os.Exit(9)
 	}
 
