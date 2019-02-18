@@ -1,5 +1,15 @@
 package bitbucket
 
+import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"sort"
+	"strings"
+)
+
 var apiBaseURL = "https://api.bitbucket.org/2.0"
 
 func GetApiBaseURL() string {
@@ -127,6 +137,7 @@ type RepositoryOptions struct {
 
 type PullRequestsOptions struct {
 	ID                string   `json:"id"`
+	State             string   `json:"state"`
 	CommentID         string   `json:"comment_id"`
 	Owner             string   `json:"owner"`
 	RepoSlug          string   `json:"repo_slug"`
@@ -215,4 +226,109 @@ type DownloadsOptions struct {
 	RepoSlug string `json:"repo_slug"`
 	FilePath string `json:"filepath"`
 	FileName string `json:"filename"`
+}
+
+type Response struct {
+	*http.Response
+
+	//// These fields provide the page values for paginating through a set of
+	//// results. Any or all of these may be set to the zero value for
+	//// responses that are not part of a paginated set, or for which there
+	//// are no additional pages.
+	//TotalItems   int
+	//TotalPages   int
+	//ItemsPerPage int
+	//CurrentPage  int
+	//NextPage     int
+	//PreviousPage int
+}
+
+// newResponse creates a new Response for the provided http.Response.
+func newResponse(r *http.Response) *Response {
+	response := &Response{Response: r}
+	//response.populatePageValues()
+	return response
+}
+
+//// populatePageValues parses the HTTP Link response headers and populates the
+//// various pagination link values in the Response.
+//func (r *Response) populatePageValues() {
+//	if totalItems := r.Response.Header.Get(xTotal); totalItems != "" {
+//		r.TotalItems, _ = strconv.Atoi(totalItems)
+//	}
+//	if totalPages := r.Response.Header.Get(xTotalPages); totalPages != "" {
+//		r.TotalPages, _ = strconv.Atoi(totalPages)
+//	}
+//	if itemsPerPage := r.Response.Header.Get(xPerPage); itemsPerPage != "" {
+//		r.ItemsPerPage, _ = strconv.Atoi(itemsPerPage)
+//	}
+//	if currentPage := r.Response.Header.Get(xPage); currentPage != "" {
+//		r.CurrentPage, _ = strconv.Atoi(currentPage)
+//	}
+//	if nextPage := r.Response.Header.Get(xNextPage); nextPage != "" {
+//		r.NextPage, _ = strconv.Atoi(nextPage)
+//	}
+//	if previousPage := r.Response.Header.Get(xPrevPage); previousPage != "" {
+//		r.PreviousPage, _ = strconv.Atoi(previousPage)
+//	}
+//}
+
+type ErrorResponse struct {
+	Body     []byte
+	Response *http.Response
+	Message  string
+}
+
+func (e *ErrorResponse) Error() string {
+	path, _ := url.QueryUnescape(e.Response.Request.URL.Path)
+	u := fmt.Sprintf("%s://%s%s", e.Response.Request.URL.Scheme, e.Response.Request.URL.Host, path)
+	return fmt.Sprintf("%s %s: %d %s", e.Response.Request.Method, u, e.Response.StatusCode, e.Message)
+}
+
+// CheckResponse checks the API response for errors, and returns them if present.
+func CheckResponse(r *http.Response) error {
+	switch r.StatusCode {
+	case 200, 201, 202, 204, 304:
+		return nil
+	}
+
+	errorResponse := &ErrorResponse{Response: r}
+	data, err := ioutil.ReadAll(r.Body)
+	if err == nil && data != nil {
+		errorResponse.Body = data
+
+		var raw interface{}
+		if err := json.Unmarshal(data, &raw); err != nil {
+			errorResponse.Message = "failed to parse unknown error format"
+		} else {
+			errorResponse.Message = parseError(raw)
+		}
+	}
+
+	return errorResponse
+}
+
+func parseError(raw interface{}) string {
+	switch raw := raw.(type) {
+	case string:
+		return raw
+
+	case []interface{}:
+		var errs []string
+		for _, v := range raw {
+			errs = append(errs, parseError(v))
+		}
+		return fmt.Sprintf("[%s]", strings.Join(errs, ", "))
+
+	case map[string]interface{}:
+		var errs []string
+		for k, v := range raw {
+			errs = append(errs, fmt.Sprintf("{%s: %s}", k, parseError(v)))
+		}
+		sort.Strings(errs)
+		return strings.Join(errs, ", ")
+
+	default:
+		return fmt.Sprintf("failed to parse unexpected error type: %T", raw)
+	}
 }

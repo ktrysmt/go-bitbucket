@@ -146,6 +146,38 @@ func injectClient(a *auth) *Client {
 	return c
 }
 
+// Do sends an API request and returns the API response. The API response is
+// JSON decoded and stored in the value pointed to by v, or returned as an
+// error if an API error has occurred. If v implements the io.Writer
+// interface, the raw response body will be written to v, without attempting to
+// first decode it.
+func (c *Client) Do(req *http.Request, v interface{}) (*Response, error) {
+	resp, err := c.HttpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	response := newResponse(resp)
+
+	err = CheckResponse(resp)
+	if err != nil {
+		// even though there was an error, we still return the response
+		// in case the caller wants to inspect it further
+		return response, err
+	}
+
+	if v != nil {
+		if w, ok := v.(io.Writer); ok {
+			_, err = io.Copy(w, resp.Body)
+		} else {
+			err = json.NewDecoder(resp.Body).Decode(v)
+		}
+	}
+
+	return response, err
+}
+
 func (c *Client) execute(method string, urlStr string, text string) (interface{}, error) {
 	// Use pagination if changed from default value
 	const DEC_RADIX = 10
