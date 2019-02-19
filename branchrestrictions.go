@@ -29,7 +29,7 @@ func (b *BranchRestrictions) Get(bo *BranchRestrictionsOptions) (interface{}, er
 func (b *BranchRestrictions) Update(bo *BranchRestrictionsOptions) (interface{}, error) {
 	data := b.buildBranchRestrictionsBody(bo)
 	urlStr := b.c.requestUrl("/repositories/%s/%s/branch-restrictions/%s", bo.Owner, bo.RepoSlug, bo.ID)
-	return b.c.execute("PUT", urlStr, data)
+	return b.c.execute("PUT", urlStr, data, "")
 }
 
 func (b *BranchRestrictions) Delete(bo *BranchRestrictionsOptions) (interface{}, error) {

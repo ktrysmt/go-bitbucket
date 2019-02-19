@@ -23,7 +23,7 @@ func (p *PullRequests) Update(po *PullRequestsOptions) (interface{}, error) {
 }
 
 func (p *PullRequests) List(owner, repo, opts string) (interface{}, error) {
-	urlStr := GetApiBaseURL() + "/repositories/" + owner + "/" + repo + "/pullrequests/"
+	urlStr := GetApiBaseURL() + "/repositories/" + owner + "/" + repo + "/pullrequests"
 	return p.c.execute("GET", urlStr, "", opts)
 }
 

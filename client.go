@@ -240,7 +240,7 @@ func (c *Client) execute(method string, urlStr string, text string, opts string)
 	if opts != "" {
 		// encode the query string. then add it to the urlStr
 		encodedQuery := url.QueryEscape(opts)
-		urlStr += fmt.Sprintf("/q=%s", encodedQuery)
+		urlStr += fmt.Sprintf("?q=%s", encodedQuery)
 	}
 
 	body := strings.NewReader(text)
@@ -269,7 +269,7 @@ func (c *Client) execute(method string, urlStr string, text string, opts string)
 			if nextUrl != "" {
 				valuesSlice := valuesIn.([]interface{})
 				if valuesSlice != nil {
-					nextResult, err := c.execute(method, nextUrl, text)
+					nextResult, err := c.execute(method, nextUrl, text, opts)
 					if err != nil {
 						return nil, err
 					}
