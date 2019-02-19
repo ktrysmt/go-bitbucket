@@ -10,6 +10,8 @@ import (
 type Issues struct {
 	c *Client
 
+	Page    int     `json:"page,omitempty"`
+	Size    int     `json:"size,omitempty"`
 	PageLen int     `json:"pagelen,omitempty"`
 	Values  []Issue `json:"values,omitempty"`
 }

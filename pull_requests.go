@@ -3,29 +3,49 @@ package bitbucket
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/mitchellh/mapstructure"
 	"os"
 )
 
 type PullRequests struct {
 	c *Client
+
+	Page    int `json:"page,omitempty"`
+	Size    int `json:"size,omitempty"`
+	PageLen int `json:"pagelen,omitempty"`
+
+	Values *[]PullRequest `json:"values,omitempty"`
 }
 
 type PullRequest struct {
-	Type              string
-	Description       string
-	Title             string
-	CloseSourceBranch bool
-	Id                int64
-	CommentCount      int
-	State             string
-	TaskCount         int
-	Reason            string
+	Type              string `json:"type,omitempty"`
+	Description       string `json:"description,omitempty"`
+	Title             string `json:"title,omitempty"`
+	CloseSourceBranch bool   `json:"close_source_branch,omitempty"`
+	Id                int64  `json:"id,omitempty"`
+	CommentCount      int    `json:"comment_count,omitempty"`
+	State             string `json:"state,omitempty"`
+	TaskCount         int    `json:"task_count,omitempty"`
+	Reason            string `json:"reason,omitempty"`
 }
 
-func (p *PullRequests) Create(po *PullRequestsOptions) (interface{}, error) {
+func (p *PullRequests) Create(po *PullRequestsOptions) (*PullRequest, error) {
 	data := p.buildPullRequestBody(po)
 	urlStr := p.c.requestUrl("/repositories/%s/%s/pullrequests/", po.Owner, po.RepoSlug)
-	return p.c.execute("POST", urlStr, data, "")
+
+	result := &PullRequest{}
+	response, err := p.c.execute("POST", urlStr, data, "")
+	if err != nil {
+		return result, err
+	}
+
+	// decode map and unmarshall it to a struct
+	decodeErr := mapstructure.Decode(response, &result)
+	if err != nil {
+		return result, decodeErr
+	}
+
+	return result, nil
 }
 
 func (p *PullRequests) Update(po *PullRequestsOptions) (interface{}, error) {
@@ -34,9 +54,22 @@ func (p *PullRequests) Update(po *PullRequestsOptions) (interface{}, error) {
 	return p.c.execute("PUT", urlStr, data, "")
 }
 
-func (p *PullRequests) List(owner, repo, opts string) (interface{}, error) {
+func (p *PullRequests) List(owner, repo, opts string) (*PullRequests, error) {
 	urlStr := GetApiBaseURL() + "/repositories/" + owner + "/" + repo + "/pullrequests"
-	return p.c.execute("GET", urlStr, "", opts)
+
+	result := &PullRequests{}
+	response, err := p.c.execute("GET", urlStr, "", opts)
+	if err != nil {
+		return result, err
+	}
+
+	// decode map and unmarshall it to a struct
+	decodeErr := mapstructure.Decode(response, &result)
+	if err != nil {
+		return result, decodeErr
+	}
+
+	return result, nil
 }
 
 func (p *PullRequests) Get(po *PullRequestsOptions) (interface{}, error) {
