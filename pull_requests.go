@@ -10,6 +10,18 @@ type PullRequests struct {
 	c *Client
 }
 
+type PullRequest struct {
+	Type              string
+	Description       string
+	Title             string
+	CloseSourceBranch bool
+	Id                int64
+	CommentCount      int
+	State             string
+	TaskCount         int
+	Reason            string
+}
+
 func (p *PullRequests) Create(po *PullRequestsOptions) (interface{}, error) {
 	data := p.buildPullRequestBody(po)
 	urlStr := p.c.requestUrl("/repositories/%s/%s/pullrequests/", po.Owner, po.RepoSlug)
