@@ -24,7 +24,15 @@ import (
 
 const DEFAULT_PAGE_LENGTH = 10
 
+const (
+	defaultBaseURL = "https://api.bitbucket.org/"
+	apiVersionPath = "2.0/"
+	userAgent      = "go-bitbucket"
+)
+
 type Client struct {
+	baseURL *url.URL
+
 	Auth         *auth
 	Users        users
 	User         user
@@ -126,6 +134,35 @@ func NewBasicAuth(u, p string) *Client {
 	return injectClient(a)
 }
 
+// BaseURL return a copy of the baseURL.
+func (c *Client) BaseURL() *url.URL {
+	u := *c.baseURL
+	return &u
+}
+
+// SetBaseURL sets the base URL for API requests to a custom endpoint. urlStr
+// should always be specified with a trailing slash.
+func (c *Client) SetBaseURL(urlStr string) error {
+	// Make sure the given URL end with a slash
+	if !strings.HasSuffix(urlStr, "/") {
+		urlStr += "/"
+	}
+
+	baseURL, err := url.Parse(urlStr)
+	if err != nil {
+		return err
+	}
+
+	if !strings.HasSuffix(baseURL.Path, apiVersionPath) {
+		baseURL.Path += apiVersionPath
+	}
+
+	// Update the base URL of the client.
+	c.baseURL = baseURL
+
+	return nil
+}
+
 func injectClient(a *auth) *Client {
 	c := &Client{Auth: a, Pagelen: DEFAULT_PAGE_LENGTH}
 	c.Repositories = &Repositories{
@@ -143,6 +180,12 @@ func injectClient(a *auth) *Client {
 	c.User = &User{c: c}
 	c.Teams = &Teams{c: c}
 	c.HttpClient = new(http.Client)
+
+	if err := c.SetBaseURL(defaultBaseURL); err != nil {
+		// Should never happen since defaultBaseURL is our constant.
+		panic(err)
+	}
+
 	return c
 }
 
@@ -178,7 +221,7 @@ func (c *Client) Do(req *http.Request, v interface{}) (*Response, error) {
 	return response, err
 }
 
-func (c *Client) execute(method string, urlStr string, text string) (interface{}, error) {
+func (c *Client) execute(method string, urlStr string, text string, opts string) (interface{}, error) {
 	// Use pagination if changed from default value
 	const DEC_RADIX = 10
 	if strings.Contains(urlStr, "/repositories/") {
@@ -192,6 +235,12 @@ func (c *Client) execute(method string, urlStr string, text string) (interface{}
 			urlObj.RawQuery = q.Encode()
 			urlStr = urlObj.String()
 		}
+	}
+
+	if opts != "" {
+		// encode the query string. then add it to the urlStr
+		encodedQuery := url.QueryEscape(opts)
+		urlStr += fmt.Sprintf("/q=%s", encodedQuery)
 	}
 
 	body := strings.NewReader(text)

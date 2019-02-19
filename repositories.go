@@ -20,7 +20,7 @@ func (r *Repositories) ListForAccount(ro *RepositoriesOptions) (interface{}, err
 	if ro.Role != "" {
 		urlStr += "?role=" + ro.Role
 	}
-	return r.c.execute("GET", urlStr, "")
+	return r.c.execute("GET", urlStr, "", "")
 }
 
 func (r *Repositories) ListForTeam(ro *RepositoriesOptions) (interface{}, error) {
@@ -28,10 +28,10 @@ func (r *Repositories) ListForTeam(ro *RepositoriesOptions) (interface{}, error)
 	if ro.Role != "" {
 		urlStr += "?role=" + ro.Role
 	}
-	return r.c.execute("GET", urlStr, "")
+	return r.c.execute("GET", urlStr, "", "")
 }
 
 func (r *Repositories) ListPublic() (interface{}, error) {
 	urlStr := r.c.requestUrl("/repositories/", "")
-	return r.c.execute("GET", urlStr, "")
+	return r.c.execute("GET", urlStr, "", "")
 }

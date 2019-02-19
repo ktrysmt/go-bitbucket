@@ -35,7 +35,7 @@ type Content struct {
 
 func (i *Issues) List(owner, repoSlug string) (*Issues, error) {
 	urlStr := i.c.requestUrl("/repositories/%s/%s/issues", owner, repoSlug)
-	response, err := i.c.execute("GET", urlStr, "")
+	response, err := i.c.execute("GET", urlStr, "", "")
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +45,7 @@ func (i *Issues) List(owner, repoSlug string) (*Issues, error) {
 
 func (i *Issues) Get(owner, repoSlug, issueId string) (*Issue, error) {
 	urlStr := i.c.requestUrl("/repositories/%s/%s/issues/%s", owner, repoSlug, issueId)
-	response, err := i.c.execute("GET", urlStr, "")
+	response, err := i.c.execute("GET", urlStr, "", "")
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +57,7 @@ func (i *Issues) Create(owner, repoSlug string, io *IssueOptions) (*Issue, error
 	data := i.buildIssueBody(io)
 
 	urlStr := i.c.requestUrl("/repositories/%s/%s/issues", owner, repoSlug)
-	response, err := i.c.execute("POST", urlStr, data)
+	response, err := i.c.execute("POST", urlStr, data, "")
 	if err != nil {
 		return nil, err
 	}
