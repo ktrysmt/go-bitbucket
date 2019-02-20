@@ -52,6 +52,25 @@ type PullRequest struct {
 			Name string `json:"name,omitempty"`
 		}
 	}
+	Summary struct {
+		Raw    string `json:"raw,omitempty"`
+		Markup string `json:"markup,omitempty"`
+		Html   string `json:"html,omitempty"`
+		Type   string `json:"type,omitempty"`
+	}
+	Source struct {
+		Commit struct {
+			Hash string `json:"hash,omitempty"`
+		}
+		Repository struct {
+			Name     string `json:"name,omitempty"`
+			FullName string `json:"full_name,omitempty"`
+			Uuid     string `json:"uuid,omitempty"`
+		}
+		Branch struct {
+			Name string `json:"name,omitempty"`
+		}
+	}
 	CommentCount int    `json:"comment_count,omitempty"`
 	State        string `json:"state,omitempty"`
 	TaskCount    int    `json:"task_count,omitempty"`
