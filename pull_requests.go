@@ -15,15 +15,17 @@ type PullRequestsService struct {
 	client *Client
 }
 
+// PullRequest represents a list of Bitbucket pull request.
+//
+// Bitbucket API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Busername%7D/%7Brepo_slug%7D/pullrequests
 type PullRequests struct {
-	Page    int `json:"page,omitempty"`
-	Size    int `json:"size,omitempty"`
-	PageLen int `json:"pagelen,omitempty"`
-
-	Values *[]PullRequest `json:"values,omitempty"`
+	Page    int            `json:"page,omitempty"`
+	Size    int            `json:"size,omitempty"`
+	PageLen int            `json:"pagelen,omitempty"`
+	Values  *[]PullRequest `json:"values,omitempty"`
 }
 
-// PullRequest represents a Bitbucket merge request.
+// PullRequest represents a Bitbucket pull request.
 //
 // Bitbucket API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Busername%7D/%7Brepo_slug%7D/pullrequests
 type PullRequest struct {
