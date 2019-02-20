@@ -52,6 +52,25 @@ type PullRequest struct {
 			Name string `json:"name,omitempty"`
 		}
 	}
+	Summary struct {
+		Raw    string `json:"raw,omitempty"`
+		Markup string `json:"markup,omitempty"`
+		Html   string `json:"html,omitempty"`
+		Type   string `json:"type,omitempty"`
+	}
+	Source struct {
+		Commit struct {
+			Hash string `json:"hash,omitempty"`
+		}
+		Repository struct {
+			Name     string `json:"name,omitempty"`
+			FullName string `json:"full_name,omitempty"`
+			Uuid     string `json:"uuid,omitempty"`
+		}
+		Branch struct {
+			Name string `json:"name,omitempty"`
+		}
+	}
 	CommentCount int    `json:"comment_count,omitempty"`
 	State        string `json:"state,omitempty"`
 	TaskCount    int    `json:"task_count,omitempty"`
@@ -79,7 +98,7 @@ func (p *PullRequestsService) Get(owner, repo, id string) (*PullRequest, error) 
 	urlStr := GetApiBaseURL() + "/repositories/" + owner + "/" + repo + "/pullrequests/" + id
 
 	result := &PullRequest{}
-	response, err := p.client.execute("POST", urlStr, "", "")
+	response, err := p.client.execute("GET", urlStr, "", "")
 	if err != nil {
 		return result, err
 	}
@@ -117,7 +136,7 @@ func (p *PullRequestsService) Update(owner, repo, id string, po *PullRequestsOpt
 	urlStr := GetApiBaseURL() + "/repositories/" + owner + "/" + repo + "/pullrequests/" + id
 
 	result := &PullRequest{}
-	response, err := p.client.execute("POST", urlStr, data, "")
+	response, err := p.client.execute("PUT", urlStr, data, "")
 	if err != nil {
 		return result, err
 	}
