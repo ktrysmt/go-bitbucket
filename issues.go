@@ -7,35 +7,49 @@ import (
 	"os"
 )
 
-type Issues struct {
-	c *Client
+// IssuesService handles communication with the issue related methods
+// of the Bitbucket API.
+//
+// Bitbucket API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Busername%7D/%7Brepo_slug%7D/issues
+type IssuesService struct {
+	client *Client
+}
 
-	PageLen int     `json:"pagelen,omitempty"`
-	Values  []Issue `json:"values,omitempty"`
+type Issues struct {
+	Page    int      `json:"page,omitempty"`
+	Size    int      `json:"size,omitempty"`
+	PageLen int      `json:"pagelen,omitempty"`
+	Values  *[]Issue `json:"values,omitempty"`
 }
 
 type Issue struct {
-	Priority  string  `json:"priority,omitempty"`
-	Kind      string  `json:"kind,omitempty"`
-	Title     string  `json:"title,omitempty"`
-	Votes     int     `json:"votes,omitempty"`
-	Watches   int     `json:"watches,omitempty"`
-	Content   Content `json:"content,omitempty"`
-	State     string  `json:"state,omitempty"`
-	IssueType string  `json:"state,omitempty"`
-	ID        int64   `json:"id,omitempty"`
+	Priority string `json:"priority,omitempty"`
+	Kind     string `json:"kind,omitempty"`
+	Links    struct {
+		Html struct {
+			Href string `json:"href,omitempty"`
+		}
+	}
+	Title     string       `json:"title,omitempty"`
+	Votes     int          `json:"votes,omitempty"`
+	Watches   int          `json:"watches,omitempty"`
+	Content   IssueContent `json:"content,omitempty"`
+	State     string       `json:"state,omitempty"`
+	IssueType string       `json:"state,omitempty"`
+	ID        int64        `json:"id,omitempty"`
 }
 
-type Content struct {
+type IssueContent struct {
 	Raw    string `json:"raw,omitempty"`
 	Markup string `json:"markup,omitempty"`
 	Html   string `json:"html,omitempty"`
 	Type   string `json:"type,omitempty"`
 }
 
-func (i *Issues) List(owner, repoSlug string) (*Issues, error) {
-	urlStr := i.c.requestUrl("/repositories/%s/%s/issues", owner, repoSlug)
-	response, err := i.c.execute("GET", urlStr, "")
+func (i *IssuesService) List(owner, repoSlug string) (*Issues, error) {
+	urlStr := i.client.requestUrl("/repositories/%s/%s/issues", owner, repoSlug)
+
+	response, err := i.client.execute("GET", urlStr, "", "")
 	if err != nil {
 		return nil, err
 	}
@@ -43,9 +57,9 @@ func (i *Issues) List(owner, repoSlug string) (*Issues, error) {
 	return decodeIssues(response)
 }
 
-func (i *Issues) Get(owner, repoSlug, issueId string) (*Issue, error) {
-	urlStr := i.c.requestUrl("/repositories/%s/%s/issues/%s", owner, repoSlug, issueId)
-	response, err := i.c.execute("GET", urlStr, "")
+func (i *IssuesService) Get(owner, repoSlug, issueId string) (*Issue, error) {
+	urlStr := i.client.requestUrl("/repositories/%s/%s/issues/%s", owner, repoSlug, issueId)
+	response, err := i.client.execute("GET", urlStr, "", "")
 	if err != nil {
 		return nil, err
 	}
@@ -53,11 +67,11 @@ func (i *Issues) Get(owner, repoSlug, issueId string) (*Issue, error) {
 	return decodeIssue(response)
 }
 
-func (i *Issues) Create(owner, repoSlug string, io *IssueOptions) (*Issue, error) {
+func (i *IssuesService) Create(owner, repoSlug string, io *IssueOptions) (*Issue, error) {
 	data := i.buildIssueBody(io)
 
-	urlStr := i.c.requestUrl("/repositories/%s/%s/issues", owner, repoSlug)
-	response, err := i.c.execute("POST", urlStr, data)
+	urlStr := i.client.requestUrl("/repositories/%s/%s/issues", owner, repoSlug)
+	response, err := i.client.execute("POST", urlStr, data, "")
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +79,7 @@ func (i *Issues) Create(owner, repoSlug string, io *IssueOptions) (*Issue, error
 	return decodeIssue(response)
 }
 
-func (i *Issues) buildIssueBody(io *IssueOptions) string {
+func (i *IssuesService) buildIssueBody(io *IssueOptions) string {
 
 	body := map[string]interface{}{}
 
@@ -88,7 +102,7 @@ func (i *Issues) buildIssueBody(io *IssueOptions) string {
 	return i.buildJsonBody(body)
 }
 
-func (i *Issues) buildJsonBody(body map[string]interface{}) string {
+func (i *IssuesService) buildJsonBody(body map[string]interface{}) string {
 
 	data, err := json.Marshal(body)
 	if err != nil {
