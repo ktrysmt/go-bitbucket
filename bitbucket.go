@@ -33,17 +33,17 @@ type user interface {
 }
 
 type pullrequests interface {
-	Create(opt PullRequestsOptions) (interface{}, error)
-	Update(opt PullRequestsOptions) (interface{}, error)
-	List(opt PullRequestsOptions) (interface{}, error)
-	Get(opt PullRequestsOptions) (interface{}, error)
-	Activities(opt PullRequestsOptions) (interface{}, error)
-	Activity(opt PullRequestsOptions) (interface{}, error)
-	Commits(opt PullRequestsOptions) (interface{}, error)
-	Patch(opt PullRequestsOptions) (interface{}, error)
-	Diff(opt PullRequestsOptions) (interface{}, error)
-	Merge(opt PullRequestsOptions) (interface{}, error)
-	Decline(opt PullRequestsOptions) (interface{}, error)
+	Create(opt PullRequestsOpts) (interface{}, error)
+	Update(opt PullRequestsOpts) (interface{}, error)
+	List(opt PullRequestsOpts) (interface{}, error)
+	Get(opt PullRequestsOpts) (interface{}, error)
+	Activities(opt PullRequestsOpts) (interface{}, error)
+	Activity(opt PullRequestsOpts) (interface{}, error)
+	Commits(opt PullRequestsOpts) (interface{}, error)
+	Patch(opt PullRequestsOpts) (interface{}, error)
+	Diff(opt PullRequestsOpts) (interface{}, error)
+	Merge(opt PullRequestsOpts) (interface{}, error)
+	Decline(opt PullRequestsOpts) (interface{}, error)
 }
 
 type repository interface {
@@ -133,23 +133,6 @@ type RepositoryOptions struct {
 	HasIssues   string `json:"has_issues"`
 	HasWiki     string `json:"has_wiki"`
 	Project     string `json:"project"`
-}
-
-type PullRequestsOptions struct {
-	ID                string   `json:"id"`
-	State             string   `json:"state"`
-	CommentID         string   `json:"comment_id"`
-	Owner             string   `json:"owner"`
-	RepoSlug          string   `json:"repo_slug"`
-	Title             string   `json:"title"`
-	Description       string   `json:"description"`
-	CloseSourceBranch bool     `json:"close_source_branch"`
-	SourceBranch      string   `json:"source_branch"`
-	SourceRepository  string   `json:"source_repository"`
-	DestinationBranch string   `json:"destination_branch"`
-	DestinationCommit string   `json:"destination_repository"`
-	Message           string   `json:"message"`
-	Reviewers         []string `json:"reviewers"`
 }
 
 type CommitsOptions struct {

@@ -7,9 +7,15 @@ import (
 	"os"
 )
 
-type PullRequests struct {
-	c *Client
+// PullRequestService handles communication with the pull requests related
+// methods of the Bitbucket API.
+//
+// Bitbucket API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Busername%7D/%7Brepo_slug%7D/pullrequests
+type PullRequestsService struct {
+	client *Client
+}
 
+type PullRequests struct {
 	Page    int `json:"page,omitempty"`
 	Size    int `json:"size,omitempty"`
 	PageLen int `json:"pagelen,omitempty"`
@@ -17,24 +23,61 @@ type PullRequests struct {
 	Values *[]PullRequest `json:"values,omitempty"`
 }
 
+// PullRequest represents a Bitbucket merge request.
+//
+// Bitbucket API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Busername%7D/%7Brepo_slug%7D/pullrequests
 type PullRequest struct {
-	Type              string `json:"type,omitempty"`
-	Description       string `json:"description,omitempty"`
+	Type        string `json:"type,omitempty"`
+	Description string `json:"description,omitempty"`
+	Links       struct {
+		Html struct {
+			Href string `json:"href,omitempty"`
+		}
+	}
 	Title             string `json:"title,omitempty"`
 	CloseSourceBranch bool   `json:"close_source_branch,omitempty"`
-	Id                int64  `json:"id,omitempty"`
-	CommentCount      int    `json:"comment_count,omitempty"`
-	State             string `json:"state,omitempty"`
-	TaskCount         int    `json:"task_count,omitempty"`
-	Reason            string `json:"reason,omitempty"`
+	ID                int64  `json:"id,omitempty"`
+	Destination       struct {
+		Commit struct {
+			Hash string `json:"hash,omitempty"`
+		}
+		Repository struct {
+			Name     string `json:"name,omitempty"`
+			FullName string `json:"full_name,omitempty"`
+			Uuid     string `json:"uuid,omitempty"`
+		}
+		Branch struct {
+			Name string `json:"name,omitempty"`
+		}
+	}
+	CommentCount int    `json:"comment_count,omitempty"`
+	State        string `json:"state,omitempty"`
+	TaskCount    int    `json:"task_count,omitempty"`
+	Reason       string `json:"reason,omitempty"`
 }
 
-func (p *PullRequests) Create(po *PullRequestsOptions) (*PullRequest, error) {
-	data := p.buildPullRequestBody(po)
-	urlStr := p.c.requestUrl("/repositories/%s/%s/pullrequests/", po.Owner, po.RepoSlug)
+type PullRequestsOpts struct {
+	ID                string   `json:"id"`
+	State             string   `json:"state"`
+	CommentID         string   `json:"comment_id"`
+	Owner             string   `json:"owner"`
+	RepoSlug          string   `json:"repo_slug"`
+	Title             string   `json:"title"`
+	Description       string   `json:"description"`
+	CloseSourceBranch bool     `json:"close_source_branch"`
+	SourceBranch      string   `json:"source_branch"`
+	SourceRepository  string   `json:"source_repository"`
+	DestinationBranch string   `json:"destination_branch"`
+	DestinationCommit string   `json:"destination_repository"`
+	Message           string   `json:"message"`
+	Reviewers         []string `json:"reviewers"`
+}
+
+func (p *PullRequestsService) Get(owner, repo, id string) (*PullRequest, error) {
+	urlStr := GetApiBaseURL() + "/repositories/" + owner + "/" + repo + "/pullrequests/" + id
 
 	result := &PullRequest{}
-	response, err := p.c.execute("POST", urlStr, data, "")
+	response, err := p.client.execute("POST", urlStr, "", "")
 	if err != nil {
 		return result, err
 	}
@@ -48,17 +91,49 @@ func (p *PullRequests) Create(po *PullRequestsOptions) (*PullRequest, error) {
 	return result, nil
 }
 
-func (p *PullRequests) Update(po *PullRequestsOptions) (interface{}, error) {
+func (p *PullRequestsService) Create(owner, repo string, po *PullRequestsOpts) (*PullRequest, error) {
 	data := p.buildPullRequestBody(po)
-	urlStr := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID
-	return p.c.execute("PUT", urlStr, data, "")
+	urlStr := p.client.requestUrl("/repositories/%s/%s/pullrequests/", owner, repo)
+
+	result := &PullRequest{}
+	response, err := p.client.execute("POST", urlStr, data, "")
+	if err != nil {
+		return result, err
+	}
+
+	// decode map and unmarshall it to a struct
+	decodeErr := mapstructure.Decode(response, &result)
+	if err != nil {
+		return result, decodeErr
+	}
+
+	return result, nil
 }
 
-func (p *PullRequests) List(owner, repo, opts string) (*PullRequests, error) {
+func (p *PullRequestsService) Update(owner, repo, id string, po *PullRequestsOpts) (*PullRequest, error) {
+	data := p.buildPullRequestBody(po)
+	urlStr := GetApiBaseURL() + "/repositories/" + owner + "/" + repo + "/pullrequests/" + id
+
+	result := &PullRequest{}
+	response, err := p.client.execute("POST", urlStr, data, "")
+	if err != nil {
+		return result, err
+	}
+
+	// decode map and unmarshall it to a struct
+	decodeErr := mapstructure.Decode(response, &result)
+	if err != nil {
+		return result, decodeErr
+	}
+
+	return result, nil
+}
+
+func (p *PullRequestsService) List(owner, repo, opts string) (*PullRequests, error) {
 	urlStr := GetApiBaseURL() + "/repositories/" + owner + "/" + repo + "/pullrequests"
 
 	result := &PullRequests{}
-	response, err := p.c.execute("GET", urlStr, "", opts)
+	response, err := p.client.execute("GET", urlStr, "", opts)
 	if err != nil {
 		return result, err
 	}
@@ -72,59 +147,54 @@ func (p *PullRequests) List(owner, repo, opts string) (*PullRequests, error) {
 	return result, nil
 }
 
-func (p *PullRequests) Get(po *PullRequestsOptions) (interface{}, error) {
-	urlStr := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID
-	return p.c.execute("GET", urlStr, "", "")
-}
-
-func (p *PullRequests) Activities(po *PullRequestsOptions) (interface{}, error) {
+func (p *PullRequestsService) Activities(po *PullRequestsOpts) (interface{}, error) {
 	urlStr := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/activity"
-	return p.c.execute("GET", urlStr, "", "")
+	return p.client.execute("GET", urlStr, "", "")
 }
 
-func (p *PullRequests) Activity(po *PullRequestsOptions) (interface{}, error) {
+func (p *PullRequestsService) Activity(po *PullRequestsOpts) (interface{}, error) {
 	urlStr := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/activity"
-	return p.c.execute("GET", urlStr, "", "")
+	return p.client.execute("GET", urlStr, "", "")
 }
 
-func (p *PullRequests) Commits(po *PullRequestsOptions) (interface{}, error) {
+func (p *PullRequestsService) Commits(po *PullRequestsOpts) (interface{}, error) {
 	urlStr := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/commits"
-	return p.c.execute("GET", urlStr, "", "")
+	return p.client.execute("GET", urlStr, "", "")
 }
 
-func (p *PullRequests) Patch(po *PullRequestsOptions) (interface{}, error) {
+func (p *PullRequestsService) Patch(po *PullRequestsOpts) (interface{}, error) {
 	urlStr := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/patch"
-	return p.c.execute("GET", urlStr, "", "")
+	return p.client.execute("GET", urlStr, "", "")
 }
 
-func (p *PullRequests) Diff(po *PullRequestsOptions) (interface{}, error) {
+func (p *PullRequestsService) Diff(po *PullRequestsOpts) (interface{}, error) {
 	urlStr := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/diff"
-	return p.c.execute("GET", urlStr, "", "")
+	return p.client.execute("GET", urlStr, "", "")
 }
 
-func (p *PullRequests) Merge(po *PullRequestsOptions) (interface{}, error) {
+func (p *PullRequestsService) Merge(po *PullRequestsOpts) (interface{}, error) {
 	data := p.buildPullRequestBody(po)
 	urlStr := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/merge"
-	return p.c.execute("POST", urlStr, data, "")
+	return p.client.execute("POST", urlStr, data, "")
 }
 
-func (p *PullRequests) Decline(po *PullRequestsOptions) (interface{}, error) {
+func (p *PullRequestsService) Decline(po *PullRequestsOpts) (interface{}, error) {
 	data := p.buildPullRequestBody(po)
 	urlStr := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/decline"
-	return p.c.execute("POST", urlStr, data, "")
+	return p.client.execute("POST", urlStr, data, "")
 }
 
-func (p *PullRequests) GetComments(po *PullRequestsOptions) (interface{}, error) {
+func (p *PullRequestsService) GetComments(po *PullRequestsOpts) (interface{}, error) {
 	urlStr := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/comments/"
-	return p.c.execute("GET", urlStr, "", "")
+	return p.client.execute("GET", urlStr, "", "")
 }
 
-func (p *PullRequests) GetComment(po *PullRequestsOptions) (interface{}, error) {
+func (p *PullRequestsService) GetComment(po *PullRequestsOpts) (interface{}, error) {
 	urlStr := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/comments/" + po.CommentID
-	return p.c.execute("GET", urlStr, "", "")
+	return p.client.execute("GET", urlStr, "", "")
 }
 
-func (p *PullRequests) buildPullRequestBody(po *PullRequestsOptions) string {
+func (p *PullRequestsService) buildPullRequestBody(po *PullRequestsOpts) string {
 
 	body := map[string]interface{}{}
 	body["source"] = map[string]interface{}{}

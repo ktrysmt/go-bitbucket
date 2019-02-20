@@ -5,7 +5,7 @@ package bitbucket
 type Repositories struct {
 	c                  *Client
 	Issues             *Issues
-	PullRequests       *PullRequests
+	PullRequests       *PullRequestsService
 	Repository         *Repository
 	Commits            *Commits
 	Diff               *Diff

@@ -168,7 +168,7 @@ func injectClient(a *auth) *Client {
 	c.Repositories = &Repositories{
 		c:                  c,
 		Issues:             &Issues{c: c},
-		PullRequests:       &PullRequests{c: c},
+		PullRequests:       &PullRequestsService{client: c},
 		Repository:         &Repository{c: c},
 		Commits:            &Commits{c: c},
 		Diff:               &Diff{c: c},
