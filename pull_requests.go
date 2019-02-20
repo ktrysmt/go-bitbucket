@@ -98,7 +98,7 @@ func (p *PullRequestsService) Get(owner, repo, id string) (*PullRequest, error) 
 	urlStr := GetApiBaseURL() + "/repositories/" + owner + "/" + repo + "/pullrequests/" + id
 
 	result := &PullRequest{}
-	response, err := p.client.execute("POST", urlStr, "", "")
+	response, err := p.client.execute("GET", urlStr, "", "")
 	if err != nil {
 		return result, err
 	}
@@ -136,7 +136,7 @@ func (p *PullRequestsService) Update(owner, repo, id string, po *PullRequestsOpt
 	urlStr := GetApiBaseURL() + "/repositories/" + owner + "/" + repo + "/pullrequests/" + id
 
 	result := &PullRequest{}
-	response, err := p.client.execute("POST", urlStr, data, "")
+	response, err := p.client.execute("PUT", urlStr, data, "")
 	if err != nil {
 		return result, err
 	}
