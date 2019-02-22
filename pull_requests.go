@@ -107,10 +107,10 @@ type PullRequestsOpts struct {
 	Reviewers         []string `json:"reviewers"`
 }
 
-func (p *PullRequestsService) List(owner, repo, opts string) (*PullRequest, *Response, error) {
+func (p *PullRequestsService) List(owner, repo, opts string) (*PullRequests, *Response, error) {
 	urlStr := GetApiBaseURL() + "/repositories/" + owner + "/" + repo + "/pullrequests"
 
-	result := new(PullRequest)
+	result := new(PullRequests)
 	response, err := p.client.executeNew("GET", urlStr, result, nil, opts)
 
 	return result, response, err
