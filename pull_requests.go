@@ -29,35 +29,49 @@ type PullRequests struct {
 //
 // Bitbucket API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Busername%7D/%7Brepo_slug%7D/pullrequests
 type PullRequest struct {
+	Rendered struct {
+		Description struct {
+			Raw    string `json:"raw,omitempty"`
+			Markup string `json:"markup,omitempty"`
+			HTML   string `json:"html,omitempty"`
+			Type   string `json:"type,omitempty"`
+		} `json:"description,omitempty"`
+		Title struct {
+			Raw    string `json:"raw,omitempty"`
+			Markup string `json:"markup,omitempty"`
+			HTML   string `json:"html,omitempty"`
+			Type   string `json:"type,omitempty"`
+		} `json:"title,omitempty"`
+	} `json:"rendered,omitempty"`
 	Type        string `json:"type,omitempty"`
 	Description string `json:"description,omitempty"`
 	Links       struct {
 		Html struct {
 			Href string `json:"href,omitempty"`
-		}
-	}
+		} `json:"html,omitempty"`
+	} `json:"html,omitempty"`
 	Title             string `json:"title,omitempty"`
 	CloseSourceBranch bool   `json:"close_source_branch,omitempty"`
 	ID                int64  `json:"id,omitempty"`
 	Destination       struct {
 		Commit struct {
 			Hash string `json:"hash,omitempty"`
-		}
+		} `json:"commit,omitempty"`
 		Repository struct {
 			Name     string `json:"name,omitempty"`
 			FullName string `json:"full_name,omitempty"`
 			Uuid     string `json:"uuid,omitempty"`
-		}
+		} `json:"repository,omitempty"`
 		Branch struct {
 			Name string `json:"name,omitempty"`
-		}
-	}
+		} `json:"branch,omitempty"`
+	} `json:"destination,omitempty"`
 	Summary struct {
 		Raw    string `json:"raw,omitempty"`
 		Markup string `json:"markup,omitempty"`
 		Html   string `json:"html,omitempty"`
 		Type   string `json:"type,omitempty"`
-	}
+	} `json:"summary,omitempty"`
 	Source struct {
 		Commit struct {
 			Hash string `json:"hash,omitempty"`
@@ -66,11 +80,11 @@ type PullRequest struct {
 			Name     string `json:"name,omitempty"`
 			FullName string `json:"full_name,omitempty"`
 			Uuid     string `json:"uuid,omitempty"`
-		}
+		} `json:"repository,omitempty"`
 		Branch struct {
 			Name string `json:"name,omitempty"`
-		}
-	}
+		} `json:"destination,omitempty"`
+	} `json:"source,omitempty"`
 	CommentCount int    `json:"comment_count,omitempty"`
 	State        string `json:"state,omitempty"`
 	TaskCount    int    `json:"task_count,omitempty"`
