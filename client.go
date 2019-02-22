@@ -189,38 +189,6 @@ func injectClient(a *auth) *Client {
 	return c
 }
 
-// Do sends an API request and returns the API response. The API response is
-// JSON decoded and stored in the value pointed to by v, or returned as an
-// error if an API error has occurred. If v implements the io.Writer
-// interface, the raw response body will be written to v, without attempting to
-// first decode it.
-func (c *Client) Do(req *http.Request, v interface{}) (*Response, error) {
-	resp, err := c.HttpClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	response := newResponse(resp)
-
-	err = CheckResponse(resp)
-	if err != nil {
-		// even though there was an error, we still return the response
-		// in case the caller wants to inspect it further
-		return response, err
-	}
-
-	if v != nil {
-		if w, ok := v.(io.Writer); ok {
-			_, err = io.Copy(w, resp.Body)
-		} else {
-			err = json.NewDecoder(resp.Body).Decode(v)
-		}
-	}
-
-	return response, err
-}
-
 func (c *Client) execute(method string, urlStr string, text string, opts string) (interface{}, error) {
 	// Use pagination if changed from default value
 	const DEC_RADIX = 10
@@ -299,6 +267,57 @@ func (c *Client) execute(method string, urlStr string, text string, opts string)
 	return result, nil
 }
 
+func (c *Client) executeNew(method string, urlStr string, v, body interface{}, opts string) (*Response, error) {
+	// Use pagination if changed from default value
+	const DEC_RADIX = 10
+	if strings.Contains(urlStr, "/repositories/") {
+		if c.Pagelen != DEFAULT_PAGE_LENGTH {
+			urlObj, err := url.Parse(urlStr)
+			if err != nil {
+				return nil, err
+			}
+			q := urlObj.Query()
+			q.Set("pagelen", strconv.FormatUint(c.Pagelen, DEC_RADIX))
+			urlObj.RawQuery = q.Encode()
+			urlStr = urlObj.String()
+		}
+	}
+
+	if opts != "" {
+		// encode the query string. then add it to the urlStr
+		encodedQuery := url.QueryEscape(opts)
+		urlStr += fmt.Sprintf("?q=%s", encodedQuery)
+	}
+
+	var buf io.ReadWriter
+	if body != nil {
+		buf = new(bytes.Buffer)
+		enc := json.NewEncoder(buf)
+		enc.SetEscapeHTML(false)
+		err := enc.Encode(body)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	req, err := http.NewRequest(method, urlStr, buf)
+	if err != nil {
+		return nil, err
+	}
+
+	if body != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
+	c.authenticateRequest(req)
+	response, err := c.doRequestNew(req, v, false)
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
+}
+
 func (c *Client) executeFileUpload(method string, urlStr string, filePath string, fileName string) (interface{}, error) {
 	fileReader, err := os.Open(filePath)
 	if err != nil {
@@ -350,7 +369,6 @@ func (c *Client) authenticateRequest(req *http.Request) {
 }
 
 func (c *Client) doRequest(req *http.Request, emptyResponse bool) (interface{}, error) {
-
 	resp, err := c.HttpClient.Do(req)
 	if err != nil {
 		return nil, err
@@ -383,6 +401,34 @@ func (c *Client) doRequest(req *http.Request, emptyResponse bool) (interface{}, 
 	}
 
 	return result, nil
+}
+
+func (c *Client) doRequestNew(req *http.Request, v interface{}, emptyResponse bool) (*Response, error) {
+	resp, err := c.HttpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	if resp.Body != nil {
+		defer resp.Body.Close()
+	}
+
+	if (resp.StatusCode != http.StatusOK) && (resp.StatusCode != http.StatusCreated) {
+		return nil, fmt.Errorf(resp.Status)
+	}
+
+	if emptyResponse {
+		return nil, nil
+	}
+
+	if resp.Body == nil {
+		return nil, fmt.Errorf("response body is nil")
+	}
+
+	response := newResponse(resp)
+
+	err = json.NewDecoder(resp.Body).Decode(v)
+
+	return response, err
 }
 
 func (c *Client) requestUrl(template string, args ...interface{}) string {
