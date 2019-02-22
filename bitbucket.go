@@ -33,17 +33,17 @@ type user interface {
 }
 
 type pullrequests interface {
-	Create(opt PullRequestsOpts) (interface{}, error)
-	Update(opt PullRequestsOpts) (interface{}, error)
-	List(opt PullRequestsOpts) (interface{}, error)
-	Get(opt PullRequestsOpts) (interface{}, error)
-	Activities(opt PullRequestsOpts) (interface{}, error)
-	Activity(opt PullRequestsOpts) (interface{}, error)
-	Commits(opt PullRequestsOpts) (interface{}, error)
-	Patch(opt PullRequestsOpts) (interface{}, error)
-	Diff(opt PullRequestsOpts) (interface{}, error)
-	Merge(opt PullRequestsOpts) (interface{}, error)
-	Decline(opt PullRequestsOpts) (interface{}, error)
+	Create(opt CreatePullRequestsOpts) (interface{}, error)
+	Update(opt CreatePullRequestsOpts) (interface{}, error)
+	List(opt CreatePullRequestsOpts) (interface{}, error)
+	Get(opt CreatePullRequestsOpts) (interface{}, error)
+	Activities(opt CreatePullRequestsOpts) (interface{}, error)
+	Activity(opt CreatePullRequestsOpts) (interface{}, error)
+	Commits(opt CreatePullRequestsOpts) (interface{}, error)
+	Patch(opt CreatePullRequestsOpts) (interface{}, error)
+	Diff(opt CreatePullRequestsOpts) (interface{}, error)
+	Merge(opt CreatePullRequestsOpts) (interface{}, error)
+	Decline(opt CreatePullRequestsOpts) (interface{}, error)
 }
 
 type repository interface {

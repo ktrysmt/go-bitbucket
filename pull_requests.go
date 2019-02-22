@@ -1,11 +1,5 @@
 package bitbucket
 
-import (
-	"encoding/json"
-	"fmt"
-	"os"
-)
-
 // PullRequestService handles communication with the pull requests related
 // methods of the Bitbucket API.
 //
@@ -90,21 +84,18 @@ type PullRequest struct {
 	Reason       string `json:"reason,omitempty"`
 }
 
-type PullRequestsOpts struct {
-	ID                string   `json:"id"`
-	State             string   `json:"state"`
-	CommentID         string   `json:"comment_id"`
-	Owner             string   `json:"owner"`
-	RepoSlug          string   `json:"repo_slug"`
-	Title             string   `json:"title"`
-	Description       string   `json:"description"`
-	CloseSourceBranch bool     `json:"close_source_branch"`
-	SourceBranch      string   `json:"source_branch"`
-	SourceRepository  string   `json:"source_repository"`
-	DestinationBranch string   `json:"destination_branch"`
-	DestinationCommit string   `json:"destination_repository"`
-	Message           string   `json:"message"`
-	Reviewers         []string `json:"reviewers"`
+type CreatePullRequestsOpts struct {
+	//State             string   `json:"state"`
+	//CommentID         string   `json:"comment_id"`
+	Title       *string `json:"title,omitempty"`
+	Description *string `json:"description,omitempty"`
+	//CloseSourceBranch bool     `json:"close_source_branch"`
+	SourceBranch *string `json:"source_branch,omitempty"`
+	//SourceRepository  string   `json:"source_repository"`
+	DestinationBranch *string `json:"destination_branch,omitempty"`
+	//DestinationCommit string   `json:"destination_repository"`
+	//Message           string   `json:"message"`
+	//Reviewers         []string `json:"reviewers"`
 }
 
 func (p *PullRequestsService) List(owner, repo, opts string) (*PullRequests, *Response, error) {
@@ -125,7 +116,7 @@ func (p *PullRequestsService) Get(owner, repo, id string) (*PullRequest, *Respon
 	return result, response, err
 }
 
-func (p *PullRequestsService) Create(owner, repo string, po *PullRequestsOpts) (*PullRequest, *Response, error) {
+func (p *PullRequestsService) Create(owner, repo string, po *CreatePullRequestsOpts) (*PullRequest, *Response, error) {
 	urlStr := p.client.requestUrl("/repositories/%s/%s/pullrequests/", owner, repo)
 
 	result := new(PullRequest)
@@ -134,93 +125,93 @@ func (p *PullRequestsService) Create(owner, repo string, po *PullRequestsOpts) (
 	return result, response, err
 }
 
-func (p *PullRequestsService) Patch(po *PullRequestsOpts) (interface{}, error) {
-	urlStr := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/patch"
+func (p *PullRequestsService) Patch(owner, repo, id string, po *CreatePullRequestsOpts) (interface{}, error) {
+	urlStr := GetApiBaseURL() + "/repositories/" + owner + "/" + repo + "/pullrequests/" + id + "/patch"
 	return p.client.execute("GET", urlStr, "", "")
 }
 
-func (p *PullRequestsService) Diff(po *PullRequestsOpts) (interface{}, error) {
-	urlStr := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/diff"
+func (p *PullRequestsService) Diff(owner, repo, id string, po *CreatePullRequestsOpts) (interface{}, error) {
+	urlStr := GetApiBaseURL() + "/repositories/" + owner + "/" + repo + "/pullrequests/" + id + "/diff"
 	return p.client.execute("GET", urlStr, "", "")
 }
 
-func (p *PullRequestsService) Merge(po *PullRequestsOpts) (interface{}, error) {
+func (p *PullRequestsService) Merge(owner, repo, id string, po *CreatePullRequestsOpts) (interface{}, error) {
 	data := p.buildPullRequestBody(po)
-	urlStr := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/merge"
+	urlStr := GetApiBaseURL() + "/repositories/" + owner + "/" + repo + "/pullrequests/" + id + "/merge"
 	return p.client.execute("POST", urlStr, data, "")
 }
 
-func (p *PullRequestsService) Decline(po *PullRequestsOpts) (interface{}, error) {
+func (p *PullRequestsService) Decline(owner, repo, id string, po *CreatePullRequestsOpts) (interface{}, error) {
 	data := p.buildPullRequestBody(po)
-	urlStr := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/decline"
+	urlStr := GetApiBaseURL() + "/repositories/" + owner + "/" + repo + "/pullrequests/" + id + "/decline"
 	return p.client.execute("POST", urlStr, data, "")
 }
 
-func (p *PullRequestsService) GetComments(po *PullRequestsOpts) (interface{}, error) {
-	urlStr := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/comments/"
+func (p *PullRequestsService) GetComments(owner, repo, id string, po *CreatePullRequestsOpts) (interface{}, error) {
+	urlStr := GetApiBaseURL() + "/repositories/" + owner + "/" + repo + "/pullrequests/" + id + "/comments/"
 	return p.client.execute("GET", urlStr, "", "")
 }
 
-func (p *PullRequestsService) GetComment(po *PullRequestsOpts) (interface{}, error) {
-	urlStr := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/comments/" + po.CommentID
+func (p *PullRequestsService) GetComment(owner, repo, prId, commentId string, po *CreatePullRequestsOpts) (interface{}, error) {
+	urlStr := GetApiBaseURL() + "/repositories/" + owner + "/" + repo + "/pullrequests/" + prId + "/comments/" + commentId
 	return p.client.execute("GET", urlStr, "", "")
 }
 
-func (p *PullRequestsService) buildPullRequestBody(po *PullRequestsOpts) string {
+func (p *PullRequestsService) buildPullRequestBody(po *CreatePullRequestsOpts) string {
+	// TODO: comment this out for now
+	//body := map[string]interface{}{}
+	//body["source"] = map[string]interface{}{}
+	//body["destination"] = map[string]interface{}{}
+	//body["reviewers"] = []map[string]string{}
+	//body["title"] = ""
+	//body["description"] = ""
+	//body["message"] = ""
+	//body["close_source_branch"] = false
+	//
+	//if n := len(po.Reviewers); n > 0 {
+	//	body["reviewers"] = make([]map[string]string, n)
+	//	for i, user := range po.Reviewers {
+	//		body["reviewers"].([]map[string]string)[i] = map[string]string{"username": user}
+	//	}
+	//}
+	//
+	//if po.SourceBranch != "" {
+	//	body["source"].(map[string]interface{})["branch"] = map[string]string{"name": po.SourceBranch}
+	//}
+	//
+	//if po.SourceRepository != "" {
+	//	body["source"].(map[string]interface{})["repository"] = map[string]interface{}{"full_name": po.SourceRepository}
+	//}
+	//
+	//if po.DestinationBranch != "" {
+	//	body["destination"].(map[string]interface{})["branch"] = map[string]interface{}{"name": po.DestinationBranch}
+	//}
+	//
+	//if po.DestinationCommit != "" {
+	//	body["destination"].(map[string]interface{})["commit"] = map[string]interface{}{"hash": po.DestinationCommit}
+	//}
+	//
+	//if po.Title != "" {
+	//	body["title"] = po.Title
+	//}
+	//
+	//if po.Description != "" {
+	//	body["description"] = po.Description
+	//}
+	//
+	//if po.Message != "" {
+	//	body["message"] = po.Message
+	//}
+	//
+	//if po.CloseSourceBranch == true || po.CloseSourceBranch == false {
+	//	body["close_source_branch"] = po.CloseSourceBranch
+	//}
+	//
+	//data, err := json.Marshal(body)
+	//if err != nil {
+	//	fmt.Println(err)
+	//	os.Exit(9)
+	//}
 
-	body := map[string]interface{}{}
-	body["source"] = map[string]interface{}{}
-	body["destination"] = map[string]interface{}{}
-	body["reviewers"] = []map[string]string{}
-	body["title"] = ""
-	body["description"] = ""
-	body["message"] = ""
-	body["close_source_branch"] = false
-
-	if n := len(po.Reviewers); n > 0 {
-		body["reviewers"] = make([]map[string]string, n)
-		for i, user := range po.Reviewers {
-			body["reviewers"].([]map[string]string)[i] = map[string]string{"username": user}
-		}
-	}
-
-	if po.SourceBranch != "" {
-		body["source"].(map[string]interface{})["branch"] = map[string]string{"name": po.SourceBranch}
-	}
-
-	if po.SourceRepository != "" {
-		body["source"].(map[string]interface{})["repository"] = map[string]interface{}{"full_name": po.SourceRepository}
-	}
-
-	if po.DestinationBranch != "" {
-		body["destination"].(map[string]interface{})["branch"] = map[string]interface{}{"name": po.DestinationBranch}
-	}
-
-	if po.DestinationCommit != "" {
-		body["destination"].(map[string]interface{})["commit"] = map[string]interface{}{"hash": po.DestinationCommit}
-	}
-
-	if po.Title != "" {
-		body["title"] = po.Title
-	}
-
-	if po.Description != "" {
-		body["description"] = po.Description
-	}
-
-	if po.Message != "" {
-		body["message"] = po.Message
-	}
-
-	if po.CloseSourceBranch == true || po.CloseSourceBranch == false {
-		body["close_source_branch"] = po.CloseSourceBranch
-	}
-
-	data, err := json.Marshal(body)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(9)
-	}
-
-	return string(data)
+	return string("")
 }
