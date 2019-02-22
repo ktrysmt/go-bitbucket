@@ -4,12 +4,12 @@ package bitbucket
 
 type PullRequestActivities struct{}
 
-func (p *PullRequestsService) Activities(owner, repo string, po *CreatePullRequestsOpts) (interface{}, error) {
+func (p *PullRequestsService) Activities(owner, repo string, po *CreatePullRequestOpts) (interface{}, error) {
 	urlStr := GetApiBaseURL() + "/repositories/" + owner + "/" + repo + "/pullrequests/activity"
 	return p.client.execute("GET", urlStr, "", "")
 }
 
-func (p *PullRequestsService) Activity(owner, repo, id string, po *CreatePullRequestsOpts) (interface{}, error) {
+func (p *PullRequestsService) Activity(owner, repo, id string, po *CreatePullRequestOpts) (interface{}, error) {
 	urlStr := GetApiBaseURL() + "/repositories/" + owner + "/" + repo + "/pullrequests/" + id + "/activity"
 	return p.client.execute("GET", urlStr, "", "")
 }

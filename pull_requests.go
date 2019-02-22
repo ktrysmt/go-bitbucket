@@ -84,18 +84,26 @@ type PullRequest struct {
 	Reason       string `json:"reason,omitempty"`
 }
 
-type CreatePullRequestsOpts struct {
+type CreatePullRequestOpts struct {
 	//State             string   `json:"state"`
 	//CommentID         string   `json:"comment_id"`
 	Title       *string `json:"title,omitempty"`
 	Description *string `json:"description,omitempty"`
 	//CloseSourceBranch bool     `json:"close_source_branch"`
-	SourceBranch *string `json:"source_branch,omitempty"`
+	Source      *CreatePullRequestSourceOpts      `json:"source,omitempty"`
+	Destination *CreatePullRequestDestinationOpts `json:"destination,omitempty"`
 	//SourceRepository  string   `json:"source_repository"`
-	DestinationBranch *string `json:"destination_branch,omitempty"`
 	//DestinationCommit string   `json:"destination_repository"`
 	//Message           string   `json:"message"`
 	//Reviewers         []string `json:"reviewers"`
+}
+
+type CreatePullRequestSourceOpts struct {
+	Branch *string `json:"branch,omitempty"`
+}
+
+type CreatePullRequestDestinationOpts struct {
+	Branch *string `json:"branch,omitempty"`
 }
 
 func (p *PullRequestsService) List(owner, repo, opts string) (*PullRequests, *Response, error) {
@@ -116,7 +124,7 @@ func (p *PullRequestsService) Get(owner, repo, id string) (*PullRequest, *Respon
 	return result, response, err
 }
 
-func (p *PullRequestsService) Create(owner, repo string, po *CreatePullRequestsOpts) (*PullRequest, *Response, error) {
+func (p *PullRequestsService) Create(owner, repo string, po *CreatePullRequestOpts) (*PullRequest, *Response, error) {
 	urlStr := p.client.requestUrl("/repositories/%s/%s/pullrequests/", owner, repo)
 
 	result := new(PullRequest)
@@ -125,39 +133,39 @@ func (p *PullRequestsService) Create(owner, repo string, po *CreatePullRequestsO
 	return result, response, err
 }
 
-func (p *PullRequestsService) Patch(owner, repo, id string, po *CreatePullRequestsOpts) (interface{}, error) {
+func (p *PullRequestsService) Patch(owner, repo, id string, po *CreatePullRequestOpts) (interface{}, error) {
 	urlStr := GetApiBaseURL() + "/repositories/" + owner + "/" + repo + "/pullrequests/" + id + "/patch"
 	return p.client.execute("GET", urlStr, "", "")
 }
 
-func (p *PullRequestsService) Diff(owner, repo, id string, po *CreatePullRequestsOpts) (interface{}, error) {
+func (p *PullRequestsService) Diff(owner, repo, id string, po *CreatePullRequestOpts) (interface{}, error) {
 	urlStr := GetApiBaseURL() + "/repositories/" + owner + "/" + repo + "/pullrequests/" + id + "/diff"
 	return p.client.execute("GET", urlStr, "", "")
 }
 
-func (p *PullRequestsService) Merge(owner, repo, id string, po *CreatePullRequestsOpts) (interface{}, error) {
+func (p *PullRequestsService) Merge(owner, repo, id string, po *CreatePullRequestOpts) (interface{}, error) {
 	data := p.buildPullRequestBody(po)
 	urlStr := GetApiBaseURL() + "/repositories/" + owner + "/" + repo + "/pullrequests/" + id + "/merge"
 	return p.client.execute("POST", urlStr, data, "")
 }
 
-func (p *PullRequestsService) Decline(owner, repo, id string, po *CreatePullRequestsOpts) (interface{}, error) {
+func (p *PullRequestsService) Decline(owner, repo, id string, po *CreatePullRequestOpts) (interface{}, error) {
 	data := p.buildPullRequestBody(po)
 	urlStr := GetApiBaseURL() + "/repositories/" + owner + "/" + repo + "/pullrequests/" + id + "/decline"
 	return p.client.execute("POST", urlStr, data, "")
 }
 
-func (p *PullRequestsService) GetComments(owner, repo, id string, po *CreatePullRequestsOpts) (interface{}, error) {
+func (p *PullRequestsService) GetComments(owner, repo, id string, po *CreatePullRequestOpts) (interface{}, error) {
 	urlStr := GetApiBaseURL() + "/repositories/" + owner + "/" + repo + "/pullrequests/" + id + "/comments/"
 	return p.client.execute("GET", urlStr, "", "")
 }
 
-func (p *PullRequestsService) GetComment(owner, repo, prId, commentId string, po *CreatePullRequestsOpts) (interface{}, error) {
+func (p *PullRequestsService) GetComment(owner, repo, prId, commentId string, po *CreatePullRequestOpts) (interface{}, error) {
 	urlStr := GetApiBaseURL() + "/repositories/" + owner + "/" + repo + "/pullrequests/" + prId + "/comments/" + commentId
 	return p.client.execute("GET", urlStr, "", "")
 }
 
-func (p *PullRequestsService) buildPullRequestBody(po *CreatePullRequestsOpts) string {
+func (p *PullRequestsService) buildPullRequestBody(po *CreatePullRequestOpts) string {
 	// TODO: comment this out for now
 	//body := map[string]interface{}{}
 	//body["source"] = map[string]interface{}{}
