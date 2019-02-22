@@ -300,8 +300,6 @@ func (c *Client) executeNew(method string, urlStr string, v, body interface{}, o
 		}
 	}
 
-	fmt.Println(buf)
-
 	req, err := http.NewRequest(method, urlStr, buf)
 	if err != nil {
 		return nil, err

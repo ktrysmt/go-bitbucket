@@ -99,11 +99,15 @@ type CreatePullRequestOpts struct {
 }
 
 type CreatePullRequestSourceOpts struct {
-	Branch *string `json:"branch,omitempty"`
+	Branch *Branch `json:"branch,omitempty"`
 }
 
 type CreatePullRequestDestinationOpts struct {
-	Branch *string `json:"branch,omitempty"`
+	Branch *Branch `json:"branch,omitempty"`
+}
+
+type Branch struct {
+	Name *string `json:"name,omitempty"`
 }
 
 func (p *PullRequestsService) List(owner, repo, opts string) (*PullRequests, *Response, error) {
