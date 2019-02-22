@@ -59,7 +59,7 @@ func (i *IssuesService) List(owner, repoSlug string) (*Issues, *Response, error)
 	result := new(Issues)
 	urlStr := i.client.requestUrl("/repositories/%s/%s/issues", owner, repoSlug)
 
-	response, err := i.client.executeNew("GET", urlStr, result, "", "")
+	response, err := i.client.executeNew("GET", urlStr, result, nil, "")
 
 	return result, response, err
 }
@@ -67,7 +67,7 @@ func (i *IssuesService) List(owner, repoSlug string) (*Issues, *Response, error)
 func (i *IssuesService) Get(owner, repoSlug, issueId string) (*Issue, *Response, error) {
 	result := new(Issue)
 	urlStr := i.client.requestUrl("/repositories/%s/%s/issues/%s", owner, repoSlug, issueId)
-	response, err := i.client.executeNew("GET", urlStr, result, "", "")
+	response, err := i.client.executeNew("GET", urlStr, result, nil, "")
 
 	return result, response, err
 }
