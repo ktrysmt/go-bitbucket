@@ -19,7 +19,7 @@
 
 [[projects]]
   digest = "1:48717b1dc128fc991a7f222d217e8a8d730670559b7da19ae7d4710744ebe8ad"
-  name = "github.com/ktrysmt/go-bitbucket"
+  name = "github.com/davidji99/go-bitbucket"
   packages = ["."]
   pruneopts = "UT"
   revision = "1f1c5e77687102cc8f6baa9f79276178be6f0ea3"
@@ -102,7 +102,7 @@
   analyzer-version = 1
   input-imports = [
     "github.com/k0kubun/pp",
-    "github.com/ktrysmt/go-bitbucket",
+    "github.com/davidji99/go-bitbucket",
     "github.com/mitchellh/mapstructure",
     "golang.org/x/net/context",
     "golang.org/x/oauth2",
