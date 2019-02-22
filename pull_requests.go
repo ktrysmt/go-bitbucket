@@ -3,7 +3,6 @@ package bitbucket
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/mitchellh/mapstructure"
 	"os"
 )
 
@@ -29,35 +28,49 @@ type PullRequests struct {
 //
 // Bitbucket API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Busername%7D/%7Brepo_slug%7D/pullrequests
 type PullRequest struct {
+	Rendered struct {
+		Description struct {
+			Raw    string `json:"raw,omitempty"`
+			Markup string `json:"markup,omitempty"`
+			HTML   string `json:"html,omitempty"`
+			Type   string `json:"type,omitempty"`
+		} `json:"description,omitempty"`
+		Title struct {
+			Raw    string `json:"raw,omitempty"`
+			Markup string `json:"markup,omitempty"`
+			HTML   string `json:"html,omitempty"`
+			Type   string `json:"type,omitempty"`
+		} `json:"title,omitempty"`
+	} `json:"rendered,omitempty"`
 	Type        string `json:"type,omitempty"`
 	Description string `json:"description,omitempty"`
 	Links       struct {
 		Html struct {
 			Href string `json:"href,omitempty"`
-		}
-	}
+		} `json:"html,omitempty"`
+	} `json:"html,omitempty"`
 	Title             string `json:"title,omitempty"`
 	CloseSourceBranch bool   `json:"close_source_branch,omitempty"`
 	ID                int64  `json:"id,omitempty"`
 	Destination       struct {
 		Commit struct {
 			Hash string `json:"hash,omitempty"`
-		}
+		} `json:"commit,omitempty"`
 		Repository struct {
 			Name     string `json:"name,omitempty"`
 			FullName string `json:"full_name,omitempty"`
 			Uuid     string `json:"uuid,omitempty"`
-		}
+		} `json:"repository,omitempty"`
 		Branch struct {
 			Name string `json:"name,omitempty"`
-		}
-	}
+		} `json:"branch,omitempty"`
+	} `json:"destination,omitempty"`
 	Summary struct {
 		Raw    string `json:"raw,omitempty"`
 		Markup string `json:"markup,omitempty"`
 		Html   string `json:"html,omitempty"`
 		Type   string `json:"type,omitempty"`
-	}
+	} `json:"summary,omitempty"`
 	Source struct {
 		Commit struct {
 			Hash string `json:"hash,omitempty"`
@@ -66,11 +79,11 @@ type PullRequest struct {
 			Name     string `json:"name,omitempty"`
 			FullName string `json:"full_name,omitempty"`
 			Uuid     string `json:"uuid,omitempty"`
-		}
+		} `json:"repository,omitempty"`
 		Branch struct {
 			Name string `json:"name,omitempty"`
-		}
-	}
+		} `json:"destination,omitempty"`
+	} `json:"source,omitempty"`
 	CommentCount int    `json:"comment_count,omitempty"`
 	State        string `json:"state,omitempty"`
 	TaskCount    int    `json:"task_count,omitempty"`
@@ -94,93 +107,31 @@ type PullRequestsOpts struct {
 	Reviewers         []string `json:"reviewers"`
 }
 
-func (p *PullRequestsService) Get(owner, repo, id string) (*PullRequest, error) {
-	urlStr := GetApiBaseURL() + "/repositories/" + owner + "/" + repo + "/pullrequests/" + id
-
-	result := &PullRequest{}
-	response, err := p.client.execute("GET", urlStr, "", "")
-	if err != nil {
-		return result, err
-	}
-
-	// decode map and unmarshall it to a struct
-	decodeErr := mapstructure.Decode(response, &result)
-	if err != nil {
-		return result, decodeErr
-	}
-
-	return result, nil
-}
-
-func (p *PullRequestsService) Create(owner, repo string, po *PullRequestsOpts) (*PullRequest, error) {
-	data := p.buildPullRequestBody(po)
-	urlStr := p.client.requestUrl("/repositories/%s/%s/pullrequests/", owner, repo)
-
-	result := &PullRequest{}
-	response, err := p.client.execute("POST", urlStr, data, "")
-	if err != nil {
-		return result, err
-	}
-
-	// decode map and unmarshall it to a struct
-	decodeErr := mapstructure.Decode(response, &result)
-	if err != nil {
-		return result, decodeErr
-	}
-
-	return result, nil
-}
-
-func (p *PullRequestsService) Update(owner, repo, id string, po *PullRequestsOpts) (*PullRequest, error) {
-	data := p.buildPullRequestBody(po)
-	urlStr := GetApiBaseURL() + "/repositories/" + owner + "/" + repo + "/pullrequests/" + id
-
-	result := &PullRequest{}
-	response, err := p.client.execute("PUT", urlStr, data, "")
-	if err != nil {
-		return result, err
-	}
-
-	// decode map and unmarshall it to a struct
-	decodeErr := mapstructure.Decode(response, &result)
-	if err != nil {
-		return result, decodeErr
-	}
-
-	return result, nil
-}
-
-func (p *PullRequestsService) List(owner, repo, opts string) (*PullRequests, error) {
+func (p *PullRequestsService) List(owner, repo, opts string) (*PullRequest, *Response, error) {
 	urlStr := GetApiBaseURL() + "/repositories/" + owner + "/" + repo + "/pullrequests"
 
-	result := &PullRequests{}
-	response, err := p.client.execute("GET", urlStr, "", opts)
-	if err != nil {
-		return result, err
-	}
+	result := new(PullRequest)
+	response, err := p.client.executeNew("GET", urlStr, result, nil, opts)
 
-	// decode map and unmarshall it to a struct
-	decodeErr := mapstructure.Decode(response, &result)
-	if err != nil {
-		return result, decodeErr
-	}
-
-	return result, nil
+	return result, response, err
 }
 
-func (p *PullRequestsService) Activities(po *PullRequestsOpts) (interface{}, error) {
-	urlStr := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/activity"
-	return p.client.execute("GET", urlStr, "", "")
+func (p *PullRequestsService) Get(owner, repo, id string) (*PullRequest, *Response, error) {
+	urlStr := GetApiBaseURL() + "/repositories/" + owner + "/" + repo + "/pullrequests/" + id
+
+	result := new(PullRequest)
+	response, err := p.client.executeNew("GET", urlStr, result, nil, "")
+
+	return result, response, err
 }
 
-func (p *PullRequestsService) Activity(po *PullRequestsOpts) (interface{}, error) {
-	urlStr := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/activity"
-	return p.client.execute("GET", urlStr, "", "")
-}
+func (p *PullRequestsService) Create(owner, repo string, po *PullRequestsOpts) (*PullRequest, *Response, error) {
+	urlStr := p.client.requestUrl("/repositories/%s/%s/pullrequests/", owner, repo)
 
-func (p *PullRequestsService) Commits(po *PullRequestsOpts) (interface{}, error) {
-	urlStr := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/commits"
-	return p.client.execute("GET", urlStr, "", "")
+	result := new(PullRequest)
+	response, err := p.client.executeNew("POST", urlStr, result, po, "")
+
+	return result, response, err
 }
 
 func (p *PullRequestsService) Patch(po *PullRequestsOpts) (interface{}, error) {
