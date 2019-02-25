@@ -9,7 +9,7 @@ type PullRequestCommits struct {
 type PullRequestCommit struct {
 }
 
-func (p *PullRequestsService) Commits(po *PullRequestsOpts) (interface{}, error) {
-	urlStr := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/commits"
+func (p *PullRequestsService) Commits(owner, repo, id string, po *CreatePullRequestOpts) (interface{}, error) {
+	urlStr := GetApiBaseURL() + "/repositories/" + owner + "/" + repo + "/pullrequests/" + id + "/commits"
 	return p.client.execute("GET", urlStr, "", "")
 }
