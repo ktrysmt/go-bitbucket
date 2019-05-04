@@ -96,8 +96,8 @@ type teams interface {
 }
 
 type ListOptions struct {
-	Page uint64
-	PageLen uint64
+	Page uint64 `json:"page"`
+	PageLen uint64 `json:"pagelen"`
 }
 
 type RepositoriesOptions struct {
