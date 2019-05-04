@@ -95,7 +95,13 @@ type teams interface {
 	Projects(teamname string) (interface{}, error)
 }
 
+type ListOptions struct {
+	Page uint64
+	PageLen uint64
+}
+
 type RepositoriesOptions struct {
+	ListOptions *ListOptions `json:"list_options"`
 	Owner string `json:"owner"`
 	Role  string `json:"role"` // role=[owner|admin|contributor|member]
 }
