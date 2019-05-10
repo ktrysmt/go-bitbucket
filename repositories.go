@@ -1,7 +1,6 @@
 package bitbucket
 
 import (
-	"fmt"
 	"net/url"
 	"strconv"
 )
@@ -21,25 +20,25 @@ type Repositories struct {
 }
 
 func safelyConvertToURIParameters(ro *RepositoriesOptions) string {
-	params := ""
+	params := url.Values{}
 
 	if ro.Role != "" {
-		params += fmt.Sprintf("role=%s&", url.QueryEscape(ro.Role))
+		params.Set("role", ro.Role)
 	}
 
 	if ro.ListOptions != nil {
 		if ro.ListOptions.Page > 0 {
 			pageString := strconv.Itoa(int(ro.ListOptions.Page))
-			params += fmt.Sprintf("page=%s&", url.QueryEscape(pageString))
+			params.Set("page", pageString)
 		}
 
 		if ro.ListOptions.PageLen > 0 {
 			pageLenString := strconv.Itoa(int(ro.ListOptions.PageLen))
-			params += fmt.Sprintf("pagelen=%s&", url.QueryEscape(pageLenString))
+			params.Set("pagelen", pageLenString)
 		}
 	}
 
-	return params
+	return params.Encode()
 }
 
 func (r *Repositories) ListForAccount(ro *RepositoriesOptions) (interface{}, error) {
