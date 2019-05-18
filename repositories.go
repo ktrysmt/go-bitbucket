@@ -9,13 +9,14 @@ import (
 
 type Repositories struct {
 	c                  *Client
-	PullRequests       *PullRequests
+	Issues             *IssuesService
+	PullRequests       *PullRequestsService
 	Repository         *Repository
 	Commits            *Commits
 	Diff               *Diff
 	BranchRestrictions *BranchRestrictions
 	Webhooks           *Webhooks
-	Downloads		   *Downloads
+	Downloads          *Downloads
 	repositories
 }
 
@@ -47,8 +48,7 @@ func (r *Repositories) ListForAccount(ro *RepositoriesOptions) (interface{}, err
 	if params := safelyConvertToURIParameters(ro); params != "" {
 		urlStr += "?" + params
 	}
-
-	return r.c.execute("GET", urlStr, "")
+	return r.c.execute("GET", urlStr, "", "")
 }
 
 func (r *Repositories) ListForTeam(ro *RepositoriesOptions) (interface{}, error) {
@@ -57,11 +57,10 @@ func (r *Repositories) ListForTeam(ro *RepositoriesOptions) (interface{}, error)
 	if params := safelyConvertToURIParameters(ro); params != "" {
 		urlStr += "?" + params
 	}
-
-	return r.c.execute("GET", urlStr, "")
+	return r.c.execute("GET", urlStr, "", "")
 }
 
 func (r *Repositories) ListPublic() (interface{}, error) {
 	urlStr := r.c.requestUrl("/repositories/", "")
-	return r.c.execute("GET", urlStr, "")
+	return r.c.execute("GET", urlStr, "", "")
 }

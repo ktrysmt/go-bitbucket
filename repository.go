@@ -2,9 +2,9 @@ package bitbucket
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 
-	"github.com/k0kubun/pp"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -50,7 +50,7 @@ type PipelineKeyPair struct {
 func (r *Repository) Create(ro *RepositoryOptions) (*Repository, error) {
 	data := r.buildRepositoryBody(ro)
 	urlStr := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.RepoSlug)
-	response, err := r.c.execute("POST", urlStr, data)
+	response, err := r.c.execute("POST", urlStr, data, "")
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +60,7 @@ func (r *Repository) Create(ro *RepositoryOptions) (*Repository, error) {
 
 func (r *Repository) Get(ro *RepositoryOptions) (*Repository, error) {
 	urlStr := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.RepoSlug)
-	response, err := r.c.execute("GET", urlStr, "")
+	response, err := r.c.execute("GET", urlStr, "", "")
 	if err != nil {
 		return nil, err
 	}
@@ -70,23 +70,23 @@ func (r *Repository) Get(ro *RepositoryOptions) (*Repository, error) {
 
 func (r *Repository) Delete(ro *RepositoryOptions) (interface{}, error) {
 	urlStr := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.RepoSlug)
-	return r.c.execute("DELETE", urlStr, "")
+	return r.c.execute("DELETE", urlStr, "", "")
 }
 
 func (r *Repository) ListWatchers(ro *RepositoryOptions) (interface{}, error) {
 	urlStr := r.c.requestUrl("/repositories/%s/%s/watchers", ro.Owner, ro.RepoSlug)
-	return r.c.execute("GET", urlStr, "")
+	return r.c.execute("GET", urlStr, "", "")
 }
 
 func (r *Repository) ListForks(ro *RepositoryOptions) (interface{}, error) {
 	urlStr := r.c.requestUrl("/repositories/%s/%s/forks", ro.Owner, ro.RepoSlug)
-	return r.c.execute("GET", urlStr, "")
+	return r.c.execute("GET", urlStr, "", "")
 }
 
 func (r *Repository) UpdatePipelineConfig(rpo *RepositoryPipelineOptions) (*Pipeline, error) {
 	data := r.buildPipelineBody(rpo)
 	urlStr := r.c.requestUrl("/repositories/%s/%s/pipelines_config", rpo.Owner, rpo.RepoSlug)
-	response, err := r.c.execute("PUT", urlStr, data)
+	response, err := r.c.execute("PUT", urlStr, data, "")
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +98,7 @@ func (r *Repository) AddPipelineVariable(rpvo *RepositoryPipelineVariableOptions
 	data := r.buildPipelineVariableBody(rpvo)
 	urlStr := r.c.requestUrl("/repositories/%s/%s/pipelines_config/variables/", rpvo.Owner, rpvo.RepoSlug)
 
-	response, err := r.c.execute("POST", urlStr, data)
+	response, err := r.c.execute("POST", urlStr, data, "")
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +110,7 @@ func (r *Repository) AddPipelineKeyPair(rpkpo *RepositoryPipelineKeyPairOptions)
 	data := r.buildPipelineKeyPairBody(rpkpo)
 	urlStr := r.c.requestUrl("/repositories/%s/%s/pipelines_config/ssh/key_pair", rpkpo.Owner, rpkpo.RepoSlug)
 
-	response, err := r.c.execute("PUT", urlStr, data)
+	response, err := r.c.execute("PUT", urlStr, data, "")
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +122,7 @@ func (r *Repository) buildJsonBody(body map[string]interface{}) string {
 
 	data, err := json.Marshal(body)
 	if err != nil {
-		pp.Println(err)
+		fmt.Println(err)
 		os.Exit(9)
 	}
 
