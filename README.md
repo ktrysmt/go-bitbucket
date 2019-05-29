@@ -1,7 +1,7 @@
 # go-bitbucket
 
-<a class="repo-badge" href="https://godoc.org/github.com/ktrysmt/go-bitbucket"><img src="https://godoc.org/github.com/ktrysmt/go-bitbucket?status.svg" alt="go-bitbucket?status"></a>
-<a href="https://goreportcard.com/report/github.com/ktrysmt/go-bitbucket"><img class="badge" tag="github.com/ktrysmt/go-bitbucket" src="https://goreportcard.com/badge/github.com/ktrysmt/go-bitbucket"></a>
+<a class="repo-badge" href="https://godoc.org/github.com/davidji99/go-bitbucket"><img src="https://godoc.org/github.com/davidji99/go-bitbucket?status.svg" alt="go-bitbucket?status"></a>
+<a href="https://goreportcard.com/report/github.com/davidji99/go-bitbucket"><img class="badge" tag="github.com/davidji99/go-bitbucket" src="https://goreportcard.com/badge/github.com/davidji99/go-bitbucket"></a>
 
 > Bitbucket-API library for golang.
 
@@ -15,7 +15,7 @@ And the response type is json format defined Bitbucket API.
 ## Install
 
 ```sh
-go get github.com/ktrysmt/go-bitbucket
+go get github.com/davidji99/go-bitbucket
 ```
 
 ## Usage
@@ -26,7 +26,7 @@ package main
 import (
         "fmt"
 
-        "github.com/ktrysmt/go-bitbucket" 
+        "github.com/davidji99/go-bitbucket"
 )
 
 func main() {
@@ -71,7 +71,7 @@ It's using dep.
 
 ```sh
 go get github.com/golang/dep/...
-git clone https://github.com/ktrysmt/go-bitbucket 
+git clone https://github.com/davidji99/go-bitbucket 
 cd ./go-bitbucket
 dep ensure 
 ```

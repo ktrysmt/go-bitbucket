@@ -1,5 +1,15 @@
 package bitbucket
 
+import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"sort"
+	"strings"
+)
+
 var apiBaseURL = "https://api.bitbucket.org/2.0"
 
 func GetApiBaseURL() string {
@@ -23,17 +33,17 @@ type user interface {
 }
 
 type pullrequests interface {
-	Create(opt PullRequestsOptions) (interface{}, error)
-	Update(opt PullRequestsOptions) (interface{}, error)
-	List(opt PullRequestsOptions) (interface{}, error)
-	Get(opt PullRequestsOptions) (interface{}, error)
-	Activities(opt PullRequestsOptions) (interface{}, error)
-	Activity(opt PullRequestsOptions) (interface{}, error)
-	Commits(opt PullRequestsOptions) (interface{}, error)
-	Patch(opt PullRequestsOptions) (interface{}, error)
-	Diff(opt PullRequestsOptions) (interface{}, error)
-	Merge(opt PullRequestsOptions) (interface{}, error)
-	Decline(opt PullRequestsOptions) (interface{}, error)
+	Create(opt CreatePullRequestOpts) (interface{}, error)
+	Update(opt CreatePullRequestOpts) (interface{}, error)
+	List(opt CreatePullRequestOpts) (interface{}, error)
+	Get(opt CreatePullRequestOpts) (interface{}, error)
+	Activities(opt CreatePullRequestOpts) (interface{}, error)
+	Activity(opt CreatePullRequestOpts) (interface{}, error)
+	Commits(opt CreatePullRequestOpts) (interface{}, error)
+	Patch(opt CreatePullRequestOpts) (interface{}, error)
+	Diff(opt CreatePullRequestOpts) (interface{}, error)
+	Merge(opt CreatePullRequestOpts) (interface{}, error)
+	Decline(opt CreatePullRequestOpts) (interface{}, error)
 }
 
 type repository interface {
@@ -95,9 +105,15 @@ type teams interface {
 	Projects(teamname string) (interface{}, error)
 }
 
+type ListOptions struct {
+	Page    uint64 `json:"page"`
+	PageLen uint64 `json:"pagelen"`
+}
+
 type RepositoriesOptions struct {
-	Owner string `json:"owner"`
-	Role  string `json:"role"` // role=[owner|admin|contributor|member]
+	ListOptions *ListOptions `json:"list_options"`
+	Owner       string       `json:"owner"`
+	Role        string       `json:"role"` // role=[owner|admin|contributor|member]
 }
 
 type RepositoryOptions struct {
@@ -114,22 +130,6 @@ type RepositoryOptions struct {
 	Project     string `json:"project"`
 }
 
-type PullRequestsOptions struct {
-	ID                string   `json:"id"`
-	CommentID         string   `json:"comment_id"`
-	Owner             string   `json:"owner"`
-	RepoSlug          string   `json:"repo_slug"`
-	Title             string   `json:"title"`
-	Description       string   `json:"description"`
-	CloseSourceBranch bool     `json:"close_source_branch"`
-	SourceBranch      string   `json:"source_branch"`
-	SourceRepository  string   `json:"source_repository"`
-	DestinationBranch string   `json:"destination_branch"`
-	DestinationCommit string   `json:"destination_repository"`
-	Message           string   `json:"message"`
-	Reviewers         []string `json:"reviewers"`
-}
-
 type CommitsOptions struct {
 	Owner       string `json:"owner"`
 	RepoSlug    string `json:"repo_slug"`
@@ -141,12 +141,11 @@ type CommitsOptions struct {
 }
 
 type CommitStatusOptions struct {
-	Key 		string `json:"key"`
-	Url 		string `json:"url"`
-	State 		string `json:"state"`
-	Name 		string `json:"name"`
+	Key         string `json:"key"`
+	Url         string `json:"url"`
+	State       string `json:"state"`
+	Name        string `json:"name"`
 	Description string `json:"description"`
-
 }
 
 type BranchRestrictionsOptions struct {
@@ -201,8 +200,78 @@ type RepositoryPipelineKeyPairOptions struct {
 }
 
 type DownloadsOptions struct {
-	Owner       string `json:"owner"`
-	RepoSlug    string `json:"repo_slug"`
-	FilePath    string `json:"filepath"`
-	FileName    string `json:"filename"`
+	Owner    string `json:"owner"`
+	RepoSlug string `json:"repo_slug"`
+	FilePath string `json:"filepath"`
+	FileName string `json:"filename"`
+}
+
+type Response struct {
+	*http.Response
+}
+
+// newResponse creates a new Response for the provided http.Response.
+func newResponse(r *http.Response) *Response {
+	response := &Response{Response: r}
+	return response
+}
+
+type ErrorResponse struct {
+	Body     []byte
+	Response *http.Response
+	Message  string
+}
+
+func (e *ErrorResponse) Error() string {
+	path, _ := url.QueryUnescape(e.Response.Request.URL.Path)
+	u := fmt.Sprintf("%s://%s%s", e.Response.Request.URL.Scheme, e.Response.Request.URL.Host, path)
+	return fmt.Sprintf("%s %s: %d %s", e.Response.Request.Method, u, e.Response.StatusCode, e.Message)
+}
+
+// CheckResponse checks the API response for errors, and returns them if present.
+func CheckResponse(r *http.Response) error {
+	switch r.StatusCode {
+	case 200, 201, 202, 204, 304:
+		return nil
+	}
+
+	errorResponse := &ErrorResponse{Response: r}
+	data, err := ioutil.ReadAll(r.Body)
+	if err == nil && data != nil {
+		errorResponse.Body = data
+
+		var raw interface{}
+		if err := json.Unmarshal(data, &raw); err != nil {
+			errorResponse.Message = "failed to parse unknown error format"
+		} else {
+			errorResponse.Message = parseError(raw)
+		}
+	}
+
+	return errorResponse
+}
+
+func parseError(raw interface{}) string {
+	switch raw := raw.(type) {
+	case string:
+		return raw
+
+	case []interface{}:
+		var errs []string
+		for _, v := range raw {
+			errs = append(errs, parseError(v))
+		}
+		return fmt.Sprintf("[%s]", strings.Join(errs, ", "))
+
+	case map[string]interface{}:
+		var errs []string
+		for k, v := range raw {
+			errs = append(errs, fmt.Sprintf("{%s: %s}", k, parseError(v)))
+		}
+		sort.Strings(errs)
+		return strings.Join(errs, ", ")
+
+	default:
+		return fmt.Sprintf("failed to parse unexpected error type: %T", raw)
+	}
 }

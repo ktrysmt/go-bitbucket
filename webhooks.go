@@ -2,9 +2,8 @@ package bitbucket
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
-
-	"github.com/k0kubun/pp"
 )
 
 type Webhooks struct {
@@ -29,7 +28,7 @@ func (r *Webhooks) buildWebhooksBody(ro *WebhooksOptions) string {
 
 	data, err := json.Marshal(body)
 	if err != nil {
-		pp.Println(err)
+		fmt.Println(err)
 		os.Exit(9)
 	}
 
@@ -38,29 +37,29 @@ func (r *Webhooks) buildWebhooksBody(ro *WebhooksOptions) string {
 
 func (r *Webhooks) Gets(ro *WebhooksOptions) (interface{}, error) {
 	urlStr := r.c.requestUrl("/repositories/%s/%s/hooks/", ro.Owner, ro.RepoSlug)
-	return r.c.execute("GET", urlStr, "")
+	return r.c.execute("GET", urlStr, "", "")
 }
 
 func (r *Webhooks) Create(ro *WebhooksOptions) (interface{}, error) {
 	data := r.buildWebhooksBody(ro)
 	urlStr := r.c.requestUrl("/repositories/%s/%s/hooks", ro.Owner, ro.RepoSlug)
-	return r.c.execute("POST", urlStr, data)
+	return r.c.execute("POST", urlStr, data, "")
 }
 
 func (r *Webhooks) Get(ro *WebhooksOptions) (interface{}, error) {
 	urlStr := r.c.requestUrl("/repositories/%s/%s/hooks/%s", ro.Owner, ro.RepoSlug, ro.Uuid)
-	return r.c.execute("GET", urlStr, "")
+	return r.c.execute("GET", urlStr, "", "")
 }
 
 func (r *Webhooks) Update(ro *WebhooksOptions) (interface{}, error) {
 	data := r.buildWebhooksBody(ro)
 	urlStr := r.c.requestUrl("/repositories/%s/%s/hooks/%s", ro.Owner, ro.RepoSlug, ro.Uuid)
-	return r.c.execute("PUT", urlStr, data)
+	return r.c.execute("PUT", urlStr, data, "")
 }
 
 func (r *Webhooks) Delete(ro *WebhooksOptions) (interface{}, error) {
 	urlStr := r.c.requestUrl("/repositories/%s/%s/hooks/%s", ro.Owner, ro.RepoSlug, ro.Uuid)
-	return r.c.execute("DELETE", urlStr, "")
+	return r.c.execute("DELETE", urlStr, "", "")
 }
 
 //
