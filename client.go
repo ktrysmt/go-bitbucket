@@ -12,27 +12,19 @@ import (
 	"strings"
 
 	"bytes"
+	"io"
+	"mime/multipart"
+	"os"
+
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/bitbucket"
 	"golang.org/x/oauth2/clientcredentials"
-
-	"io"
-	"mime/multipart"
-	"os"
 )
 
 const DEFAULT_PAGE_LENGTH = 10
 
-const (
-	defaultBaseURL = "https://api.bitbucket.org/"
-	apiVersionPath = "2.0/"
-	userAgent      = "go-bitbucket"
-)
-
 type Client struct {
-	baseURL *url.URL
-
 	Auth         *auth
 	Users        users
 	User         user
@@ -119,11 +111,6 @@ func NewOAuthWithCode(i, s, c string) (*Client, string) {
 	return injectClient(a), tok.AccessToken
 }
 
-func NewOAuthToken(t oauth2.Token) *Client {
-	a := &auth{token: t}
-	return injectClient(a)
-}
-
 func NewOAuthbearerToken(t string) *Client {
 	a := &auth{bearerToken: t}
 	return injectClient(a)
@@ -134,41 +121,11 @@ func NewBasicAuth(u, p string) *Client {
 	return injectClient(a)
 }
 
-// BaseURL return a copy of the baseURL.
-func (c *Client) BaseURL() *url.URL {
-	u := *c.baseURL
-	return &u
-}
-
-// SetBaseURL sets the base URL for API requests to a custom endpoint. urlStr
-// should always be specified with a trailing slash.
-func (c *Client) SetBaseURL(urlStr string) error {
-	// Make sure the given URL end with a slash
-	if !strings.HasSuffix(urlStr, "/") {
-		urlStr += "/"
-	}
-
-	baseURL, err := url.Parse(urlStr)
-	if err != nil {
-		return err
-	}
-
-	if !strings.HasSuffix(baseURL.Path, apiVersionPath) {
-		baseURL.Path += apiVersionPath
-	}
-
-	// Update the base URL of the client.
-	c.baseURL = baseURL
-
-	return nil
-}
-
 func injectClient(a *auth) *Client {
 	c := &Client{Auth: a, Pagelen: DEFAULT_PAGE_LENGTH}
 	c.Repositories = &Repositories{
 		c:                  c,
-		Issues:             &IssuesService{client: c},
-		PullRequests:       &PullRequestsService{client: c},
+		PullRequests:       &PullRequests{c: c},
 		Repository:         &Repository{c: c},
 		Commits:            &Commits{c: c},
 		Diff:               &Diff{c: c},
@@ -180,16 +137,10 @@ func injectClient(a *auth) *Client {
 	c.User = &User{c: c}
 	c.Teams = &Teams{c: c}
 	c.HttpClient = new(http.Client)
-
-	if err := c.SetBaseURL(defaultBaseURL); err != nil {
-		// Should never happen since defaultBaseURL is our constant.
-		panic(err)
-	}
-
 	return c
 }
 
-func (c *Client) execute(method string, urlStr string, text string, opts string) (interface{}, error) {
+func (c *Client) execute(method string, urlStr string, text string) (interface{}, error) {
 	// Use pagination if changed from default value
 	const DEC_RADIX = 10
 	if strings.Contains(urlStr, "/repositories/") {
@@ -203,12 +154,6 @@ func (c *Client) execute(method string, urlStr string, text string, opts string)
 			urlObj.RawQuery = q.Encode()
 			urlStr = urlObj.String()
 		}
-	}
-
-	if opts != "" {
-		// encode the query string. then add it to the urlStr
-		encodedQuery := url.QueryEscape(opts)
-		urlStr += fmt.Sprintf("?q=%s", encodedQuery)
 	}
 
 	body := strings.NewReader(text)
@@ -237,7 +182,7 @@ func (c *Client) execute(method string, urlStr string, text string, opts string)
 			if nextUrl != "" {
 				valuesSlice := valuesIn.([]interface{})
 				if valuesSlice != nil {
-					nextResult, err := c.execute(method, nextUrl, text, opts)
+					nextResult, err := c.execute(method, nextUrl, text)
 					if err != nil {
 						return nil, err
 					}
@@ -265,57 +210,6 @@ func (c *Client) execute(method string, urlStr string, text string, opts string)
 	}
 
 	return result, nil
-}
-
-func (c *Client) executeNew(method string, urlStr string, v, body interface{}, opts string) (*Response, error) {
-	// Use pagination if changed from default value
-	const DEC_RADIX = 10
-	if strings.Contains(urlStr, "/repositories/") {
-		if c.Pagelen != DEFAULT_PAGE_LENGTH {
-			urlObj, err := url.Parse(urlStr)
-			if err != nil {
-				return nil, err
-			}
-			q := urlObj.Query()
-			q.Set("pagelen", strconv.FormatUint(c.Pagelen, DEC_RADIX))
-			urlObj.RawQuery = q.Encode()
-			urlStr = urlObj.String()
-		}
-	}
-
-	if opts != "" {
-		// encode the query string. then add it to the urlStr
-		encodedQuery := url.QueryEscape(opts)
-		urlStr += fmt.Sprintf("?q=%s", encodedQuery)
-	}
-
-	var buf io.ReadWriter
-	if body != nil {
-		buf = new(bytes.Buffer)
-		enc := json.NewEncoder(buf)
-		enc.SetEscapeHTML(false)
-		err := enc.Encode(body)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	req, err := http.NewRequest(method, urlStr, buf)
-	if err != nil {
-		return nil, err
-	}
-
-	if body != nil {
-		req.Header.Set("Content-Type", "application/json")
-	}
-
-	c.authenticateRequest(req)
-	response, err := c.doRequestNew(req, v, false)
-	if err != nil {
-		return nil, err
-	}
-
-	return response, nil
 }
 
 func (c *Client) executeFileUpload(method string, urlStr string, filePath string, fileName string) (interface{}, error) {
@@ -369,6 +263,7 @@ func (c *Client) authenticateRequest(req *http.Request) {
 }
 
 func (c *Client) doRequest(req *http.Request, emptyResponse bool) (interface{}, error) {
+
 	resp, err := c.HttpClient.Do(req)
 	if err != nil {
 		return nil, err
@@ -401,34 +296,6 @@ func (c *Client) doRequest(req *http.Request, emptyResponse bool) (interface{}, 
 	}
 
 	return result, nil
-}
-
-func (c *Client) doRequestNew(req *http.Request, v interface{}, emptyResponse bool) (*Response, error) {
-	resp, err := c.HttpClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-
-	if (resp.StatusCode != http.StatusOK) && (resp.StatusCode != http.StatusCreated) {
-		return nil, fmt.Errorf(resp.Status)
-	}
-
-	if emptyResponse {
-		return nil, nil
-	}
-
-	if resp.Body == nil {
-		return nil, fmt.Errorf("response body is nil")
-	}
-
-	response := newResponse(resp)
-
-	err = json.NewDecoder(resp.Body).Decode(v)
-
-	return response, err
 }
 
 func (c *Client) requestUrl(template string, args ...interface{}) string {

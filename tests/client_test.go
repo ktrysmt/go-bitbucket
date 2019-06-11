@@ -1,7 +1,7 @@
 package tests
 
 import (
-	"github.com/davidji99/go-bitbucket"
+	"github.com/ktrysmt/go-bitbucket"
 	"reflect"
 	"testing"
 )
