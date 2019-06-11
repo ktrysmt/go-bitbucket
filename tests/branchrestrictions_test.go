@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/davidji99/go-bitbucket"
+	"github.com/ktrysmt/go-bitbucket"
 )
 
 var (
