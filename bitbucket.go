@@ -128,6 +128,7 @@ type PullRequestsOptions struct {
 	DestinationCommit string   `json:"destination_repository"`
 	Message           string   `json:"message"`
 	Reviewers         []string `json:"reviewers"`
+	States            []string `json:"states"`
 }
 
 type CommitsOptions struct {
@@ -141,12 +142,11 @@ type CommitsOptions struct {
 }
 
 type CommitStatusOptions struct {
-	Key 		string `json:"key"`
-	Url 		string `json:"url"`
-	State 		string `json:"state"`
-	Name 		string `json:"name"`
+	Key         string `json:"key"`
+	Url         string `json:"url"`
+	State       string `json:"state"`
+	Name        string `json:"name"`
 	Description string `json:"description"`
-
 }
 
 type BranchRestrictionsOptions struct {
@@ -201,8 +201,8 @@ type RepositoryPipelineKeyPairOptions struct {
 }
 
 type DownloadsOptions struct {
-	Owner       string `json:"owner"`
-	RepoSlug    string `json:"repo_slug"`
-	FilePath    string `json:"filepath"`
-	FileName    string `json:"filename"`
+	Owner    string `json:"owner"`
+	RepoSlug string `json:"repo_slug"`
+	FilePath string `json:"filepath"`
+	FileName string `json:"filename"`
 }
