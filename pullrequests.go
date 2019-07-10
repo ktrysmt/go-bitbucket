@@ -26,17 +26,15 @@ func (p *PullRequests) Update(po *PullRequestsOptions) (interface{}, error) {
 
 func (p *PullRequests) Gets(po *PullRequestsOptions) (interface{}, error) {
 	urlStr := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/"
-	fmt.Printf(">>>> urlStr: %s\n", urlStr)
 	parsed, err := url.Parse(urlStr)
 	if err != nil {
 		return nil, err
 	}
-	q := u.Query()
+	query := parsed.Query()
 	for _, state := range po.States {
-		q.Set("state", state)
+		query.Set("state", state)
 	}
-	parsed.RawQuery = q.Encode()
-	fmt.Printf(">>>> parsed: %s\n", parsed.String())
+	parsed.RawQuery = query.Encode()
 	return p.c.execute("GET", parsed.String(), "")
 }
 
