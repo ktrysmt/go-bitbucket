@@ -130,6 +130,7 @@ type PullRequestsOptions struct {
 	Reviewers         []string `json:"reviewers"`
 	States            []string `json:"states"`
 	Query             string   `json:"query"`
+	Sort              string   `json:"sort"`
 }
 
 type CommitsOptions struct {

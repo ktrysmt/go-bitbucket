@@ -51,6 +51,17 @@ func (p *PullRequests) Gets(po *PullRequestsOptions) (interface{}, error) {
 		urlStr = parsed.String()
 	}
 
+	if po.Sort != "" {
+		parsed, err := url.Parse(urlStr)
+		if err != nil {
+			return nil, err
+		}
+		query := parsed.Query()
+		query.Set("sort", po.Sort)
+		parsed.RawQuery = query.Encode()
+		urlStr = parsed.String()
+	}
+
 	return p.c.execute("GET", urlStr, "")
 }
 
