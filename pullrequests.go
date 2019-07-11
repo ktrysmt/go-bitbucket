@@ -27,20 +27,26 @@ func (p *PullRequests) Update(po *PullRequestsOptions) (interface{}, error) {
 func (p *PullRequests) Gets(po *PullRequestsOptions) (interface{}, error) {
 	urlStr := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/"
 
+	parsed, err := url.Parse(urlStr)
+	if err != nil {
+		return nil, err
+	}
+
 	if po.States != nil && len(po.States) != 0 {
-		parsed, err := url.Parse(urlStr)
-		if err != nil {
-			return nil, err
-		}
 		query := parsed.Query()
 		for _, state := range po.States {
 			query.Set("state", state)
 		}
 		parsed.RawQuery = query.Encode()
-		urlStr = parsed.String()
 	}
 
-	return p.c.execute("GET", urlStr, "")
+	if po.Query != "" {
+		query := parsed.Query()
+		query.Set("q", po.Query)
+		parsed.RawQuery = query.Encode()
+	}
+
+	return p.c.execute("GET", parsed.String(), "")
 }
 
 func (p *PullRequests) Get(po *PullRequestsOptions) (interface{}, error) {

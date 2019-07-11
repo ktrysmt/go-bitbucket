@@ -129,6 +129,7 @@ type PullRequestsOptions struct {
 	Message           string   `json:"message"`
 	Reviewers         []string `json:"reviewers"`
 	States            []string `json:"states"`
+	Query             string   `json:"query"`
 }
 
 type CommitsOptions struct {
