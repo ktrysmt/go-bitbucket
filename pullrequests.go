@@ -2,6 +2,7 @@ package bitbucket
 
 import (
 	"encoding/json"
+	"net/url"
 	"os"
 
 	"github.com/k0kubun/pp"
@@ -25,6 +26,42 @@ func (p *PullRequests) Update(po *PullRequestsOptions) (interface{}, error) {
 
 func (p *PullRequests) Gets(po *PullRequestsOptions) (interface{}, error) {
 	urlStr := GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/"
+
+	if po.States != nil && len(po.States) != 0 {
+		parsed, err := url.Parse(urlStr)
+		if err != nil {
+			return nil, err
+		}
+		query := parsed.Query()
+		for _, state := range po.States {
+			query.Set("state", state)
+		}
+		parsed.RawQuery = query.Encode()
+		urlStr = parsed.String()
+	}
+
+	if po.Query != "" {
+		parsed, err := url.Parse(urlStr)
+		if err != nil {
+			return nil, err
+		}
+		query := parsed.Query()
+		query.Set("q", po.Query)
+		parsed.RawQuery = query.Encode()
+		urlStr = parsed.String()
+	}
+
+	if po.Sort != "" {
+		parsed, err := url.Parse(urlStr)
+		if err != nil {
+			return nil, err
+		}
+		query := parsed.Query()
+		query.Set("sort", po.Sort)
+		parsed.RawQuery = query.Encode()
+		urlStr = parsed.String()
+	}
+
 	return p.c.execute("GET", urlStr, "")
 }
 
