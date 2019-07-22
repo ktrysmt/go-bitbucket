@@ -45,6 +45,8 @@ type repository interface {
 	UpdatePipelineConfig(opt RepositoryPipelineOptions) (*Pipeline, error)
 	AddPipelineVariable(opt RepositoryPipelineVariableOptions) (*PipelineVariable, error)
 	AddPipelineKeyPair(opt RepositoryPipelineKeyPairOptions) (*PipelineKeyPair, error)
+	ListFiles(opt RepositoryFilesOptions) (*[]RepositoryFile, error)
+	GetFileBlob(opt RepositoryBlobOptions) (*RepositoryBlob, error)
 }
 
 type repositories interface {
@@ -112,6 +114,19 @@ type RepositoryOptions struct {
 	HasIssues   string `json:"has_issues"`
 	HasWiki     string `json:"has_wiki"`
 	Project     string `json:"project"`
+}
+
+type RepositoryFilesOptions struct {
+	Owner    string `json:"owner"`
+	RepoSlug string `json:"repo_slug"`
+	Ref      string `json:"ref"`
+}
+
+type RepositoryBlobOptions struct {
+	Owner    string `json:"owner"`
+	RepoSlug string `json:"repo_slug"`
+	Ref      string `json:"ref"`
+	Path     string `json:"path"`
 }
 
 type PullRequestsOptions struct {
