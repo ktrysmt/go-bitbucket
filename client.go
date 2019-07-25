@@ -140,6 +140,21 @@ func injectClient(a *auth) *Client {
 	return c
 }
 
+func (c *Client) executeRaw(method string, urlStr string, text string) ([]byte, error) {
+	body := strings.NewReader(text)
+
+	req, err := http.NewRequest(method, urlStr, body)
+	if err != nil {
+		return nil, err
+	}
+	if text != "" {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
+	c.authenticateRequest(req)
+	return c.doRawRequest(req, false)
+}
+
 func (c *Client) execute(method string, urlStr string, text string) (interface{}, error) {
 	// Use pagination if changed from default value
 	const DEC_RADIX = 10
@@ -263,7 +278,22 @@ func (c *Client) authenticateRequest(req *http.Request) {
 }
 
 func (c *Client) doRequest(req *http.Request, emptyResponse bool) (interface{}, error) {
+	resBodyBytes, err := c.doRawRequest(req, emptyResponse)
+	if err != nil {
+		return nil, err
+	}
 
+	var result interface{}
+	err = json.Unmarshal(resBodyBytes, &result)
+	if err != nil {
+		log.Println("Could not unmarshal JSON payload, returning raw response")
+		return resBodyBytes, err
+	}
+
+	return result, nil
+}
+
+func (c *Client) doRawRequest(req *http.Request, emptyResponse bool) ([]byte, error) {
 	resp, err := c.HttpClient.Do(req)
 	if err != nil {
 		return nil, err
@@ -284,18 +314,7 @@ func (c *Client) doRequest(req *http.Request, emptyResponse bool) (interface{}, 
 		return nil, fmt.Errorf("response body is nil")
 	}
 
-	resBodyBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	var result interface{}
-	err = json.Unmarshal(resBodyBytes, &result)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
+	return ioutil.ReadAll(resp.Body)
 }
 
 func (c *Client) requestUrl(template string, args ...interface{}) string {

@@ -3,6 +3,7 @@ package bitbucket
 import (
 	"encoding/json"
 	"os"
+	"path"
 
 	"github.com/k0kubun/pp"
 	"github.com/mitchellh/mapstructure"
@@ -24,6 +25,20 @@ type Repository struct {
 	Type        string
 	Owner       map[string]interface{}
 	Links       map[string]interface{}
+}
+
+type RepositoryFile struct {
+	Mimetype   string
+	Links      map[string]interface{}
+	Path       string
+	Commit     map[string]interface{}
+	Attributes []string
+	Type       string
+	Size       int
+}
+
+type RepositoryBlob struct {
+	Content []byte
 }
 
 type Pipeline struct {
@@ -66,6 +81,30 @@ func (r *Repository) Get(ro *RepositoryOptions) (*Repository, error) {
 	}
 
 	return decodeRepository(response)
+}
+
+func (r *Repository) ListFiles(ro *RepositoryFilesOptions) ([]RepositoryFile, error) {
+	filePath := path.Join("/repositories", ro.Owner, ro.RepoSlug, "src")
+	urlStr := r.c.requestUrl(filePath)
+	response, err := r.c.execute("GET", urlStr, "")
+	if err != nil {
+		return nil, err
+	}
+
+	return decodeRepositoryFiles(response)
+}
+
+func (r *Repository) GetFileBlob(ro *RepositoryBlobOptions) (*RepositoryBlob, error) {
+	filePath := path.Join("/repositories", ro.Owner, ro.RepoSlug, "src", ro.Ref, ro.Path)
+	urlStr := r.c.requestUrl(filePath)
+	response, err := r.c.executeRaw("GET", urlStr, "")
+	if err != nil {
+		return nil, err
+	}
+
+	blob := RepositoryBlob{Content: response}
+
+	return &blob, nil
 }
 
 func (r *Repository) Delete(ro *RepositoryOptions) (interface{}, error) {
@@ -219,6 +258,22 @@ func decodeRepository(repoResponse interface{}) (*Repository, error) {
 	return repository, nil
 }
 
+func decodeRepositoryFiles(repoResponse interface{}) ([]RepositoryFile, error) {
+	repoFileMap := repoResponse.(map[string]interface{})
+
+	if repoFileMap["type"] == "error" {
+		return nil, DecodeError(repoFileMap)
+	}
+
+	var repositoryFiles = new([]RepositoryFile)
+	err := mapstructure.Decode(repoFileMap["values"], repositoryFiles)
+	if err != nil {
+		return nil, err
+	}
+
+	return *repositoryFiles, nil
+}
+
 func decodePipelineRepository(repoResponse interface{}) (*Pipeline, error) {
 	repoMap := repoResponse.(map[string]interface{})
 
@@ -265,4 +320,12 @@ func decodePipelineKeyPairRepository(repoResponse interface{}) (*PipelineKeyPair
 	}
 
 	return pipelineKeyPair, nil
+}
+
+func (rf RepositoryFile) String() string {
+	return rf.Path
+}
+
+func (rb RepositoryBlob) String() string {
+	return string(rb.Content)
 }
