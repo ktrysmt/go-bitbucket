@@ -48,7 +48,7 @@ type RepositoryBranches struct {
 	Pagelen  int
 	Size     int
 	Next     string
-	Branches *[]RepositoryBranch
+	Branches []RepositoryBranch
 }
 
 type RepositoryBranch struct {
@@ -360,7 +360,7 @@ func decodeRepositoryBranches(branchResponse interface{}) (*RepositoryBranches, 
 		Pagelen:  int(pagelen),
 		Size:     int(size),
 		Next:     next,
-		Branches: &branches,
+		Branches: branches,
 	}
 	return &repositoryBranches, nil
 }
