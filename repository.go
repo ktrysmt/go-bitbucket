@@ -142,6 +142,10 @@ func (r *Repository) ListBranches(rbo *RepositoryBranchOptions) (*RepositoryBran
 		params.Add("page", strconv.Itoa(rbo.PageNum))
 	}
 
+	if rbo.Pagelen > 0 {
+		params.Add("pagelen", strconv.Itoa(rbo.Pagelen))
+	}
+
 	urlStr := r.c.requestUrl("/repositories/%s/%s/refs/branches?%s", rbo.Owner, rbo.RepoSlug, params.Encode())
 	response, err := r.c.executeRaw("GET", urlStr, "")
 	if err != nil {

@@ -136,6 +136,7 @@ type RepositoryBranchOptions struct {
 	Query    string `json:"q"`
 	Sort     string `json:"sort"`
 	PageNum  int    `json:"page"`
+	Pagelen  int    `json:"pagelen"`
 }
 
 type PullRequestsOptions struct {
