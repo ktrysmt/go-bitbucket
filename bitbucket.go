@@ -47,6 +47,7 @@ type repository interface {
 	AddPipelineKeyPair(opt RepositoryPipelineKeyPairOptions) (*PipelineKeyPair, error)
 	ListFiles(opt RepositoryFilesOptions) (*[]RepositoryFile, error)
 	GetFileBlob(opt RepositoryBlobOptions) (*RepositoryBlob, error)
+	ListBranches(opt RepositoryBranchOptions) (*RepositoryBranches, error)
 }
 
 type repositories interface {
@@ -127,6 +128,15 @@ type RepositoryBlobOptions struct {
 	RepoSlug string `json:"repo_slug"`
 	Ref      string `json:"ref"`
 	Path     string `json:"path"`
+}
+
+type RepositoryBranchOptions struct {
+	Owner    string `json:"owner"`
+	RepoSlug string `json:"repo_slug"`
+	Query    string `json:"q"`
+	Sort     string `json:"sort"`
+	PageNum  int    `json:"page"`
+	Pagelen  int    `json:"pagelen"`
 }
 
 type PullRequestsOptions struct {

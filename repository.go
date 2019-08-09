@@ -2,8 +2,10 @@ package bitbucket
 
 import (
 	"encoding/json"
+	"net/url"
 	"os"
 	"path"
+	"strconv"
 
 	"github.com/k0kubun/pp"
 	"github.com/mitchellh/mapstructure"
@@ -39,6 +41,24 @@ type RepositoryFile struct {
 
 type RepositoryBlob struct {
 	Content []byte
+}
+
+type RepositoryBranches struct {
+	Page     int
+	Pagelen  int
+	Size     int
+	Next     string
+	Branches []RepositoryBranch
+}
+
+type RepositoryBranch struct {
+	Type                   string
+	Name                   string
+	Default_Merge_Strategy string
+	Merge_Strategies       []string
+	Links                  map[string]interface{}
+	Target                 map[string]interface{}
+	Heads                  []map[string]interface{}
 }
 
 type Pipeline struct {
@@ -105,6 +125,34 @@ func (r *Repository) GetFileBlob(ro *RepositoryBlobOptions) (*RepositoryBlob, er
 	blob := RepositoryBlob{Content: response}
 
 	return &blob, nil
+}
+
+func (r *Repository) ListBranches(rbo *RepositoryBranchOptions) (*RepositoryBranches, error) {
+
+	params := url.Values{}
+	if rbo.Query != "" {
+		params.Add("q", rbo.Query)
+	}
+
+	if rbo.Sort != "" {
+		params.Add("sort", rbo.Sort)
+	}
+
+	if rbo.PageNum > 0 {
+		params.Add("page", strconv.Itoa(rbo.PageNum))
+	}
+
+	if rbo.Pagelen > 0 {
+		params.Add("pagelen", strconv.Itoa(rbo.Pagelen))
+	}
+
+	urlStr := r.c.requestUrl("/repositories/%s/%s/refs/branches?%s", rbo.Owner, rbo.RepoSlug, params.Encode())
+	response, err := r.c.executeRaw("GET", urlStr, "")
+	if err != nil {
+		return nil, err
+	}
+
+	return decodeRepositoryBranches(response)
 }
 
 func (r *Repository) Delete(ro *RepositoryOptions) (interface{}, error) {
@@ -272,6 +320,53 @@ func decodeRepositoryFiles(repoResponse interface{}) ([]RepositoryFile, error) {
 	}
 
 	return *repositoryFiles, nil
+}
+
+func decodeRepositoryBranches(branchResponse interface{}) (*RepositoryBranches, error) {
+
+	var branchResponseMap map[string]interface{}
+	err := json.Unmarshal(branchResponse.([]byte), &branchResponseMap)
+	if err != nil {
+		return nil, err
+	}
+
+	branchArray := branchResponseMap["values"].([]interface{})
+	var branches []RepositoryBranch
+	for _, branchEntry := range branchArray {
+		var branch RepositoryBranch
+		err = mapstructure.Decode(branchEntry, &branch)
+		if err == nil {
+			branches = append(branches, branch)
+		}
+	}
+
+	page, ok := branchResponseMap["page"].(float64)
+	if !ok {
+		page = 0
+	}
+
+	pagelen, ok := branchResponseMap["pagelen"].(float64)
+	if !ok {
+		pagelen = 0
+	}
+	size, ok := branchResponseMap["size"].(float64)
+	if !ok {
+		size = 0
+	}
+
+	next, ok := branchResponseMap["next"].(string)
+	if !ok {
+		next = ""
+	}
+
+	repositoryBranches := RepositoryBranches{
+		Page:     int(page),
+		Pagelen:  int(pagelen),
+		Size:     int(size),
+		Next:     next,
+		Branches: branches,
+	}
+	return &repositoryBranches, nil
 }
 
 func decodePipelineRepository(repoResponse interface{}) (*Pipeline, error) {
