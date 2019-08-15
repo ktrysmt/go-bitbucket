@@ -1,6 +1,10 @@
 package bitbucket
 
-import "github.com/mitchellh/mapstructure"
+import (
+	"encoding/json"
+
+	"github.com/mitchellh/mapstructure"
+)
 
 //"github.com/k0kubun/pp"
 
@@ -17,8 +21,10 @@ type Repositories struct {
 }
 
 type RepositoriesRes struct {
-	*PageRes
-	Values []*Repositories `json:"values"`
+	Page    int32
+	Pagelen int32
+	Size    int32
+	Items   []Repository
 }
 
 func (r *Repositories) ListForAccount(ro *RepositoriesOptions) (*RepositoriesRes, error) {
@@ -38,7 +44,7 @@ func (r *Repositories) ListForTeam(ro *RepositoriesOptions) (*RepositoriesRes, e
 	if ro.Role != "" {
 		urlStr += "?role=" + ro.Role
 	}
-	repos, err := r.c.execute("GET", urlStr, "")
+	repos, err := r.c.executeRaw("GET", urlStr, "")
 	if err != nil {
 		return nil, err
 	}
@@ -55,17 +61,41 @@ func (r *Repositories) ListPublic() (interface{}, error) {
 }
 
 func decodeRepositorys(reposResponse interface{}) (*RepositoriesRes, error) {
-	repoMap := reposResponse.(map[string]interface{})
-
-	if repoMap["type"] == "error" {
-		return nil, DecodeError(repoMap)
-	}
-
-	var repositorysRes = new(RepositoriesRes)
-	err := mapstructure.Decode(repoMap, repositorysRes)
+	var reposResponseMap map[string]interface{}
+	err := json.Unmarshal(reposResponse.([]byte), &reposResponseMap)
 	if err != nil {
 		return nil, err
 	}
 
-	return repositorysRes, nil
+	repoArray := reposResponseMap["values"].([]interface{})
+	var repos []Repository
+	for _, repoEntry := range repoArray {
+		var repo Repository
+		err = mapstructure.Decode(repoEntry, &repo)
+		if err == nil {
+			repos = append(repos, repo)
+		}
+	}
+
+	page, ok := reposResponseMap["page"].(float64)
+	if !ok {
+		page = 0
+	}
+
+	pagelen, ok := reposResponseMap["pagelen"].(float64)
+	if !ok {
+		pagelen = 0
+	}
+	size, ok := reposResponseMap["size"].(float64)
+	if !ok {
+		size = 0
+	}
+
+	repositories := RepositoriesRes{
+		Page:    int32(page),
+		Pagelen: int32(pagelen),
+		Size:    int32(size),
+		Items:   repos,
+	}
+	return &repositories, nil
 }
