@@ -233,3 +233,9 @@ type DownloadsOptions struct {
 	FilePath string `json:"filepath"`
 	FileName string `json:"filename"`
 }
+
+type PageRes struct {
+	Page    int32 `json:"page"`
+	PageLen int32 `json:"pagelen"`
+	Size    int32 `json:"size"`
+}
