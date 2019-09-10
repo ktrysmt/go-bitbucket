@@ -121,6 +121,7 @@ type RepositoryFilesOptions struct {
 	Owner    string `json:"owner"`
 	RepoSlug string `json:"repo_slug"`
 	Ref      string `json:"ref"`
+	Path     string `json:"path"`
 }
 
 type RepositoryBlobOptions struct {

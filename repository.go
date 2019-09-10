@@ -104,7 +104,7 @@ func (r *Repository) Get(ro *RepositoryOptions) (*Repository, error) {
 }
 
 func (r *Repository) ListFiles(ro *RepositoryFilesOptions) ([]RepositoryFile, error) {
-	filePath := path.Join("/repositories", ro.Owner, ro.RepoSlug, "src")
+	filePath := path.Join("/repositories", ro.Owner, ro.RepoSlug, "src", ro.Ref, ro.Path) + "/"
 	urlStr := r.c.requestUrl(filePath)
 	response, err := r.c.execute("GET", urlStr, "")
 	if err != nil {
