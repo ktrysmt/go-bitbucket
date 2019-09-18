@@ -46,6 +46,7 @@ type RepositoryBlob struct {
 type RepositoryBranches struct {
 	Page     int
 	Pagelen  int
+	MaxDepth int
 	Size     int
 	Next     string
 	Branches []RepositoryBranch
@@ -106,6 +107,7 @@ func (r *Repository) Get(ro *RepositoryOptions) (*Repository, error) {
 func (r *Repository) ListFiles(ro *RepositoryFilesOptions) ([]RepositoryFile, error) {
 	filePath := path.Join("/repositories", ro.Owner, ro.RepoSlug, "src", ro.Ref, ro.Path) + "/"
 	urlStr := r.c.requestUrl(filePath)
+	print(urlStr)
 	response, err := r.c.execute("GET", urlStr, "")
 	if err != nil {
 		return nil, err
@@ -144,6 +146,10 @@ func (r *Repository) ListBranches(rbo *RepositoryBranchOptions) (*RepositoryBran
 
 	if rbo.Pagelen > 0 {
 		params.Add("pagelen", strconv.Itoa(rbo.Pagelen))
+	}
+
+	if rbo.MaxDepth > 0 {
+		params.Add("max_depth", strconv.Itoa(rbo.MaxDepth))
 	}
 
 	urlStr := r.c.requestUrl("/repositories/%s/%s/refs/branches?%s", rbo.Owner, rbo.RepoSlug, params.Encode())
@@ -349,6 +355,10 @@ func decodeRepositoryBranches(branchResponse interface{}) (*RepositoryBranches, 
 	if !ok {
 		pagelen = 0
 	}
+	max_depth, ok := branchResponseMap["max_depth"].(float64)
+	if !ok {
+		max_depth = 0
+	}
 	size, ok := branchResponseMap["size"].(float64)
 	if !ok {
 		size = 0
@@ -362,6 +372,7 @@ func decodeRepositoryBranches(branchResponse interface{}) (*RepositoryBranches, 
 	repositoryBranches := RepositoryBranches{
 		Page:     int(page),
 		Pagelen:  int(pagelen),
+		MaxDepth: int(max_depth),
 		Size:     int(size),
 		Next:     next,
 		Branches: branches,
