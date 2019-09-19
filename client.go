@@ -23,6 +23,7 @@ import (
 )
 
 const DEFAULT_PAGE_LENGTH = 10
+const DEFAULT_MAX_DEPTH = 1
 
 type Client struct {
 	Auth         *auth
@@ -31,6 +32,7 @@ type Client struct {
 	Teams        teams
 	Repositories *Repositories
 	Pagelen      uint64
+	MaxDepth     uint64
 
 	HttpClient *http.Client
 }
@@ -122,7 +124,7 @@ func NewBasicAuth(u, p string) *Client {
 }
 
 func injectClient(a *auth) *Client {
-	c := &Client{Auth: a, Pagelen: DEFAULT_PAGE_LENGTH}
+	c := &Client{Auth: a, Pagelen: DEFAULT_PAGE_LENGTH, MaxDepth: DEFAULT_MAX_DEPTH}
 	c.Repositories = &Repositories{
 		c:                  c,
 		PullRequests:       &PullRequests{c: c},
@@ -166,6 +168,17 @@ func (c *Client) execute(method string, urlStr string, text string) (interface{}
 			}
 			q := urlObj.Query()
 			q.Set("pagelen", strconv.FormatUint(c.Pagelen, DEC_RADIX))
+			urlObj.RawQuery = q.Encode()
+			urlStr = urlObj.String()
+		}
+
+		if c.MaxDepth != DEFAULT_MAX_DEPTH {
+			urlObj, err := url.Parse(urlStr)
+			if err != nil {
+				return nil, err
+			}
+			q := urlObj.Query()
+			q.Set("max_depth", strconv.FormatUint(c.MaxDepth, DEC_RADIX))
 			urlObj.RawQuery = q.Encode()
 			urlStr = urlObj.String()
 		}
@@ -217,6 +230,7 @@ func (c *Client) execute(method string, urlStr string, text string) (interface{}
 					resultMap["values"] = valuesSlice
 					delete(resultMap, "page")
 					delete(resultMap, "pagelen")
+					delete(resultMap, "max_depth")
 					delete(resultMap, "size")
 					result = resultMap
 				}
