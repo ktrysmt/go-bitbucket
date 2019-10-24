@@ -141,6 +141,16 @@ type RepositoryBranchOptions struct {
 	MaxDepth int    `json:"max_depth"`
 }
 
+type RepositoryTagOptions struct {
+	Owner    string `json:"owner"`
+	RepoSlug string `json:"repo_slug"`
+	Query    string `json:"q"`
+	Sort     string `json:"sort"`
+	PageNum  int    `json:"page"`
+	Pagelen  int    `json:"pagelen"`
+	MaxDepth int    `json:"max_depth"`
+}
+
 type PullRequestsOptions struct {
 	ID                string   `json:"id"`
 	CommentID         string   `json:"comment_id"`
@@ -237,8 +247,8 @@ type DownloadsOptions struct {
 }
 
 type PageRes struct {
-	Page    int32 `json:"page"`
-	PageLen int32 `json:"pagelen"`
+	Page     int32 `json:"page"`
+	PageLen  int32 `json:"pagelen"`
 	MaxDepth int32 `json:"max_depth"`
-	Size    int32 `json:"size"`
+	Size     int32 `json:"size"`
 }
