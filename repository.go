@@ -160,6 +160,37 @@ func (r *Repository) ListBranches(rbo *RepositoryBranchOptions) (*RepositoryBran
 	return decodeRepositoryBranches(response)
 }
 
+func (r *Repository) ListTags(rbo *RepositoryBranchOptions) (*RepositoryBranches, error) {
+	params := url.Values{}
+	if rbo.Query != "" {
+		params.Add("q", rbo.Query)
+	}
+
+	if rbo.Sort != "" {
+		params.Add("sort", rbo.Sort)
+	}
+
+	if rbo.PageNum > 0 {
+		params.Add("page", strconv.Itoa(rbo.PageNum))
+	}
+
+	if rbo.Pagelen > 0 {
+		params.Add("pagelen", strconv.Itoa(rbo.Pagelen))
+	}
+
+	if rbo.MaxDepth > 0 {
+		params.Add("max_depth", strconv.Itoa(rbo.MaxDepth))
+	}
+
+	urlStr := r.c.requestUrl("/repositories/%s/%s/refs/tags?%s", rbo.Owner, rbo.RepoSlug, params.Encode())
+	response, err := r.c.executeRaw("GET", urlStr, "")
+	if err != nil {
+		return nil, err
+	}
+
+	return decodeRepositoryBranches(response)
+}
+
 func (r *Repository) Delete(ro *RepositoryOptions) (interface{}, error) {
 	urlStr := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.RepoSlug)
 	return r.c.execute("DELETE", urlStr, "")
