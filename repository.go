@@ -62,6 +62,23 @@ type RepositoryBranch struct {
 	Heads                  []map[string]interface{}
 }
 
+type RepositoryTags struct {
+	Page     int
+	Pagelen  int
+	MaxDepth int
+	Size     int
+	Next     string
+	Tags     []RepositoryTag
+}
+
+type RepositoryTag struct {
+	Type   string
+	Name   string
+	Links  map[string]interface{}
+	Target map[string]interface{}
+	Heads  []map[string]interface{}
+}
+
 type Pipeline struct {
 	Type       string
 	Enabled    bool
@@ -158,6 +175,38 @@ func (r *Repository) ListBranches(rbo *RepositoryBranchOptions) (*RepositoryBran
 	}
 
 	return decodeRepositoryBranches(response)
+}
+
+func (r *Repository) ListTags(rbo *RepositoryTagOptions) (*RepositoryTags, error) {
+
+	params := url.Values{}
+	if rbo.Query != "" {
+		params.Add("q", rbo.Query)
+	}
+
+	if rbo.Sort != "" {
+		params.Add("sort", rbo.Sort)
+	}
+
+	if rbo.PageNum > 0 {
+		params.Add("page", strconv.Itoa(rbo.PageNum))
+	}
+
+	if rbo.Pagelen > 0 {
+		params.Add("pagelen", strconv.Itoa(rbo.Pagelen))
+	}
+
+	if rbo.MaxDepth > 0 {
+		params.Add("max_depth", strconv.Itoa(rbo.MaxDepth))
+	}
+
+	urlStr := r.c.requestUrl("/repositories/%s/%s/refs/tags?%s", rbo.Owner, rbo.RepoSlug, params.Encode())
+	response, err := r.c.executeRaw("GET", urlStr, "")
+	if err != nil {
+		return nil, err
+	}
+
+	return decodeRepositoryTags(response)
 }
 
 func (r *Repository) Delete(ro *RepositoryOptions) (interface{}, error) {
@@ -377,6 +426,58 @@ func decodeRepositoryBranches(branchResponse interface{}) (*RepositoryBranches, 
 		Branches: branches,
 	}
 	return &repositoryBranches, nil
+}
+
+func decodeRepositoryTags(tagResponse interface{}) (*RepositoryTags, error) {
+
+	var tagResponseMap map[string]interface{}
+	err := json.Unmarshal(tagResponse.([]byte), &tagResponseMap)
+	if err != nil {
+		return nil, err
+	}
+
+	tagArray := tagResponseMap["values"].([]interface{})
+	var tags []RepositoryTag
+	for _, tagEntry := range tagArray {
+		var tag RepositoryTag
+		err = mapstructure.Decode(tagEntry, &tag)
+		if err == nil {
+			tags = append(tags, tag)
+		}
+	}
+
+	page, ok := tagResponseMap["page"].(float64)
+	if !ok {
+		page = 0
+	}
+
+	pagelen, ok := tagResponseMap["pagelen"].(float64)
+	if !ok {
+		pagelen = 0
+	}
+	max_depth, ok := tagResponseMap["max_depth"].(float64)
+	if !ok {
+		max_depth = 0
+	}
+	size, ok := tagResponseMap["size"].(float64)
+	if !ok {
+		size = 0
+	}
+
+	next, ok := tagResponseMap["next"].(string)
+	if !ok {
+		next = ""
+	}
+
+	repositoryTags := RepositoryTags{
+		Page:     int(page),
+		Pagelen:  int(pagelen),
+		MaxDepth: int(max_depth),
+		Size:     int(size),
+		Next:     next,
+		Tags:     tags,
+	}
+	return &repositoryTags, nil
 }
 
 func decodePipelineRepository(repoResponse interface{}) (*Pipeline, error) {
