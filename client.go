@@ -33,6 +33,7 @@ type Client struct {
 	Repositories *Repositories
 	Pagelen      uint64
 	MaxDepth     uint64
+	apiBaseURL   string
 
 	HttpClient *http.Client
 }
@@ -124,7 +125,7 @@ func NewBasicAuth(u, p string) *Client {
 }
 
 func injectClient(a *auth) *Client {
-	c := &Client{Auth: a, Pagelen: DEFAULT_PAGE_LENGTH, MaxDepth: DEFAULT_MAX_DEPTH}
+	c := &Client{Auth: a, Pagelen: DEFAULT_PAGE_LENGTH, MaxDepth: DEFAULT_MAX_DEPTH, apiBaseURL: "https://api.bitbucket.org/2.0"}
 	c.Repositories = &Repositories{
 		c:                  c,
 		PullRequests:       &PullRequests{c: c},
@@ -140,6 +141,14 @@ func injectClient(a *auth) *Client {
 	c.Teams = &Teams{c: c}
 	c.HttpClient = new(http.Client)
 	return c
+}
+
+func (c *Client) GetApiBaseURL() string {
+	return c.apiBaseURL
+}
+
+func (c *Client) SetApiBaseURL(urlStr string) {
+	c.apiBaseURL = urlStr
 }
 
 func (c *Client) executeRaw(method string, urlStr string, text string) ([]byte, error) {
@@ -334,7 +343,7 @@ func (c *Client) doRawRequest(req *http.Request, emptyResponse bool) ([]byte, er
 func (c *Client) requestUrl(template string, args ...interface{}) string {
 
 	if len(args) == 1 && args[0] == "" {
-		return GetApiBaseURL() + template
+		return c.apiBaseURL + template
 	}
-	return GetApiBaseURL() + fmt.Sprintf(template, args...)
+	return c.apiBaseURL + fmt.Sprintf(template, args...)
 }

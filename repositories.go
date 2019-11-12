@@ -21,11 +21,11 @@ type Repositories struct {
 }
 
 type RepositoriesRes struct {
-	Page    int32
-	Pagelen int32
+	Page     int32
+	Pagelen  int32
 	MaxDepth int32
-	Size    int32
-	Items   []Repository
+	Size     int32
+	Items    []Repository
 }
 
 func (r *Repositories) ListForAccount(ro *RepositoriesOptions) (*RepositoriesRes, error) {
@@ -53,7 +53,7 @@ func (r *Repositories) ListForTeam(ro *RepositoriesOptions) (*RepositoriesRes, e
 }
 
 func (r *Repositories) ListPublic() (interface{}, error) {
-	urlStr := r.c.requestUrl("/repositories/", "")
+	urlStr := r.c.requestUrl("/repositories/")
 	repos, err := r.c.execute("GET", urlStr, "")
 	if err != nil {
 		return nil, err
@@ -96,11 +96,11 @@ func decodeRepositorys(reposResponse interface{}) (*RepositoriesRes, error) {
 	}
 
 	repositories := RepositoriesRes{
-		Page:    int32(page),
-		Pagelen: int32(pagelen),
+		Page:     int32(page),
+		Pagelen:  int32(pagelen),
 		MaxDepth: int32(max_depth),
-		Size:    int32(size),
-		Items:   repos,
+		Size:     int32(size),
+		Items:    repos,
 	}
 	return &repositories, nil
 }
