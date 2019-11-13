@@ -1,15 +1,5 @@
 package bitbucket
 
-var apiBaseURL = "https://api.bitbucket.org/2.0"
-
-func GetApiBaseURL() string {
-	return apiBaseURL
-}
-
-func SetApiBaseURL(urlStr string) {
-	apiBaseURL = urlStr
-}
-
 type users interface {
 	Get(username string) (interface{}, error)
 	Followers(username string) (interface{}, error)
