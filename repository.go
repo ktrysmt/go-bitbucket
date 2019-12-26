@@ -100,6 +100,11 @@ type PipelineKeyPair struct {
 	PrivateKey string
 }
 
+type PipelineBuildNumber struct {
+	Type string
+	Next int
+}
+
 func (r *Repository) Create(ro *RepositoryOptions) (*Repository, error) {
 	data := r.buildRepositoryBody(ro)
 	urlStr := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.RepoSlug)
@@ -259,6 +264,18 @@ func (r *Repository) AddPipelineKeyPair(rpkpo *RepositoryPipelineKeyPairOptions)
 	return decodePipelineKeyPairRepository(response)
 }
 
+func (r *Repository) UpdatePipelineBuildNumber(rpbno *RepositoryPipelineBuildNumberOptions) (*PipelineBuildNumber, error) {
+	data := r.buildPipelineBuildNumberBody(rpbno)
+	urlStr := r.c.requestUrl("/repositories/%s/%s/pipelines_config/build_number", rpbno.Owner, rpbno.RepoSlug)
+
+	response, err := r.c.execute("PUT", urlStr, data)
+	if err != nil {
+		return nil, err
+	}
+
+	return decodePipelineBuildNumberRepository(response)
+}
+
 func (r *Repository) buildJsonBody(body map[string]interface{}) string {
 
 	data, err := json.Marshal(body)
@@ -340,6 +357,15 @@ func (r *Repository) buildPipelineKeyPairBody(rpkpo *RepositoryPipelineKeyPairOp
 	if rpkpo.PublicKey != "" {
 		body["public_key"] = rpkpo.PublicKey
 	}
+
+	return r.buildJsonBody(body)
+}
+
+func (r *Repository) buildPipelineBuildNumberBody(rpbno *RepositoryPipelineBuildNumberOptions) string {
+
+	body := map[string]interface{}{}
+
+	body["next"] = rpbno.Next
 
 	return r.buildJsonBody(body)
 }
@@ -526,6 +552,22 @@ func decodePipelineKeyPairRepository(repoResponse interface{}) (*PipelineKeyPair
 	}
 
 	return pipelineKeyPair, nil
+}
+
+func decodePipelineBuildNumberRepository(repoResponse interface{}) (*PipelineBuildNumber, error) {
+	repoMap := repoResponse.(map[string]interface{})
+
+	if repoMap["type"] == "error" {
+		return nil, DecodeError(repoMap)
+	}
+
+	var pipelineBuildNumber = new(PipelineBuildNumber)
+	err := mapstructure.Decode(repoMap, pipelineBuildNumber)
+	if err != nil {
+		return nil, err
+	}
+
+	return pipelineBuildNumber, nil
 }
 
 func (rf RepositoryFile) String() string {
