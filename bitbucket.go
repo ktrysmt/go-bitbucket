@@ -35,6 +35,7 @@ type repository interface {
 	UpdatePipelineConfig(opt RepositoryPipelineOptions) (*Pipeline, error)
 	AddPipelineVariable(opt RepositoryPipelineVariableOptions) (*PipelineVariable, error)
 	AddPipelineKeyPair(opt RepositoryPipelineKeyPairOptions) (*PipelineKeyPair, error)
+	UpdatePipelineBuildNumber(opt RepositoryPipelineBuildNumberOptions) (*PipelineBuildNumber, error)
 	ListFiles(opt RepositoryFilesOptions) (*[]RepositoryFile, error)
 	GetFileBlob(opt RepositoryBlobOptions) (*RepositoryBlob, error)
 	ListBranches(opt RepositoryBranchOptions) (*RepositoryBranches, error)
@@ -227,6 +228,12 @@ type RepositoryPipelineKeyPairOptions struct {
 	RepoSlug   string `json:"repo_slug"`
 	PrivateKey string `json:"private_key"`
 	PublicKey  string `json:"public_key"`
+}
+
+type RepositoryPipelineBuildNumberOptions struct {
+	Owner    string `json:"owner"`
+	RepoSlug string `json:"repo_slug"`
+	Next     int    `json:"next"`
 }
 
 type DownloadsOptions struct {
