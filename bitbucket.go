@@ -24,6 +24,7 @@ type pullrequests interface {
 	Diff(opt PullRequestsOptions) (interface{}, error)
 	Merge(opt PullRequestsOptions) (interface{}, error)
 	Decline(opt PullRequestsOptions) (interface{}, error)
+	Statuses(opt PullRequestsOptions) (interface{}, error)
 }
 
 type repository interface {

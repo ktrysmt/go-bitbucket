@@ -107,6 +107,12 @@ func (p *PullRequests) Decline(po *PullRequestsOptions) (interface{}, error) {
 	return p.c.execute("POST", urlStr, data)
 }
 
+func (p *PullRequests) Statuses(po *PullRequestsOptions) (interface{}, error) {
+	data := p.buildPullRequestBody(po)
+	urlStr := p.c.GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/statuses"
+	return p.c.execute("GET", urlStr, data)
+}
+
 func (p *PullRequests) GetComments(po *PullRequestsOptions) (interface{}, error) {
 	urlStr := p.c.GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/comments/"
 	return p.c.execute("GET", urlStr, "")
