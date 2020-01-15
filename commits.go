@@ -3,6 +3,8 @@ package bitbucket
 import (
 	"net/url"
 	"encoding/json"
+	"strconv"
+
 	"github.com/mitchellh/mapstructure"
 )
 
