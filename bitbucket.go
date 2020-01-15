@@ -170,6 +170,9 @@ type CommitsOptions struct {
 	Include     string `json:"include"`
 	Exclude     string `json:"exclude"`
 	CommentID   string `json:"comment_id"`
+	PageNum     int    `json:"page,omitempty"`
+	Pagelen     int    `json:"pagelen,omitempty"`
+	MaxDepth    int    `json:"max_depth,omitempty"`
 }
 
 type CommitStatusOptions struct {
