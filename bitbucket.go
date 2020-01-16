@@ -1,5 +1,11 @@
 package bitbucket
 
+type refs interface {
+	Create(opt RefsOptions) (*RepositoryBranch, error)
+	Get(opt RefsOptions) (*RepositoryBranch, error)
+	Delete(opt RefsOptions) (interface{}, error)
+}
+
 type users interface {
 	Get(username string) (interface{}, error)
 	Followers(username string) (interface{}, error)
@@ -94,6 +100,13 @@ type teams interface {
 type RepositoriesOptions struct {
 	Owner string `json:"owner"`
 	Role  string `json:"role"` // role=[owner|admin|contributor|member]
+}
+
+type RefsOptions struct {
+	Owner    string `json:"owner"`
+	RepoSlug string `json:"repo_slug"`
+	BranchName     string `json:"branch_name"`
+	TargetHash     string `json:"target_hash"`
 }
 
 type RepositoryOptions struct {

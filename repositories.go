@@ -13,6 +13,7 @@ type Repositories struct {
 	PullRequests       *PullRequests
 	Repository         *Repository
 	Commits            *Commits
+	Refs		   *Ref
 	Diff               *Diff
 	BranchRestrictions *BranchRestrictions
 	Webhooks           *Webhooks

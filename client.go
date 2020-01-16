@@ -131,6 +131,7 @@ func injectClient(a *auth) *Client {
 		PullRequests:       &PullRequests{c: c},
 		Repository:         &Repository{c: c},
 		Commits:            &Commits{c: c},
+		Refs:               &Ref{c: c},
 		Diff:               &Diff{c: c},
 		BranchRestrictions: &BranchRestrictions{c: c},
 		Webhooks:           &Webhooks{c: c},
@@ -307,10 +308,12 @@ func (c *Client) doRequest(req *http.Request, emptyResponse bool) (interface{}, 
 	}
 
 	var result interface{}
-	err = json.Unmarshal(resBodyBytes, &result)
-	if err != nil {
-		log.Println("Could not unmarshal JSON payload, returning raw response")
-		return resBodyBytes, err
+	if len(resBodyBytes) > 0 {
+		err = json.Unmarshal(resBodyBytes, &result)
+		if err != nil {
+			log.Println("Could not unmarshal JSON payload, returning raw response")
+			return resBodyBytes, err
+		}
 	}
 
 	return result, nil
@@ -326,6 +329,10 @@ func (c *Client) doRawRequest(req *http.Request, emptyResponse bool) ([]byte, er
 	}
 
 	if (resp.StatusCode != http.StatusOK) && (resp.StatusCode != http.StatusCreated) {
+		if (resp.StatusCode == http.StatusNoContent) {
+			result := make([]byte, 0)
+			return result, nil
+		}
 		return nil, fmt.Errorf(resp.Status)
 	}
 
