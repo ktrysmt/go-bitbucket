@@ -65,14 +65,9 @@ And The API v1.0 covers resources that the v2.0 API and API v2.0 is yet to cover
 
 ## Development
 
-### Install dependencies
+### Get dependencies
 
 It's using `go mod`.
-
-```sh
-export GO111MODULE=auto # or, =on
-go build
-```
 
 ### How to testing
 
@@ -85,13 +80,18 @@ export BITBUCKET_TEST_OWNER=<your_repo_owner>
 export BITBUCKET_TEST_REPOSLUG=<your_repo_name>
 ```
 
-Refs; URL Syntax is `https://<your_username>:<your_password>@bitbucket.org/<your_repo_owner>/<your_repo_name>.git`.
-
-And just run,
+And just run;
 
 ```sh
 make test
 ```
+
+If you want to test individually;
+
+```sh
+go test -v ./tests/diff_test.go
+```
+
 
 ## License
 
