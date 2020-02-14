@@ -39,6 +39,7 @@ type repository interface {
 	ListFiles(opt RepositoryFilesOptions) (*[]RepositoryFile, error)
 	GetFileBlob(opt RepositoryBlobOptions) (*RepositoryBlob, error)
 	ListBranches(opt RepositoryBranchOptions) (*RepositoryBranches, error)
+	BranchingModel(opt RepositoryBranchingModelOptions) (*BranchingModel, error)
 }
 
 type repositories interface {
@@ -234,6 +235,11 @@ type RepositoryPipelineBuildNumberOptions struct {
 	Owner    string `json:"owner"`
 	RepoSlug string `json:"repo_slug"`
 	Next     int    `json:"next"`
+}
+
+type RepositoryBranchingModelOptions struct {
+	Owner    string `json:"owner"`
+	RepoSlug string `json:"repo_slug"`
 }
 
 type DownloadsOptions struct {

@@ -105,6 +105,23 @@ type PipelineBuildNumber struct {
 	Next int
 }
 
+type BranchingModel struct {
+	Type         string
+	Branch_Types []BranchType
+	Development  BranchDevelopment
+}
+
+type BranchType struct {
+	Kind   string
+	Prefix string
+}
+
+type BranchDevelopment struct {
+	Name           string
+	Branch         RepositoryBranch
+	Use_Mainbranch bool
+}
+
 func (r *Repository) Create(ro *RepositoryOptions) (*Repository, error) {
 	data := r.buildRepositoryBody(ro)
 	urlStr := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.RepoSlug)
@@ -274,6 +291,15 @@ func (r *Repository) UpdatePipelineBuildNumber(rpbno *RepositoryPipelineBuildNum
 	}
 
 	return decodePipelineBuildNumberRepository(response)
+}
+
+func (r *Repository) BranchingModel(rbmo *RepositoryBranchingModelOptions) (*BranchingModel, error) {
+	urlStr := r.c.requestUrl("/repositories/%s/%s/branching-model", rbmo.Owner, rbmo.RepoSlug)
+	response, err := r.c.execute("GET", urlStr, "")
+	if err != nil {
+		return nil, err
+	}
+	return decodeBranchingModel(response)
 }
 
 func (r *Repository) buildJsonBody(body map[string]interface{}) string {
@@ -568,6 +594,22 @@ func decodePipelineBuildNumberRepository(repoResponse interface{}) (*PipelineBui
 	}
 
 	return pipelineBuildNumber, nil
+}
+
+func decodeBranchingModel(branchingModelResponse interface{}) (*BranchingModel, error) {
+	branchingModelMap := branchingModelResponse.(map[string]interface{})
+
+	if branchingModelMap["type"] == "error" {
+		return nil, DecodeError(branchingModelMap)
+	}
+
+	var branchingModel = new(BranchingModel)
+	err := mapstructure.Decode(branchingModelMap, branchingModel)
+	if err != nil {
+		return nil, err
+	}
+
+	return branchingModel, nil
 }
 
 func (rf RepositoryFile) String() string {
