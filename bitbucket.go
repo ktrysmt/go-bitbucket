@@ -28,6 +28,7 @@ type pullrequests interface {
 	Commits(opt PullRequestsOptions) (interface{}, error)
 	Patch(opt PullRequestsOptions) (interface{}, error)
 	Diff(opt PullRequestsOptions) (interface{}, error)
+	Approve(opt PullRequestsOptions) (interface{}, error)
 	Merge(opt PullRequestsOptions) (interface{}, error)
 	Decline(opt PullRequestsOptions) (interface{}, error)
 	Statuses(opt PullRequestsOptions) (interface{}, error)

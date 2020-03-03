@@ -95,6 +95,12 @@ func (p *PullRequests) Diff(po *PullRequestsOptions) (interface{}, error) {
 	return p.c.execute("GET", urlStr, "")
 }
 
+func (p *PullRequests) Approve(po *PullRequestsOptions) (interface{}, error) {
+	data := p.buildPullRequestBody(po)
+	urlStr := p.c.GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/approve"
+	return p.c.execute("POST", urlStr, data)
+}
+
 func (p *PullRequests) Merge(po *PullRequestsOptions) (interface{}, error) {
 	data := p.buildPullRequestBody(po)
 	urlStr := p.c.GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/merge"
