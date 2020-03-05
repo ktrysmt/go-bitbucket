@@ -37,6 +37,7 @@ type pullrequests interface {
 type repository interface {
 	Get(opt RepositoryOptions) (*Repository, error)
 	Create(opt RepositoryOptions) (*Repository, error)
+	Update(opt RepositoryOptions) (*Repository, error)
 	Delete(opt RepositoryOptions) (interface{}, error)
 	ListWatchers(opt RepositoryOptions) (interface{}, error)
 	ListForks(opt RepositoryOptions) (interface{}, error)

@@ -116,6 +116,17 @@ func (r *Repository) Create(ro *RepositoryOptions) (*Repository, error) {
 	return decodeRepository(response)
 }
 
+func (r *Repository) Update(ro *RepositoryOptions) (*Repository, error) {
+	data := r.buildRepositoryBody(ro)
+	urlStr := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.RepoSlug)
+	response, err := r.c.execute("PUT", urlStr, data)
+	if err != nil {
+		return nil, err
+	}
+
+	return decodeRepository(response)
+}
+
 func (r *Repository) Get(ro *RepositoryOptions) (*Repository, error) {
 	urlStr := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.RepoSlug)
 	response, err := r.c.execute("GET", urlStr, "")
