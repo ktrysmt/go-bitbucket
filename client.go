@@ -323,7 +323,7 @@ func (c *Client) doRawRequest(req *http.Request, emptyResponse bool) (io.ReadClo
 
 	if (resp.StatusCode != http.StatusOK) && (resp.StatusCode != http.StatusCreated) {
 		resp.Body.Close()
-		return nil, fmt.Errorf("%v (%s)", resp.Status, req.URL.String())
+		return nil, fmt.Errorf(resp.Status)
 	}
 
 	if emptyResponse {
