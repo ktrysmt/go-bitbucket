@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -151,7 +150,7 @@ func (c *Client) SetApiBaseURL(urlStr string) {
 	c.apiBaseURL = urlStr
 }
 
-func (c *Client) executeRaw(method string, urlStr string, text string) ([]byte, error) {
+func (c *Client) executeRaw(method string, urlStr string, text string) (io.ReadCloser, error) {
 	body := strings.NewReader(text)
 
 	req, err := http.NewRequest(method, urlStr, body)
@@ -301,43 +300,43 @@ func (c *Client) authenticateRequest(req *http.Request) {
 }
 
 func (c *Client) doRequest(req *http.Request, emptyResponse bool) (interface{}, error) {
-	resBodyBytes, err := c.doRawRequest(req, emptyResponse)
+	resBody, err := c.doRawRequest(req, emptyResponse)
 	if err != nil {
 		return nil, err
 	}
+	defer resBody.Close()
 
 	var result interface{}
-	err = json.Unmarshal(resBodyBytes, &result)
-	if err != nil {
+	if err := json.NewDecoder(resBody).Decode(&result); err != nil {
 		log.Println("Could not unmarshal JSON payload, returning raw response")
-		return resBodyBytes, err
+		return resBody, err
 	}
 
 	return result, nil
 }
 
-func (c *Client) doRawRequest(req *http.Request, emptyResponse bool) ([]byte, error) {
+func (c *Client) doRawRequest(req *http.Request, emptyResponse bool) (io.ReadCloser, error) {
 	resp, err := c.HttpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
 
 	if (resp.StatusCode != http.StatusOK) && (resp.StatusCode != http.StatusCreated) {
-		return nil, fmt.Errorf(resp.Status)
+		resp.Body.Close()
+		return nil, fmt.Errorf("%v (%s)", resp.Status, req.URL.String())
 	}
 
 	if emptyResponse {
+		resp.Body.Close()
 		return nil, nil
 	}
 
 	if resp.Body == nil {
+		resp.Body.Close()
 		return nil, fmt.Errorf("response body is nil")
 	}
 
-	return ioutil.ReadAll(resp.Body)
+	return resp.Body, nil
 }
 
 func (c *Client) requestUrl(template string, args ...interface{}) string {

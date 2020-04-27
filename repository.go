@@ -2,6 +2,7 @@ package bitbucket
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"net/url"
 	"os"
 	"path"
@@ -162,7 +163,12 @@ func (r *Repository) GetFileBlob(ro *RepositoryBlobOptions) (*RepositoryBlob, er
 		return nil, err
 	}
 
-	blob := RepositoryBlob{Content: response}
+	content, err := ioutil.ReadAll(response)
+	if err != nil {
+		return nil, err
+	}
+	
+	blob := RepositoryBlob{Content: content}
 
 	return &blob, nil
 }
