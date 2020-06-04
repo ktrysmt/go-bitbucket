@@ -130,8 +130,8 @@ func (p *PullRequests) buildPullRequestBody(po *PullRequestsOptions) string {
 
 	if n := len(po.Reviewers); n > 0 {
 		body["reviewers"] = make([]map[string]string, n)
-		for i, user := range po.Reviewers {
-			body["reviewers"].([]map[string]string)[i] = map[string]string{"username": user}
+		for i, uuid := range po.Reviewers {
+			body["reviewers"].([]map[string]string)[i] = map[string]string{"uuid": uuid}
 		}
 	}
 
