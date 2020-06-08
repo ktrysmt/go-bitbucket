@@ -8,7 +8,7 @@ type users interface {
 }
 
 type user interface {
-	Profile() (interface{}, error)
+	Profile() (*User, error)
 	Emails() (interface{}, error)
 }
 
