@@ -109,7 +109,8 @@ type PipelineBuildNumber struct {
 type BranchingModel struct {
 	Type         string
 	Branch_Types []BranchType
-	Development  BranchDevelopment
+	Development  BranchModel
+	Production   BranchModel
 }
 
 type BranchType struct {
@@ -117,7 +118,7 @@ type BranchType struct {
 	Prefix string
 }
 
-type BranchDevelopment struct {
+type BranchModel struct {
 	Name           string
 	Branch         RepositoryBranch
 	Use_Mainbranch bool
@@ -167,7 +168,7 @@ func (r *Repository) GetFileBlob(ro *RepositoryBlobOptions) (*RepositoryBlob, er
 	if err != nil {
 		return nil, err
 	}
-	
+
 	blob := RepositoryBlob{Content: content}
 
 	return &blob, nil
