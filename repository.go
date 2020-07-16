@@ -135,6 +135,17 @@ func (r *Repository) Create(ro *RepositoryOptions) (*Repository, error) {
 	return decodeRepository(response)
 }
 
+func (r *Repository) Fork(fo *RepositoryForkOptions) (*Repository, error) {
+	data := r.buildForkBody(fo)
+	urlStr := r.c.requestUrl("/repositories/%s/%s/forks", fo.FromOwner, fo.FromSlug)
+	response, err := r.c.execute("POST", urlStr, data)
+	if err != nil {
+		return nil, err
+	}
+
+	return decodeRepository(response)
+}
+
 func (r *Repository) Get(ro *RepositoryOptions) (*Repository, error) {
 	urlStr := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.RepoSlug)
 	response, err := r.c.execute("GET", urlStr, "")
@@ -351,6 +362,45 @@ func (r *Repository) buildRepositoryBody(ro *RepositoryOptions) string {
 	if ro.Project != "" {
 		body["project"] = map[string]string{
 			"key": ro.Project,
+		}
+	}
+
+	return r.buildJsonBody(body)
+}
+
+func (r *Repository) buildForkBody(fo *RepositoryForkOptions) string {
+
+	body := map[string]interface{}{}
+
+	if fo.Owner != "" {
+		body["workspace"] = map[string]string{
+			"slug": fo.Owner,
+		}
+	}
+	if fo.Name != "" {
+		body["name"] = fo.Name
+	}
+	if fo.IsPrivate != "" {
+		body["is_private"] = fo.IsPrivate
+	}
+	if fo.Description != "" {
+		body["description"] = fo.Description
+	}
+	if fo.ForkPolicy != "" {
+		body["fork_policy"] = fo.ForkPolicy
+	}
+	if fo.Language != "" {
+		body["language"] = fo.Language
+	}
+	if fo.HasIssues != "" {
+		body["has_issues"] = fo.HasIssues
+	}
+	if fo.HasWiki != "" {
+		body["has_wiki"] = fo.HasWiki
+	}
+	if fo.Project != "" {
+		body["project"] = map[string]string{
+			"key": fo.Project,
 		}
 	}
 
