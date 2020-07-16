@@ -3,7 +3,7 @@ module github.com/ktrysmt/go-bitbucket
 go 1.12
 
 require (
-	github.com/golang/protobuf v1.0.0
+	github.com/golang/protobuf v1.0.0 // indirect
 	github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88 // indirect
 	github.com/k0kubun/pp v2.3.0+incompatible
 	github.com/mattn/go-colorable v0.0.9 // indirect
