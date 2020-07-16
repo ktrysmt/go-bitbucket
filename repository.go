@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"strconv"
+	"strings"
 
 	"github.com/k0kubun/pp"
 	"github.com/mitchellh/mapstructure"
@@ -342,7 +343,7 @@ func (r *Repository) buildRepositoryBody(ro *RepositoryOptions) string {
 	//		body["name"] = ro.Name
 	//}
 	if ro.IsPrivate != "" {
-		body["is_private"] = ro.IsPrivate
+		body["is_private"] = strings.ToLower(strings.TrimSpace(ro.IsPrivate)) != "false"
 	}
 	if ro.Description != "" {
 		body["description"] = ro.Description
@@ -381,7 +382,7 @@ func (r *Repository) buildForkBody(fo *RepositoryForkOptions) string {
 		body["name"] = fo.Name
 	}
 	if fo.IsPrivate != "" {
-		body["is_private"] = fo.IsPrivate
+		body["is_private"] = strings.ToLower(strings.TrimSpace(fo.IsPrivate)) != "false"
 	}
 	if fo.Description != "" {
 		body["description"] = fo.Description
