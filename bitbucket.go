@@ -109,6 +109,22 @@ type RepositoryOptions struct {
 	Project     string `json:"project"`
 }
 
+type RepositoryForkOptions struct {
+	FromOwner string `json:"from_owner"`
+	FromSlug  string `json:"from_slug"`
+	Owner     string `json:"owner"`
+	// TODO: does the API supports specifying  slug on forks?
+	// see: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/forks#post
+	Name        string `json:"name"`
+	IsPrivate   string `json:"is_private"`
+	Description string `json:"description"`
+	ForkPolicy  string `json:"fork_policy"`
+	Language    string `json:"language"`
+	HasIssues   string `json:"has_issues"`
+	HasWiki     string `json:"has_wiki"`
+	Project     string `json:"project"`
+}
+
 type RepositoryFilesOptions struct {
 	Owner    string `json:"owner"`
 	RepoSlug string `json:"repo_slug"`

@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"strconv"
+	"strings"
 
 	"github.com/k0kubun/pp"
 	"github.com/mitchellh/mapstructure"
@@ -127,6 +128,17 @@ type BranchModel struct {
 func (r *Repository) Create(ro *RepositoryOptions) (*Repository, error) {
 	data := r.buildRepositoryBody(ro)
 	urlStr := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.RepoSlug)
+	response, err := r.c.execute("POST", urlStr, data)
+	if err != nil {
+		return nil, err
+	}
+
+	return decodeRepository(response)
+}
+
+func (r *Repository) Fork(fo *RepositoryForkOptions) (*Repository, error) {
+	data := r.buildForkBody(fo)
+	urlStr := r.c.requestUrl("/repositories/%s/%s/forks", fo.FromOwner, fo.FromSlug)
 	response, err := r.c.execute("POST", urlStr, data)
 	if err != nil {
 		return nil, err
@@ -331,7 +343,7 @@ func (r *Repository) buildRepositoryBody(ro *RepositoryOptions) string {
 	//		body["name"] = ro.Name
 	//}
 	if ro.IsPrivate != "" {
-		body["is_private"] = ro.IsPrivate
+		body["is_private"] = strings.ToLower(strings.TrimSpace(ro.IsPrivate)) != "false"
 	}
 	if ro.Description != "" {
 		body["description"] = ro.Description
@@ -351,6 +363,45 @@ func (r *Repository) buildRepositoryBody(ro *RepositoryOptions) string {
 	if ro.Project != "" {
 		body["project"] = map[string]string{
 			"key": ro.Project,
+		}
+	}
+
+	return r.buildJsonBody(body)
+}
+
+func (r *Repository) buildForkBody(fo *RepositoryForkOptions) string {
+
+	body := map[string]interface{}{}
+
+	if fo.Owner != "" {
+		body["workspace"] = map[string]string{
+			"slug": fo.Owner,
+		}
+	}
+	if fo.Name != "" {
+		body["name"] = fo.Name
+	}
+	if fo.IsPrivate != "" {
+		body["is_private"] = strings.ToLower(strings.TrimSpace(fo.IsPrivate)) != "false"
+	}
+	if fo.Description != "" {
+		body["description"] = fo.Description
+	}
+	if fo.ForkPolicy != "" {
+		body["fork_policy"] = fo.ForkPolicy
+	}
+	if fo.Language != "" {
+		body["language"] = fo.Language
+	}
+	if fo.HasIssues != "" {
+		body["has_issues"] = fo.HasIssues
+	}
+	if fo.HasWiki != "" {
+		body["has_wiki"] = fo.HasWiki
+	}
+	if fo.Project != "" {
+		body["project"] = map[string]string{
+			"key": fo.Project,
 		}
 	}
 
