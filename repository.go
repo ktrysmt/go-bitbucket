@@ -2,6 +2,7 @@ package bitbucket
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/url"
 	"os"
@@ -214,8 +215,29 @@ func (r *Repository) ListBranches(rbo *RepositoryBranchOptions) (*RepositoryBran
 	if err != nil {
 		return nil, err
 	}
+	bodyBytes, err := ioutil.ReadAll(response)
+	if err != nil {
+		return nil, err
+	}
+	bodyString := string(bodyBytes)
+	return decodeRepositoryBranches(bodyString)
+}
 
-	return decodeRepositoryBranches(response)
+func (r *Repository) GetBranch(rbo *RepositoryBranchOptions) (*RepositoryBranch, error) {
+	if rbo.BranchName == "" {
+		return nil, errors.New("Error: Branch Name is empty")
+	}
+	urlStr := r.c.requestUrl("/repositories/%s/%s/refs/branches/%s", rbo.Owner, rbo.RepoSlug, rbo.BranchName)
+	response, err := r.c.executeRaw("GET", urlStr, "")
+	if err != nil {
+		return nil, err
+	}
+	bodyBytes, err := ioutil.ReadAll(response)
+	if err != nil {
+		return nil, err
+	}
+	bodyString := string(bodyBytes)
+	return decodeRepositoryBranch(bodyString)
 }
 
 func (r *Repository) ListTags(rbo *RepositoryTagOptions) (*RepositoryTags, error) {
@@ -486,10 +508,10 @@ func decodeRepositoryFiles(repoResponse interface{}) ([]RepositoryFile, error) {
 	return *repositoryFiles, nil
 }
 
-func decodeRepositoryBranches(branchResponse interface{}) (*RepositoryBranches, error) {
+func decodeRepositoryBranches(branchResponseStr string) (*RepositoryBranches, error) {
 
 	var branchResponseMap map[string]interface{}
-	err := json.Unmarshal(branchResponse.([]byte), &branchResponseMap)
+	err := json.Unmarshal([]byte(branchResponseStr), &branchResponseMap)
 	if err != nil {
 		return nil, err
 	}
@@ -536,6 +558,21 @@ func decodeRepositoryBranches(branchResponse interface{}) (*RepositoryBranches, 
 		Branches: branches,
 	}
 	return &repositoryBranches, nil
+}
+
+func decodeRepositoryBranch(branchResponseStr string) (*RepositoryBranch, error) {
+
+	var branchResponseMap map[string]interface{}
+	err := json.Unmarshal([]byte(branchResponseStr), &branchResponseMap)
+	if err != nil {
+		return nil, err
+	}
+	var repositoryBranch RepositoryBranch
+	err = mapstructure.Decode(branchResponseMap, &repositoryBranch)
+	if err != nil {
+		return nil, err
+	}
+	return &repositoryBranch, nil
 }
 
 func decodeRepositoryTags(tagResponse interface{}) (*RepositoryTags, error) {

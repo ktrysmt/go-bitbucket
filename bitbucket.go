@@ -140,13 +140,14 @@ type RepositoryBlobOptions struct {
 }
 
 type RepositoryBranchOptions struct {
-	Owner    string `json:"owner"`
-	RepoSlug string `json:"repo_slug"`
-	Query    string `json:"q"`
-	Sort     string `json:"sort"`
-	PageNum  int    `json:"page"`
-	Pagelen  int    `json:"pagelen"`
-	MaxDepth int    `json:"max_depth"`
+	Owner      string `json:"owner"`
+	RepoSlug   string `json:"repo_slug"`
+	Query      string `json:"q"`
+	Sort       string `json:"sort"`
+	PageNum    int    `json:"page"`
+	Pagelen    int    `json:"pagelen"`
+	MaxDepth   int    `json:"max_depth"`
+	BranchName string `json:"branch_name"`
 }
 
 type RepositoryTagOptions struct {
