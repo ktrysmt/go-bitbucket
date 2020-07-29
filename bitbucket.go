@@ -142,7 +142,7 @@ type RepositoryBlobOptions struct {
 type RepositoryBranchOptions struct {
 	Owner      string `json:"owner"`
 	RepoSlug   string `json:"repo_slug"`
-	Query      string `json:"q"`
+	Query      string `json:"query"`
 	Sort       string `json:"sort"`
 	PageNum    int    `json:"page"`
 	Pagelen    int    `json:"pagelen"`
