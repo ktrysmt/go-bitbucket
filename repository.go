@@ -268,8 +268,12 @@ func (r *Repository) ListTags(rbo *RepositoryTagOptions) (*RepositoryTags, error
 	if err != nil {
 		return nil, err
 	}
-
-	return decodeRepositoryTags(response)
+	bodyBytes, err := ioutil.ReadAll(response)
+	if err != nil {
+		return nil, err
+	}
+	bodyString := string(bodyBytes)
+	return decodeRepositoryTags(bodyString)
 }
 
 func (r *Repository) Delete(ro *RepositoryOptions) (interface{}, error) {
@@ -575,10 +579,10 @@ func decodeRepositoryBranch(branchResponseStr string) (*RepositoryBranch, error)
 	return &repositoryBranch, nil
 }
 
-func decodeRepositoryTags(tagResponse interface{}) (*RepositoryTags, error) {
+func decodeRepositoryTags(tagResponseStr string) (*RepositoryTags, error) {
 
 	var tagResponseMap map[string]interface{}
-	err := json.Unmarshal(tagResponse.([]byte), &tagResponseMap)
+	err := json.Unmarshal([]byte(tagResponseStr), &tagResponseMap)
 	if err != nil {
 		return nil, err
 	}
