@@ -117,6 +117,32 @@ func (p *PullRequests) GetComment(po *PullRequestsOptions) (interface{}, error) 
 	return p.c.execute("GET", urlStr, "")
 }
 
+func (p *PullRequests) Statuses(po *PullRequestsOptions) (interface{}, error) {
+	urlStr := p.c.GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/statuses"
+	if po.Query != "" {
+		parsed, err := url.Parse(urlStr)
+		if err != nil {
+			return nil, err
+		}
+		query := parsed.Query()
+		query.Set("q", po.Query)
+		parsed.RawQuery = query.Encode()
+		urlStr = parsed.String()
+	}
+
+	if po.Sort != "" {
+		parsed, err := url.Parse(urlStr)
+		if err != nil {
+			return nil, err
+		}
+		query := parsed.Query()
+		query.Set("sort", po.Sort)
+		parsed.RawQuery = query.Encode()
+		urlStr = parsed.String()
+	}
+	return p.c.execute("GET", urlStr, "")
+}
+
 func (p *PullRequests) buildPullRequestBody(po *PullRequestsOptions) string {
 
 	body := map[string]interface{}{}
