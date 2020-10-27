@@ -10,9 +10,9 @@ import (
 
 func TestList(t *testing.T) {
 
-	user := os.Getenv("BITBUCKET_USERNAME")
-	pass := os.Getenv("BITBUCKET_PASSWORD")
-	owner := os.Getenv("BITBUCKET_OWNER")
+	user := os.Getenv("BITBUCKET_TEST_USERNAME")
+	pass := os.Getenv("BITBUCKET_TEST_PASSWORD")
+	owner := os.Getenv("BITBUCKET_TEST_OWNER")
 
 	c := bitbucket.NewBasicAuth(user, pass)
 
