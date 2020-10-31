@@ -304,6 +304,10 @@ func (c *Client) doRequest(req *http.Request, emptyResponse bool) (interface{}, 
 	if err != nil {
 		return nil, err
 	}
+	if emptyResponse {
+		return nil, nil
+	}
+
 	defer resBody.Close()
 
 	var result interface{}
