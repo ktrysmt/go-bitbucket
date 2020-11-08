@@ -30,6 +30,7 @@ type Client struct {
 	User         user
 	Teams        teams
 	Repositories *Repositories
+	Workspaces   *Workspace
 	Pagelen      uint64
 	MaxDepth     uint64
 	apiBaseURL   string
@@ -138,6 +139,7 @@ func injectClient(a *auth) *Client {
 	c.Users = &Users{c: c}
 	c.User = &User{c: c}
 	c.Teams = &Teams{c: c}
+	c.Workspaces = &Workspace{c: c, Repositories: c.Repositories}
 	c.HttpClient = new(http.Client)
 	return c
 }
