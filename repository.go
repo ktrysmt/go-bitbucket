@@ -291,6 +291,11 @@ func (r *Repository) ListForks(ro *RepositoryOptions) (interface{}, error) {
 	return r.c.execute("GET", urlStr, "")
 }
 
+func (r *Repository) ListDefaultReviewers(ro *RepositoryOptions) (interface{}, error) {
+	urlStr := r.c.requestUrl("/repositories/%s/%s/default-reviewers?pagelen=1", ro.Owner, ro.RepoSlug)
+	return r.c.execute("GET", urlStr, "")
+}
+
 func (r *Repository) UpdatePipelineConfig(rpo *RepositoryPipelineOptions) (*Pipeline, error) {
 	data := r.buildPipelineBody(rpo)
 	urlStr := r.c.requestUrl("/repositories/%s/%s/pipelines_config", rpo.Owner, rpo.RepoSlug)

@@ -32,6 +32,7 @@ type repository interface {
 	Delete(opt RepositoryOptions) (interface{}, error)
 	ListWatchers(opt RepositoryOptions) (interface{}, error)
 	ListForks(opt RepositoryOptions) (interface{}, error)
+	ListDefaultReviewers(opt RepositoryOptions) (interface{}, error)
 	UpdatePipelineConfig(opt RepositoryPipelineOptions) (*Pipeline, error)
 	AddPipelineVariable(opt RepositoryPipelineVariableOptions) (*PipelineVariable, error)
 	AddPipelineKeyPair(opt RepositoryPipelineKeyPairOptions) (*PipelineKeyPair, error)
