@@ -23,10 +23,16 @@ type Repository struct {
 	c *Client
 
 	Project     Project
+	Uuid        string
+	Name        string
 	Slug        string
 	Full_name   string
 	Description string
 	ForkPolicy  string
+	Language    string
+	Is_private  bool
+	Has_issues  bool
+	Mainbranch  RepositoryBranch
 	Type        string
 	Owner       map[string]interface{}
 	Links       map[string]interface{}
