@@ -276,6 +276,24 @@ func (r *Repository) ListTags(rbo *RepositoryTagOptions) (*RepositoryTags, error
 	return decodeRepositoryTags(bodyString)
 }
 
+func (r *Repository) CreateTag(rbo *RepositoryTagCreationOptions) (*RepositoryTag, error) {
+	urlStr := r.c.requestUrl("/repositories/%s/%s/refs/tags", rbo.Owner, rbo.RepoSlug)
+	data := r.buildTagBody(rbo)
+
+	response, err := r.c.executeRaw("POST", urlStr, data)
+	if err != nil {
+		return nil, err
+	}
+
+	bodyBytes, err := ioutil.ReadAll(response)
+	if err != nil {
+		return nil, err
+	}
+
+	bodyString := string(bodyBytes)
+	return decodeRepositoryTagCreated(bodyString)
+}
+
 func (r *Repository) Delete(ro *RepositoryOptions) (interface{}, error) {
 	urlStr := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.RepoSlug)
 	return r.c.execute("DELETE", urlStr, "")
@@ -480,6 +498,17 @@ func (r *Repository) buildPipelineBuildNumberBody(rpbno *RepositoryPipelineBuild
 	return r.buildJsonBody(body)
 }
 
+func (r *Repository) buildTagBody(rbo *RepositoryTagCreationOptions) string {
+	body := map[string]interface{}{
+		"name": rbo.Name,
+		"target": map[string]string{
+			"hash": rbo.Target.Hash,
+		},
+	}
+
+	return r.buildJsonBody(body)
+}
+
 func decodeRepository(repoResponse interface{}) (*Repository, error) {
 	repoMap := repoResponse.(map[string]interface{})
 
@@ -577,6 +606,15 @@ func decodeRepositoryBranch(branchResponseStr string) (*RepositoryBranch, error)
 		return nil, err
 	}
 	return &repositoryBranch, nil
+}
+
+func decodeRepositoryTagCreated(tagResponseStr string) (*RepositoryTag, error) {
+	var responseTagCreated RepositoryTag
+	err := json.Unmarshal([]byte(tagResponseStr), &responseTagCreated)
+	if err != nil {
+		return nil, err
+	}
+	return &responseTagCreated, nil
 }
 
 func decodeRepositoryTags(tagResponseStr string) (*RepositoryTags, error) {
