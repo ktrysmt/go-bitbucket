@@ -8,6 +8,7 @@ type Workspace struct {
 	c *Client
 
 	Repositories *Repositories
+	Permissions  *Permission
 
 	UUID       string
 	Type       string
@@ -23,6 +24,22 @@ type WorkspaceList struct {
 	Size       int
 	Next       string
 	Workspaces []Workspace
+}
+
+type Permission struct {
+	c *Client
+
+	Type string
+}
+
+func (t *Permission) GetUserPermissions(organization, member string) (*Permission, error) {
+	urlStr := t.c.requestUrl("/workspaces/%s/permissions?q=user.nickname=\"%s\"", organization, member)
+	response, err := t.c.execute("GET", urlStr, "")
+	if err != nil {
+		return nil, err
+	}
+
+	return decodePermission(response), err
 }
 
 func (t *Workspace) List() (*WorkspaceList, error) {
@@ -43,6 +60,23 @@ func (t *Workspace) Get(workspace string) (*Workspace, error) {
 	}
 
 	return decodeWorkspace(response)
+}
+
+func decodePermission(permission interface{}) *Permission {
+	permissionResponseMap := permission.(map[string]interface{})
+	if permissionResponseMap["size"].(float64) == 0 {
+		return nil
+	}
+
+	permissionValues := permissionResponseMap["values"].([]interface{})
+	if len(permissionValues) == 0 {
+		return nil
+	}
+
+	permissionValue := permissionValues[0].(map[string]interface{})
+	return &Permission{
+		Type: permissionValue["permission"].(string),
+	}
 }
 
 func decodeWorkspace(workspace interface{}) (*Workspace, error) {

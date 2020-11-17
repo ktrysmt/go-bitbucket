@@ -139,7 +139,7 @@ func injectClient(a *auth) *Client {
 	c.Users = &Users{c: c}
 	c.User = &User{c: c}
 	c.Teams = &Teams{c: c}
-	c.Workspaces = &Workspace{c: c, Repositories: c.Repositories}
+	c.Workspaces = &Workspace{c: c, Repositories: c.Repositories, Permissions: &Permission{c: c}}
 	c.HttpClient = new(http.Client)
 	return c
 }
