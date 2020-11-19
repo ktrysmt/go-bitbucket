@@ -85,3 +85,17 @@ func TestGetWorkspaceRepository(t *testing.T) {
 		t.Error("Cannot catch repos full name.")
 	}
 }
+
+func TestGetWorkspacePermissionForUser(t *testing.T) {
+	c := getBitbucketClient(t)
+	workspaceName := getWorkspace(t)
+
+	res, err := c.Workspaces.Permissions.GetUserPermissions(workspaceName, "josemiguelmelo")
+	if err != nil {
+		t.Error("Could not get the workspace.")
+	}
+
+	if res == nil || res.Type == "" {
+		t.Error("The workspace was not returned")
+	}
+}
