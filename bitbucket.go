@@ -91,6 +91,14 @@ type teams interface {
 	Projects(teamname string) (interface{}, error)
 }
 
+type pipelines interface {
+	List(po *PipelinesOptions) (interface{}, error)
+	Get(po *PipelinesOptions) (interface{}, error)
+	ListSteps(po *PipelinesOptions) (interface{}, error)
+	GetStep(po *PipelinesOptions) (interface{}, error)
+	GetLog(po *PipelinesOptions) (string, error)
+}
+
 type RepositoriesOptions struct {
 	Owner string `json:"owner"`
 	Role  string `json:"role"` // role=[owner|admin|contributor|member]
@@ -283,4 +291,13 @@ type PageRes struct {
 	PageLen  int32 `json:"pagelen"`
 	MaxDepth int32 `json:"max_depth"`
 	Size     int32 `json:"size"`
+}
+
+type PipelinesOptions struct {
+	Owner    string `json:"owner"`
+	RepoSlug string `json:"repo_slug"`
+	Query    string `json:"query"`
+	Sort     string `json:"sort"`
+	IDOrUuid string `json:"ID"`
+	StepUuid string `json:"StepUUID"`
 }
