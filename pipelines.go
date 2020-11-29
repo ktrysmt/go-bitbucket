@@ -1,6 +1,7 @@
 package bitbucket
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/url"
 )
@@ -34,6 +35,17 @@ func (p *Pipelines) List(po *PipelinesOptions) (interface{}, error) {
 		urlStr = parsed.String()
 	}
 
+	if po.Page != 0 {
+		parsed, err := url.Parse(urlStr)
+		if err != nil {
+			return nil, err
+		}
+		query := parsed.Query()
+		query.Set("page", fmt.Sprint(po.Page))
+		parsed.RawQuery = query.Encode()
+		urlStr = parsed.String()
+	}
+
 	return p.c.execute("GET", urlStr, "")
 }
 
@@ -63,6 +75,17 @@ func (p *Pipelines) ListSteps(po *PipelinesOptions) (interface{}, error) {
 		}
 		query := parsed.Query()
 		query.Set("sort", po.Sort)
+		parsed.RawQuery = query.Encode()
+		urlStr = parsed.String()
+	}
+
+	if po.Page != 0 {
+		parsed, err := url.Parse(urlStr)
+		if err != nil {
+			return nil, err
+		}
+		query := parsed.Query()
+		query.Set("page", fmt.Sprint(po.Page))
 		parsed.RawQuery = query.Encode()
 		urlStr = parsed.String()
 	}

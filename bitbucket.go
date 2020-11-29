@@ -295,6 +295,7 @@ type PageRes struct {
 
 type PipelinesOptions struct {
 	Owner    string `json:"owner"`
+	Page     int    `json:"page"`
 	RepoSlug string `json:"repo_slug"`
 	Query    string `json:"query"`
 	Sort     string `json:"sort"`
