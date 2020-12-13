@@ -107,6 +107,26 @@ func (p *PullRequests) Decline(po *PullRequestsOptions) (interface{}, error) {
 	return p.c.execute("POST", urlStr, data)
 }
 
+func (p *PullRequests) Approve(po *PullRequestsOptions) (interface{}, error) {
+	urlStr := p.c.GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/approve"
+	return p.c.execute("POST", urlStr, "")
+}
+
+func (p *PullRequests) UnApprove(po *PullRequestsOptions) (interface{}, error) {
+	urlStr := p.c.GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/approve"
+	return p.c.execute("DELETE", urlStr, "")
+}
+
+func (p *PullRequests) RequestChanges(po *PullRequestsOptions) (interface{}, error) {
+	urlStr := p.c.GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/request-changes"
+	return p.c.execute("POST", urlStr, "")
+}
+
+func (p *PullRequests) UnRequestChanges(po *PullRequestsOptions) (interface{}, error) {
+	urlStr := p.c.GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/request-changes"
+	return p.c.execute("DELETE", urlStr, "")
+}
+
 func (p *PullRequests) GetComments(po *PullRequestsOptions) (interface{}, error) {
 	urlStr := p.c.GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/comments/"
 	return p.c.execute("GET", urlStr, "")
