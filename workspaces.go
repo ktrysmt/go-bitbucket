@@ -62,6 +62,16 @@ func (t *Workspace) Get(workspace string) (*Workspace, error) {
 	return decodeWorkspace(response)
 }
 
+func (w *Workspace) Members(teamname string) (interface{}, error) {
+	urlStr := w.c.requestUrl("/workspaces/%s/members", teamname)
+	return w.c.execute("GET", urlStr, "")
+}
+
+func (w *Workspace) Projects(teamname string) (interface{}, error) {
+	urlStr := w.c.requestUrl("/workspaces/%s/projects/", teamname)
+	return w.c.execute("GET", urlStr, "")
+}
+
 func decodePermission(permission interface{}) *Permission {
 	permissionResponseMap := permission.(map[string]interface{})
 	if permissionResponseMap["size"].(float64) == 0 {
