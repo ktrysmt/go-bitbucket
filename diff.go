@@ -11,5 +11,5 @@ func (d *Diff) GetDiff(do *DiffOptions) (interface{}, error) {
 
 func (d *Diff) GetPatch(do *DiffOptions) (interface{}, error) {
 	urlStr := d.c.requestUrl("/repositories/%s/%s/patch/%s", do.Owner, do.RepoSlug, do.Spec)
-	return d.c.execute("GET", urlStr, "")
+	return d.c.executeRaw("GET", urlStr, "")
 }
