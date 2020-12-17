@@ -87,12 +87,12 @@ func (p *PullRequests) Commits(po *PullRequestsOptions) (interface{}, error) {
 
 func (p *PullRequests) Patch(po *PullRequestsOptions) (interface{}, error) {
 	urlStr := p.c.GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/patch"
-	return p.c.execute("GET", urlStr, "")
+	return p.c.executeRaw("GET", urlStr, "")
 }
 
 func (p *PullRequests) Diff(po *PullRequestsOptions) (interface{}, error) {
 	urlStr := p.c.GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/diff"
-	return p.c.execute("GET", urlStr, "")
+	return p.c.executeRaw("GET", urlStr, "")
 }
 
 func (p *PullRequests) Merge(po *PullRequestsOptions) (interface{}, error) {
