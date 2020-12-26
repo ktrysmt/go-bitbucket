@@ -31,7 +31,7 @@ jobs:
   # To give greater visibility on which files are failing,
   # while the errors with the tests are resolved
   individual-tests:
-    name: Run ${{ matrix.file }} (${{ matrix.os }}, ${{ matrix.go }})
+    name: ${{ matrix.file }} (${{ matrix.os }}, ${{ matrix.go }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false # When all tests are consistently passing this should be turned off
