@@ -13,6 +13,7 @@ jobs:
     name: All Tests
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false # When all tests are consistently passing this should be turned off
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
         go: [1.12, 1.13, 1.14, 1.15]
@@ -33,6 +34,7 @@ jobs:
     name: Individual Tests
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false # When all tests are consistently passing this should be turned off
       matrix:
         file:
           - branchrestrictions_test.go
