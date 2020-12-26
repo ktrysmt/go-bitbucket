@@ -31,11 +31,13 @@ jobs:
   # To give greater visibility on which files are failing,
   # while the errors with the tests are resolved
   individual-tests:
-    name: Individual Tests
-    runs-on: ubuntu-latest
+    name: Run ${{ matrix.file }}
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false # When all tests are consistently passing this should be turned off
       matrix:
+        os: [ macos-latest, windows-latest, ubuntu-latest ]
+        go: [ 1.12, 1.13, 1.14, 1.15 ]
         file:
           - branchrestrictions_test.go
           - client_test.go
@@ -45,8 +47,11 @@ jobs:
           - user_test.go
           - workspace_test.go
     steps:
-      - uses: actions/checkout@master
-      - uses: actions/setup-go@v1
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Setup Go ${{ matrix.go }}
+        uses: actions/setup-go@v1
         with:
-          go-version: '1.15'
-      - run: go test -v ./tests/${{ matrix.file }}
+          go-version: ${{ matrix.go }}
+      - name: Run ${{ matrix.file }}
+        run: go test -v ./tests/${{ matrix.file }}
