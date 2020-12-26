@@ -11,3 +11,8 @@ jobs:
         with:
           go-version: '1.15'
       - run: make test
+        env:
+          BITBUCKET_TEST_USERNAME:  ${{ secrets.BITBUCKET_TEST_USERNAME }}
+          BITBUCKET_TEST_PASSWORD:  ${{ secrets.BITBUCKET_TEST_PASSWORD }}
+          BITBUCKET_TEST_OWNER:  ${{ secrets.BITBUCKET_TEST_OWNER }}
+          BITBUCKET_TEST_REPOSLUG:  ${{ secrets.BITBUCKET_TEST_REPOSLUG }}
