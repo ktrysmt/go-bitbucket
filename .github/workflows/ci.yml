@@ -11,13 +11,20 @@ env:
 jobs:
   all-tests:
     name: All Tests
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        go: [1.12, 1.13, 1.14, 1.15]
     steps:
-      - uses: actions/checkout@master
-      - uses: actions/setup-go@v1
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Setup Go ${{ matrix.go }}
+        uses: actions/setup-go@v1
         with:
-          go-version: '1.15'
-      - run: make test
+          go-version: ${{ matrix.go }}
+      - name: Run tests
+        run: make test
 
   # This job is intended to only exist temporarily.
   # To give greater visibility on which files are failing,
