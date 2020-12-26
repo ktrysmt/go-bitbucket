@@ -2,8 +2,15 @@ name: Continuous Integration
 
 on: push
 
+env:
+  BITBUCKET_TEST_USERNAME:  ${{ secrets.BITBUCKET_TEST_USERNAME }}
+  BITBUCKET_TEST_PASSWORD:  ${{ secrets.BITBUCKET_TEST_PASSWORD }}
+  BITBUCKET_TEST_OWNER:  ${{ secrets.BITBUCKET_TEST_OWNER }}
+  BITBUCKET_TEST_REPOSLUG:  ${{ secrets.BITBUCKET_TEST_REPOSLUG }}
+
 jobs:
-  test:
+  all-tests:
+    name: All Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
@@ -11,8 +18,26 @@ jobs:
         with:
           go-version: '1.15'
       - run: make test
-        env:
-          BITBUCKET_TEST_USERNAME:  ${{ secrets.BITBUCKET_TEST_USERNAME }}
-          BITBUCKET_TEST_PASSWORD:  ${{ secrets.BITBUCKET_TEST_PASSWORD }}
-          BITBUCKET_TEST_OWNER:  ${{ secrets.BITBUCKET_TEST_OWNER }}
-          BITBUCKET_TEST_REPOSLUG:  ${{ secrets.BITBUCKET_TEST_REPOSLUG }}
+
+  # This job is intended to only exist temporarily.
+  # To give greater visibility on which files are failing,
+  # while the errors with the tests are resolved
+  individual-tests:
+    name: Individual Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        file:
+          - branchrestrictions_test.go
+          - client_test.go
+          - diff_test.go
+          - list_test.go
+          - repository_test.go
+          - user_test.go
+          - workspace_test.go
+    steps:
+      - uses: actions/checkout@master
+      - uses: actions/setup-go@v1
+        with:
+          go-version: '1.15'
+      - run: go test -v ./tests/${{ matrix.file }}
