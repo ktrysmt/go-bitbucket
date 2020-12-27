@@ -15,8 +15,8 @@ jobs:
     strategy:
       fail-fast: false # When all tests are consistently passing this should be turned off
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
-        go: [1.12, 1.13, 1.14, 1.15]
+        os: [ macos-latest, windows-latest, ubuntu-latest ]
+        go: [ 1.14, 1.15 ]
     steps:
       - name: Checkout
         uses: actions/checkout@master
@@ -45,7 +45,7 @@ jobs:
           - user_test.go
           - workspace_test.go
         os: [ macos-latest, windows-latest, ubuntu-latest ]
-        go: [ 1.12, 1.13, 1.14, 1.15 ]
+        go: [ 1.14, 1.15 ]
     steps:
       - name: Checkout
         uses: actions/checkout@master
