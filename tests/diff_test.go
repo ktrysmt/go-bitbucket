@@ -32,7 +32,10 @@ func TestDiff(t *testing.T) {
 		RepoSlug: repo,
 		Spec:     spec,
 	}
-	res, _ := c.Repositories.Diff.GetDiff(opt)
+	res, err := c.Repositories.Diff.GetDiff(opt)
+	if err != nil {
+		t.Error(err)
+	}
 
 	pp.Println(res)
 

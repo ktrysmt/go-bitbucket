@@ -22,7 +22,10 @@ func TestProfile(t *testing.T) {
 
 	c := bitbucket.NewBasicAuth(user, pass)
 
-	res, _ := c.User.Profile()
+	res, err := c.User.Profile()
+	if err != nil {
+		t.Error(err)
+	}
 
 	jsonMap := res.(map[string]interface{})
 
