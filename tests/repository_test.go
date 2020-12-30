@@ -44,3 +44,40 @@ func TestGetRepositoryRepositories(t *testing.T) {
 		t.Error("Cannot catch repos full name.")
 	}
 }
+
+func TestGetRepositoryPipelineVariables(t *testing.T) {
+
+	user := os.Getenv("BITBUCKET_TEST_USERNAME")
+	pass := os.Getenv("BITBUCKET_TEST_PASSWORD")
+	owner := os.Getenv("BITBUCKET_TEST_OWNER")
+	repo := os.Getenv("BITBUCKET_TEST_REPOSLUG")
+
+	if user == "" {
+		t.Error("BITBUCKET_TEST_USERNAME is empty.")
+	}
+	if pass == "" {
+		t.Error("BITBUCKET_TEST_PASSWORD is empty.")
+	}
+	if owner == "" {
+		t.Error("BITBUCKET_TEST_OWNER is empty.")
+	}
+	if repo == "" {
+		t.Error("BITBUCKET_TEST_REPOSLUG is empty.")
+	}
+
+	c := bitbucket.NewBasicAuth(user, pass)
+
+	opt := &bitbucket.RepositoryPipelineVariablesOptions{
+		Owner:    owner,
+		RepoSlug: repo,
+	}
+
+	res, err := c.Repositories.Repository.ListPipelineVariables(opt)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if res == nil {
+		t.Error("Cannot list pipeline variables")
+	}
+}
