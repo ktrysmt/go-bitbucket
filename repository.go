@@ -94,6 +94,15 @@ type Pipeline struct {
 	Repository Repository
 }
 
+type PipelineVariables struct {
+	Page      int
+	Pagelen   int
+	MaxDepth  int
+	Size      int
+	Next      string
+	Variables []PipelineVariable
+}
+
 type PipelineVariable struct {
 	Type    string
 	Uuid    string
@@ -329,6 +338,42 @@ func (r *Repository) UpdatePipelineConfig(rpo *RepositoryPipelineOptions) (*Pipe
 	}
 
 	return decodePipelineRepository(response)
+}
+
+func (r *Repository) ListPipelineVariables(opt *RepositoryPipelineVariablesOptions) (*PipelineVariables, error) {
+
+	params := url.Values{}
+	if opt.Query != "" {
+		params.Add("q", opt.Query)
+	}
+
+	if opt.Sort != "" {
+		params.Add("sort", opt.Sort)
+	}
+
+	if opt.PageNum > 0 {
+		params.Add("page", strconv.Itoa(opt.PageNum))
+	}
+
+	if opt.Pagelen > 0 {
+		params.Add("pagelen", strconv.Itoa(opt.Pagelen))
+	}
+
+	if opt.MaxDepth > 0 {
+		params.Add("max_depth", strconv.Itoa(opt.MaxDepth))
+	}
+
+	urlStr := r.c.requestUrl("/repositories/%s/%s/pipelines_config/variables/?%s", opt.Owner, opt.RepoSlug, params.Encode())
+	response, err := r.c.executeRaw("GET", urlStr, "")
+	if err != nil {
+		return nil, err
+	}
+	bodyBytes, err := ioutil.ReadAll(response)
+	if err != nil {
+		return nil, err
+	}
+	bodyString := string(bodyBytes)
+	return decodePipelineVariables(bodyString)
 }
 
 func (r *Repository) AddPipelineVariable(rpvo *RepositoryPipelineVariableOptions) (*PipelineVariable, error) {
@@ -694,6 +739,58 @@ func decodePipelineRepository(repoResponse interface{}) (*Pipeline, error) {
 	}
 
 	return pipeline, nil
+}
+
+func decodePipelineVariables(responseStr string) (*PipelineVariables, error) {
+
+	var responseMap map[string]interface{}
+	err := json.Unmarshal([]byte(responseStr), &responseMap)
+	if err != nil {
+		return nil, err
+	}
+
+	values := responseMap["values"].([]interface{})
+	var variables []PipelineVariable
+	for _, variable := range values {
+		var pipelineVariable PipelineVariable
+		err = mapstructure.Decode(variable, &pipelineVariable)
+		if err == nil {
+			variables = append(variables, pipelineVariable)
+		}
+	}
+
+	page, ok := responseMap["page"].(float64)
+	if !ok {
+		page = 0
+	}
+
+	pagelen, ok := responseMap["pagelen"].(float64)
+	if !ok {
+		pagelen = 0
+	}
+	max_depth, ok := responseMap["max_depth"].(float64)
+	if !ok {
+		max_depth = 0
+	}
+	size, ok := responseMap["size"].(float64)
+	if !ok {
+		size = 0
+	}
+
+	next, ok := responseMap["next"].(string)
+	if !ok {
+		next = ""
+	}
+
+	pipelineVariables := PipelineVariables{
+		Page:      int(page),
+		Pagelen:   int(pagelen),
+		MaxDepth:  int(max_depth),
+		Size:      int(size),
+		Next:      next,
+		Variables: variables,
+	}
+	return &pipelineVariables, nil
 }
 
 func decodePipelineVariableRepository(repoResponse interface{}) (*PipelineVariable, error) {
