@@ -44,7 +44,10 @@ func TestCreateBranchRestrictionsKindPush(t *testing.T) {
 		Kind:     "push",
 		Users:    []string{user},
 	}
-	res, _ := c.Repositories.BranchRestrictions.Create(opt)
+	res, err := c.Repositories.BranchRestrictions.Create(opt)
+	if err != nil {
+		t.Error(err)
+	}
 	jsonMap := res.(map[string]interface{})
 	if jsonMap["type"] != "branchrestriction" {
 		t.Error("is not branchrestriction type")
@@ -65,7 +68,10 @@ func TestCreateBranchRestrictionsKindRequirePassingBuilds(t *testing.T) {
 		Kind:     "require_passing_builds_to_merge",
 		Value:    2,
 	}
-	res, _ := c.Repositories.BranchRestrictions.Create(opt)
+	res, err := c.Repositories.BranchRestrictions.Create(opt)
+	if err != nil {
+		t.Error(err)
+	}
 	jsonMap := res.(map[string]interface{})
 	if jsonMap["type"] != "branchrestriction" {
 		t.Error("is not branchrestriction type")
