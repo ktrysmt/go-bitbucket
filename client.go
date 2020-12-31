@@ -339,7 +339,6 @@ func (c *Client) doRawRequest(req *http.Request, emptyResponse bool) (io.ReadClo
 	}
 
 	if resp.Body == nil {
-		resp.Body.Close()
 		return nil, fmt.Errorf("response body is nil")
 	}
 
