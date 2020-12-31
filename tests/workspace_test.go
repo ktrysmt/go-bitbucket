@@ -90,7 +90,12 @@ func TestGetWorkspacePermissionForUser(t *testing.T) {
 	c := getBitbucketClient(t)
 	workspaceName := getWorkspace(t)
 
-	res, err := c.Workspaces.Permissions.GetUserPermissions(workspaceName, "josemiguelmelo")
+	user, err := c.User.Profile()
+	if err != nil {
+		t.Error(err)
+	}
+
+	res, err := c.Workspaces.Permissions.GetUserPermissionsByUuid(workspaceName, user.Uuid)
 	if err != nil {
 		t.Error("Could not get the workspace.")
 	}

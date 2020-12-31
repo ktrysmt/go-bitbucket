@@ -34,6 +34,7 @@ type repository interface {
 	ListForks(opt RepositoryOptions) (interface{}, error)
 	ListDefaultReviewers(opt RepositoryOptions) (interface{}, error)
 	UpdatePipelineConfig(opt RepositoryPipelineOptions) (*Pipeline, error)
+	ListPipelineVariables(opt RepositoryPipelineVariablesOptions) (*PipelineVariables, error)
 	AddPipelineVariable(opt RepositoryPipelineVariableOptions) (*PipelineVariable, error)
 	AddPipelineKeyPair(opt RepositoryPipelineKeyPairOptions) (*PipelineKeyPair, error)
 	UpdatePipelineBuildNumber(opt RepositoryPipelineBuildNumberOptions) (*PipelineBuildNumber, error)
@@ -250,6 +251,16 @@ type RepositoryPipelineOptions struct {
 	Owner    string `json:"owner"`
 	RepoSlug string `json:"repo_slug"`
 	Enabled  bool   `json:"has_pipelines"`
+}
+
+type RepositoryPipelineVariablesOptions struct {
+	Owner    string `json:"owner"`
+	RepoSlug string `json:"repo_slug"`
+	Query    string `json:"q"`
+	Sort     string `json:"sort"`
+	PageNum  int    `json:"page"`
+	Pagelen  int    `json:"pagelen"`
+	MaxDepth int    `json:"max_depth"`
 }
 
 type RepositoryPipelineVariableOptions struct {
