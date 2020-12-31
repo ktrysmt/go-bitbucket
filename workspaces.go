@@ -42,6 +42,16 @@ func (t *Permission) GetUserPermissions(organization, member string) (*Permissio
 	return decodePermission(response), err
 }
 
+func (t *Permission) GetUserPermissionsByUuid(organization, member string) (*Permission, error) {
+	urlStr := t.c.requestUrl("/workspaces/%s/permissions?q=user.uuid=\"%s\"", organization, member)
+	response, err := t.c.execute("GET", urlStr, "")
+	if err != nil {
+		return nil, err
+	}
+
+	return decodePermission(response), err
+}
+
 func (t *Workspace) List() (*WorkspaceList, error) {
 	urlStr := t.c.requestUrl("/workspaces")
 	response, err := t.c.execute("GET", urlStr, "")
