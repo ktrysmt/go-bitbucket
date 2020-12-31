@@ -307,7 +307,7 @@ func (c *Client) doRequest(req *http.Request, emptyResponse bool) (interface{}, 
 	if err != nil {
 		return nil, err
 	}
-	if emptyResponse {
+	if emptyResponse || resBody == nil {
 		return nil, nil
 	}
 
@@ -328,12 +328,12 @@ func (c *Client) doRawRequest(req *http.Request, emptyResponse bool) (io.ReadClo
 		return nil, err
 	}
 
-	if (resp.StatusCode != http.StatusOK) && (resp.StatusCode != http.StatusCreated) {
+	if unexpectedHttpStatusCode(resp.StatusCode) {
 		resp.Body.Close()
 		return nil, fmt.Errorf(resp.Status)
 	}
 
-	if emptyResponse {
+	if emptyResponse || resp.StatusCode == http.StatusNoContent {
 		resp.Body.Close()
 		return nil, nil
 	}
@@ -343,6 +343,19 @@ func (c *Client) doRawRequest(req *http.Request, emptyResponse bool) (io.ReadClo
 	}
 
 	return resp.Body, nil
+}
+
+func unexpectedHttpStatusCode(statusCode int) bool {
+	switch statusCode {
+	case http.StatusOK:
+		return false
+	case http.StatusCreated:
+		return false
+	case http.StatusNoContent:
+		return false
+	default:
+		return true
+	}
 }
 
 func (c *Client) requestUrl(template string, args ...interface{}) string {
