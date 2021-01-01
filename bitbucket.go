@@ -36,6 +36,7 @@ type repository interface {
 	UpdatePipelineConfig(opt RepositoryPipelineOptions) (*Pipeline, error)
 	ListPipelineVariables(opt RepositoryPipelineVariablesOptions) (*PipelineVariables, error)
 	AddPipelineVariable(opt RepositoryPipelineVariableOptions) (*PipelineVariable, error)
+	DeletePipelineVariable(opt RepositoryPipelineVariableDeleteOptions) (interface{}, error)
 	AddPipelineKeyPair(opt RepositoryPipelineKeyPairOptions) (*PipelineKeyPair, error)
 	UpdatePipelineBuildNumber(opt RepositoryPipelineBuildNumberOptions) (*PipelineBuildNumber, error)
 	ListFiles(opt RepositoryFilesOptions) (*[]RepositoryFile, error)
@@ -270,6 +271,12 @@ type RepositoryPipelineVariableOptions struct {
 	Key      string `json:"key"`
 	Value    string `json:"value"`
 	Secured  bool   `json:"secured"`
+}
+
+type RepositoryPipelineVariableDeleteOptions struct {
+	Owner    string `json:"owner"`
+	RepoSlug string `json:"repo_slug"`
+	Uuid     string `json:"uuid"`
 }
 
 type RepositoryPipelineKeyPairOptions struct {

@@ -388,6 +388,11 @@ func (r *Repository) AddPipelineVariable(rpvo *RepositoryPipelineVariableOptions
 	return decodePipelineVariableRepository(response)
 }
 
+func (r *Repository) DeletePipelineVariable(opt *RepositoryPipelineVariableDeleteOptions) (interface{}, error) {
+	urlStr := r.c.requestUrl("/repositories/%s/%s/pipelines_config/variables/%s", opt.Owner, opt.RepoSlug, opt.Uuid)
+	return r.c.execute("DELETE", urlStr, "")
+}
+
 func (r *Repository) AddPipelineKeyPair(rpkpo *RepositoryPipelineKeyPairOptions) (*PipelineKeyPair, error) {
 	data := r.buildPipelineKeyPairBody(rpkpo)
 	urlStr := r.c.requestUrl("/repositories/%s/%s/pipelines_config/ssh/key_pair", rpkpo.Owner, rpkpo.RepoSlug)
