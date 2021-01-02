@@ -3,6 +3,7 @@ package bitbucket
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/url"
 	"os"
@@ -139,6 +140,29 @@ type BranchModel struct {
 	Name           string
 	Branch         RepositoryBranch
 	Use_Mainbranch bool
+}
+
+type Environments struct {
+	Page         int
+	Pagelen      int
+	MaxDepth     int
+	Size         int
+	Next         string
+	Environments []Environment
+}
+
+type EnvironmentType struct {
+	Name string
+	Rank int
+	Type string
+}
+
+type Environment struct {
+	Uuid            string
+	Name            string
+	EnvironmentType EnvironmentType
+	Rank            int
+	Type            string
 }
 
 func (r *Repository) Create(ro *RepositoryOptions) (*Repository, error) {
@@ -426,15 +450,46 @@ func (r *Repository) BranchingModel(rbmo *RepositoryBranchingModelOptions) (*Bra
 	return decodeBranchingModel(response)
 }
 
-func (r *Repository) buildJsonBody(body map[string]interface{}) string {
-
-	data, err := json.Marshal(body)
+func (r *Repository) ListEnvironments(opt *RepositoryEnvironmentsOptions) (*Environments, error) {
+	urlStr := r.c.requestUrl("/repositories/%s/%s/environments/", opt.Owner, opt.RepoSlug)
+	res, err := r.c.executeRaw("GET", urlStr, "")
 	if err != nil {
-		pp.Println(err)
-		os.Exit(9)
+		return nil, err
 	}
 
-	return string(data)
+	bodyBytes, err := ioutil.ReadAll(res)
+	if err != nil {
+		return nil, err
+	}
+
+	bodyString := string(bodyBytes)
+	return decodeEnvironments(bodyString)
+}
+
+func (r *Repository) AddEnvironment(opt *RepositoryEnvironmentOptions) (*Environment, error) {
+	body := r.buildEnvironmentBody(opt)
+	urlStr := r.c.requestUrl("/repositories/%s/%s/environments/", opt.Owner, opt.RepoSlug)
+	res, err := r.c.execute("POST", urlStr, body)
+	if err != nil {
+		return nil, err
+	}
+
+	return decodeEnvironment(res)
+}
+
+func (r *Repository) DeleteEnvironment(opt *RepositoryEnvironmentDeleteOptions) (interface{}, error) {
+	urlStr := r.c.requestUrl("/repositories/%s/%s/environments/%s", opt.Owner, opt.RepoSlug, opt.Uuid)
+	return r.c.execute("DELETE", urlStr, "")
+}
+
+func (r *Repository) GetEnvironment(opt *RepositoryEnvironmentOptions) (*Environment, error) {
+	urlStr := r.c.requestUrl("/repositories/%s/%s/environments/%s", opt.Owner, opt.RepoSlug, opt.Uuid)
+	res, err := r.c.execute("GET", urlStr, "")
+	if err != nil {
+		return nil, err
+	}
+
+	return decodeEnvironment(res)
 }
 
 func (r *Repository) buildRepositoryBody(ro *RepositoryOptions) string {
@@ -568,6 +623,34 @@ func (r *Repository) buildTagBody(rbo *RepositoryTagCreationOptions) string {
 	}
 
 	return r.buildJsonBody(body)
+}
+
+func (r *Repository) buildEnvironmentBody(opt *RepositoryEnvironmentOptions) string {
+	body := map[string]interface{}{}
+
+	body["environment_type"] = map[string]interface{}{
+		"name": opt.EnvironmentType.String(),
+		"rank": opt.Rank,
+		"type": "deployment_environment_type",
+	}
+	if opt.Uuid != "" {
+		body["uuid"] = opt.Uuid
+	}
+	body["name"] = opt.Name
+	body["rank"] = opt.Rank
+
+	return r.buildJsonBody(body)
+}
+
+func (r *Repository) buildJsonBody(body map[string]interface{}) string {
+
+	data, err := json.Marshal(body)
+	if err != nil {
+		pp.Println(err)
+		os.Exit(9)
+	}
+
+	return string(data)
 }
 
 func decodeRepository(repoResponse interface{}) (*Repository, error) {
@@ -860,6 +943,83 @@ func decodeBranchingModel(branchingModelResponse interface{}) (*BranchingModel, 
 	}
 
 	return branchingModel, nil
+}
+
+func decodeEnvironments(response string) (*Environments, error) {
+	var responseMap map[string]interface{}
+	err := json.Unmarshal([]byte(response), &responseMap)
+	if err != nil {
+		return nil, err
+	}
+
+	values := responseMap["values"].([]interface{})
+	var environmentsArray []Environment
+	var errs error = nil
+	for idx, value := range values {
+		var environment Environment
+		err = mapstructure.Decode(value, &environment)
+		if err != nil {
+			if errs == nil {
+				errs = err
+			} else {
+				errs = fmt.Errorf("%w; environment %d: %w", errs, idx, err)
+			}
+		} else {
+			environmentsArray = append(environmentsArray, environment)
+		}
+	}
+
+	page, ok := responseMap["page"].(float64)
+	if !ok {
+		page = 0
+	}
+
+	pagelen, ok := responseMap["pagelen"].(float64)
+	if !ok {
+		pagelen = 0
+	}
+
+	max_depth, ok := responseMap["max_depth"].(float64)
+	if !ok {
+		max_depth = 0
+	}
+
+	size, ok := responseMap["size"].(float64)
+	if !ok {
+		size = 0
+	}
+
+	next, ok := responseMap["next"].(string)
+	if !ok {
+		next = ""
+	}
+
+	environments := Environments{
+		Page:         int(page),
+		Pagelen:      int(pagelen),
+		MaxDepth:     int(max_depth),
+		Size:         int(size),
+		Next:         next,
+		Environments: environmentsArray,
+	}
+
+	return &environments, nil
+}
+
+func decodeEnvironment(response interface{}) (*Environment, error) {
+	responseMap := response.(map[string]interface{})
+
+	if responseMap["type"] == "error" {
+		return nil, DecodeError(responseMap)
+	}
+
+	var environment = new(Environment)
+	err := mapstructure.Decode(responseMap, &environment)
+	if err != nil {
+		return nil, err
+	}
+
+	return environment, nil
 }
 
 func (rf RepositoryFile) String() string {
