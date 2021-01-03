@@ -43,6 +43,10 @@ type repository interface {
 	GetFileBlob(opt RepositoryBlobOptions) (*RepositoryBlob, error)
 	ListBranches(opt RepositoryBranchOptions) (*RepositoryBranches, error)
 	BranchingModel(opt RepositoryBranchingModelOptions) (*BranchingModel, error)
+	ListEnvironments(opt RepositoryEnvironmentsOptions) (*Environments, error)
+	AddEnvironment(opt RepositoryEnvironmentOptions) (*Environment, error)
+	DeleteEnvironment(opt RepositoryEnvironmentDeleteOptions) (interface{}, error)
+	GetEnvironment(opt RepositoryEnvironmentOptions) (*Environment, error)
 }
 
 type repositories interface {
@@ -319,4 +323,36 @@ type PipelinesOptions struct {
 	Sort     string `json:"sort"`
 	IDOrUuid string `json:"ID"`
 	StepUuid string `json:"StepUUID"`
+}
+
+type RepositoryEnvironmentsOptions struct {
+	Owner    string `json:"owner"`
+	RepoSlug string `json:"repo_slug"`
+}
+
+type RepositoryEnvironmentTypeOption int
+
+const (
+	Test RepositoryEnvironmentTypeOption = iota
+	Staging
+	Production
+)
+
+func (e RepositoryEnvironmentTypeOption) String() string {
+	return [...]string{"Test", "Staging", "Production"}[e]
+}
+
+type RepositoryEnvironmentOptions struct {
+	Owner           string `json:"owner"`
+	RepoSlug        string `json:"repo_slug"`
+	Uuid            string `json:"uuid"`
+	Name            string `json:"name"`
+	EnvironmentType RepositoryEnvironmentTypeOption `json:"environment_type"`
+	Rank            int `json:"rank"`
+}
+
+type RepositoryEnvironmentDeleteOptions struct {
+	Owner    string `json:"owner"`
+	RepoSlug string `json:"repo_slug"`
+	Uuid     string `json:"uuid"`
 }
