@@ -3,8 +3,6 @@ name: Continuous Integration
 on:
   push:
   workflow_dispatch:
-  schedule:
-    - cron:  '*/5 * * * *'
 
 jobs:
   open-api-tests:
