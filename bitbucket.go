@@ -47,6 +47,10 @@ type repository interface {
 	AddEnvironment(opt RepositoryEnvironmentOptions) (*Environment, error)
 	DeleteEnvironment(opt RepositoryEnvironmentDeleteOptions) (interface{}, error)
 	GetEnvironment(opt RepositoryEnvironmentOptions) (*Environment, error)
+	ListDeploymentVariables(opt RepositoryDeploymentVariablesOptions) (*DeploymentVariables, error)
+	AddDeploymentVariable(opt RepositoryDeploymentVariableOptions) (*DeploymentVariable, error)
+	DeleteDeploymentVariable(opt RepositoryDeploymentVariableDeleteOptions) (interface{}, error)
+	UpdateDeploymentVariable(opt RepositoryDeploymentVariableOptions) (*DeploymentVariable, error)
 }
 
 type repositories interface {
@@ -355,4 +359,32 @@ type RepositoryEnvironmentDeleteOptions struct {
 	Owner    string `json:"owner"`
 	RepoSlug string `json:"repo_slug"`
 	Uuid     string `json:"uuid"`
+}
+
+type RepositoryDeploymentVariablesOptions struct {
+	Owner        string `json:"owner"`
+	RepoSlug     string `json:"repo_slug"`
+	Environment *Environment `json:"environment"`
+	Query        string `json:"q"`
+	Sort         string `json:"sort"`
+	PageNum      int    `json:"page"`
+	Pagelen      int    `json:"pagelen"`
+	MaxDepth     int    `json:"max_depth"`
+}
+
+type RepositoryDeploymentVariableOptions struct {
+	Owner        string `json:"owner"`
+	RepoSlug     string `json:"repo_slug"`
+	Environment *Environment `json:"environment"`
+	Uuid         string `json:"uuid"`
+	Key          string `json:"key"`
+	Value        string `json:"value"`
+	Secured      bool   `json:"secured"`
+}
+
+type RepositoryDeploymentVariableDeleteOptions struct {
+	Owner        string `json:"owner"`
+	RepoSlug     string `json:"repo_slug"`
+	Environment *Environment `json:"environment"`
+	Uuid         string `json:"uuid"`
 }

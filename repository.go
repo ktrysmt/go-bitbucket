@@ -165,6 +165,23 @@ type Environment struct {
 	Type            string
 }
 
+type DeploymentVariables struct {
+	Page      int
+	Pagelen   int
+	MaxDepth  int
+	Size      int
+	Next      string
+	Variables []DeploymentVariable
+}
+
+type DeploymentVariable struct {
+	Type    string
+	Uuid    string
+	Key     string
+	Value   string
+	Secured bool
+}
+
 func (r *Repository) Create(ro *RepositoryOptions) (*Repository, error) {
 	data := r.buildRepositoryBody(ro)
 	urlStr := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.RepoSlug)
@@ -492,6 +509,70 @@ func (r *Repository) GetEnvironment(opt *RepositoryEnvironmentOptions) (*Environ
 	return decodeEnvironment(res)
 }
 
+func (r *Repository) ListDeploymentVariables(opt *RepositoryDeploymentVariablesOptions) (*DeploymentVariables, error) {
+	params := url.Values{}
+	if opt.Query != "" {
+		params.Add("q", opt.Query)
+	}
+
+	if opt.Sort != "" {
+		params.Add("sort", opt.Sort)
+	}
+
+	if opt.PageNum > 0 {
+		params.Add("page", strconv.Itoa(opt.PageNum))
+	}
+
+	if opt.Pagelen > 0 {
+		params.Add("pagelen", strconv.Itoa(opt.Pagelen))
+	}
+
+	if opt.MaxDepth > 0 {
+		params.Add("max_depth", strconv.Itoa(opt.MaxDepth))
+	}
+
+	urlStr := r.c.requestUrl("/repositories/%s/%s/deployments_config/environments/%s/variables?%s", opt.Owner, opt.RepoSlug, opt.Environment.Uuid, params.Encode())
+	response, err := r.c.executeRaw("GET", urlStr, "")
+	if err != nil {
+		return nil, err
+	}
+	bodyBytes, err := ioutil.ReadAll(response)
+	if err != nil {
+		return nil, err
+	}
+	bodyString := string(bodyBytes)
+	return decodeDeploymentVariables(bodyString)
+}
+
+func (r *Repository) AddDeploymentVariable(opt *RepositoryDeploymentVariableOptions) (*DeploymentVariable, error) {
+	body := r.buildDeploymentVariableBody(opt)
+	urlStr := r.c.requestUrl("/repositories/%s/%s/deployments_config/environments/%s/variables", opt.Owner, opt.RepoSlug, opt.Environment.Uuid)
+
+	response, err := r.c.execute("POST", urlStr, body)
+	if err != nil {
+		return nil, err
+	}
+
+	return decodeDeploymentVariable(response)
+}
+
+func (r *Repository) DeleteDeploymentVariable(opt *RepositoryDeploymentVariableDeleteOptions) (interface{}, error) {
+	urlStr := r.c.requestUrl("/repositories/%s/%s/deployments_config/environments/%s/variables/%s", opt.Owner, opt.RepoSlug, opt.Environment.Uuid, opt.Uuid)
+	return r.c.execute("DELETE", urlStr, "")
+}
+
+func (r *Repository) UpdateDeploymentVariable(opt *RepositoryDeploymentVariableOptions) (*DeploymentVariable, error) {
+	body := r.buildDeploymentVariableBody(opt)
+	urlStr := r.c.requestUrl("/repositories/%s/%s/deployments_config/environments/%s/variables/%s", opt.Owner, opt.RepoSlug, opt.Environment.Uuid, opt.Uuid)
+
+	response, err := r.c.execute("PUT", urlStr, body)
+	if err != nil {
+		return nil, err
+	}
+
+	return decodeDeploymentVariable(response)
+}
+
 func (r *Repository) buildRepositoryBody(ro *RepositoryOptions) string {
 
 	body := map[string]interface{}{}
@@ -638,6 +719,19 @@ func (r *Repository) buildEnvironmentBody(opt *RepositoryEnvironmentOptions) str
 	}
 	body["name"] = opt.Name
 	body["rank"] = opt.Rank
+
+	return r.buildJsonBody(body)
+}
+
+func (r *Repository) buildDeploymentVariableBody(opt *RepositoryDeploymentVariableOptions) string {
+	body := map[string]interface{}{}
+
+	if opt.Uuid != "" {
+		body["uuid"] = opt.Uuid
+	}
+	body["key"] = opt.Key
+	body["value"] = opt.Value
+	body["secured"] = opt.Secured
 
 	return r.buildJsonBody(body)
 }
@@ -1020,6 +1114,83 @@ func decodeEnvironment(response interface{}) (*Environment, error) {
 	}
 
 	return environment, nil
+}
+
+func decodeDeploymentVariables(response string) (*DeploymentVariables, error) {
+	var responseMap map[string]interface{}
+	err := json.Unmarshal([]byte(response), &responseMap)
+	if err != nil {
+		return nil, err
+	}
+
+	values := responseMap["values"].([]interface{})
+	var variablesArray []DeploymentVariable
+	var errs error = nil
+	for idx, value := range values {
+		var variable DeploymentVariable
+		err = mapstructure.Decode(value, &variable)
+		if err != nil {
+			if errs == nil {
+				errs = err
+			} else {
+				errs = fmt.Errorf("%w; deployment variable %d: %w", errs, idx, err)
+			}
+		} else {
+			variablesArray = append(variablesArray, variable)
+		}
+	}
+
+	page, ok := responseMap["page"].(float64)
+	if !ok {
+		page = 0
+	}
+
+	pagelen, ok := responseMap["pagelen"].(float64)
+	if !ok {
+		pagelen = 0
+	}
+
+	max_depth, ok := responseMap["max_depth"].(float64)
+	if !ok {
+		max_depth = 0
+	}
+
+	size, ok := responseMap["size"].(float64)
+	if !ok {
+		size = 0
+	}
+
+	next, ok := responseMap["next"].(string)
+	if !ok {
+		next = ""
+	}
+
+	deploymentVariables := DeploymentVariables{
+		Page:      int(page),
+		Pagelen:   int(pagelen),
+		MaxDepth:  int(max_depth),
+		Size:      int(size),
+		Next:      next,
+		Variables: variablesArray,
+	}
+
+	return &deploymentVariables, nil
+}
+
+func decodeDeploymentVariable(response interface{}) (*DeploymentVariable, error) {
+	responseMap := response.(map[string]interface{})
+
+	if responseMap["type"] == "error" {
+		return nil, DecodeError(responseMap)
+	}
+
+	var variable = new(DeploymentVariable)
+	err := mapstructure.Decode(responseMap, &variable)
+	if err != nil {
+		return nil, err
+	}
+
+	return variable, nil
 }
 
 func (rf RepositoryFile) String() string {
