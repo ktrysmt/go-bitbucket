@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
 
@@ -9,25 +10,31 @@ import (
 
 func TestProfile(t *testing.T) {
 
-	user := os.Getenv("BITBUCKET_TEST_USERNAME")
-	pass := os.Getenv("BITBUCKET_TEST_PASSWORD")
-
-	if user == "" {
-		t.Error("BITBUCKET_TEST_USERNAME is empty.")
-	}
-
-	if pass == "" {
-		t.Error("BITBUCKET_TEST_PASSWORD is empty.")
-	}
+	user := getUsername()
+	pass := getPassword()
 
 	c := bitbucket.NewBasicAuth(user, pass)
 
 	res, err := c.User.Profile()
-	if err != nil {
-		t.Error(err)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, res)
+}
+
+func getUsername() string {
+	ev := os.Getenv("BITBUCKET_TEST_USERNAME")
+	if ev != "" {
+		return ev
 	}
 
-	if res.Username != user {
-		t.Error("Cannot catch the Profile.username.")
+	return "example-username"
+}
+
+func getPassword() string {
+	ev := os.Getenv("BITBUCKET_TEST_PASSWORD")
+	if ev != "" {
+		return ev
 	}
+
+	return "password"
 }

@@ -23,6 +23,16 @@ import (
 
 const DEFAULT_PAGE_LENGTH = 10
 const DEFAULT_MAX_DEPTH = 1
+const DEFAULT_BITBUCKET_API_BASE_URL = "https://api.bitbucket.org/2.0"
+
+func apiBaseUrl() string {
+	ev := os.Getenv("BITBUCKET_API_BASE_URL")
+	if ev != "" {
+		return ev
+	}
+
+	return DEFAULT_BITBUCKET_API_BASE_URL
+}
 
 type Client struct {
 	Auth         *auth
@@ -125,7 +135,7 @@ func NewBasicAuth(u, p string) *Client {
 }
 
 func injectClient(a *auth) *Client {
-	c := &Client{Auth: a, Pagelen: DEFAULT_PAGE_LENGTH, MaxDepth: DEFAULT_MAX_DEPTH, apiBaseURL: "https://api.bitbucket.org/2.0"}
+	c := &Client{Auth: a, Pagelen: DEFAULT_PAGE_LENGTH, MaxDepth: DEFAULT_MAX_DEPTH, apiBaseURL: apiBaseUrl()}
 	c.Repositories = &Repositories{
 		c:                  c,
 		PullRequests:       &PullRequests{c: c},
