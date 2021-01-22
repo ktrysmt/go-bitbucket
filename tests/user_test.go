@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
 
@@ -23,13 +24,9 @@ func TestProfile(t *testing.T) {
 	c := bitbucket.NewBasicAuth(user, pass)
 
 	res, err := c.User.Profile()
-	if err != nil {
-		t.Error(err)
-	}
 
-	if res.Username != user {
-		t.Error("Cannot catch the Profile.username.")
-	}
+	assert.NoError(t, err)
+	assert.NotNil(t, res)
 }
 
 func getUsername() string {
