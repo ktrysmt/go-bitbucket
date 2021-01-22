@@ -9,8 +9,8 @@ import (
 
 func TestProfile(t *testing.T) {
 
-	user := os.Getenv("BITBUCKET_TEST_USERNAME")
-	pass := os.Getenv("BITBUCKET_TEST_PASSWORD")
+	user := getUsername()
+	pass := getPassword()
 
 	if user == "" {
 		t.Error("BITBUCKET_TEST_USERNAME is empty.")
@@ -30,4 +30,22 @@ func TestProfile(t *testing.T) {
 	if res.Username != user {
 		t.Error("Cannot catch the Profile.username.")
 	}
+}
+
+func getUsername() string {
+	ev := os.Getenv("BITBUCKET_TEST_USERNAME")
+	if ev != "" {
+		return ev
+	}
+
+	return "example-username"
+}
+
+func getPassword() string {
+	ev := os.Getenv("BITBUCKET_TEST_PASSWORD")
+	if ev != "" {
+		return ev
+	}
+
+	return "password"
 }
