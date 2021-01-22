@@ -13,14 +13,6 @@ func TestProfile(t *testing.T) {
 	user := getUsername()
 	pass := getPassword()
 
-	if user == "" {
-		t.Error("BITBUCKET_TEST_USERNAME is empty.")
-	}
-
-	if pass == "" {
-		t.Error("BITBUCKET_TEST_PASSWORD is empty.")
-	}
-
 	c := bitbucket.NewBasicAuth(user, pass)
 
 	res, err := c.User.Profile()
