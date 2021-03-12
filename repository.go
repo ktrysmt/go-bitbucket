@@ -435,6 +435,25 @@ func (r *Repository) DeletePipelineVariable(opt *RepositoryPipelineVariableDelet
 	return r.c.execute("DELETE", urlStr, "")
 }
 
+func (r *Repository) GetPipelineVariable(opt *RepositoryPipelineVariableOptions) (*PipelineVariable, error) {
+	urlStr := r.c.requestUrl("/repositories/%s/%s/pipelines_config/variables/%s", opt.Owner, opt.RepoSlug, opt.Uuid)
+	response, err := r.c.execute("GET", urlStr, "")
+	if err != nil {
+		return nil, err
+	}
+	return decodePipelineVariableRepository(response)
+}
+
+func (r *Repository) UpdatePipelineVariable(opt *RepositoryPipelineVariableOptions) (*PipelineVariable, error) {
+	data := r.buildPipelineVariableBody(opt)
+	urlStr := r.c.requestUrl("/repositories/%s/%s/pipelines_config/variables/%s", opt.Owner, opt.RepoSlug, opt.Uuid)
+	response, err := r.c.execute("PUT", urlStr, data)
+	if err != nil {
+		return nil, err
+	}
+	return decodePipelineVariableRepository(response)
+}
+
 func (r *Repository) AddPipelineKeyPair(rpkpo *RepositoryPipelineKeyPairOptions) (*PipelineKeyPair, error) {
 	data := r.buildPipelineKeyPairBody(rpkpo)
 	urlStr := r.c.requestUrl("/repositories/%s/%s/pipelines_config/ssh/key_pair", rpkpo.Owner, rpkpo.RepoSlug)
