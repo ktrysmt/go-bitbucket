@@ -244,6 +244,27 @@ func (r *Repository) GetFileBlob(ro *RepositoryBlobOptions) (*RepositoryBlob, er
 	return &blob, nil
 }
 
+func (r *Repository) WriteFileBlob(ro *RepositoryBlobWriteOptions) error {
+	m := make(map[string]string)
+
+	if ro.Author != "" {
+		m["author"] = ro.Author
+	}
+
+	if ro.Message != "" {
+		m["message"] = ro.Message
+	}
+
+	if ro.Branch != "" {
+		m["branch"] = ro.Branch
+	}
+
+	urlStr := r.c.requestUrl("/repositories/%s/%s/src", ro.Owner, ro.RepoSlug)
+
+	_, err := r.c.executeFileUpload("POST", urlStr, ro.FilePath, ro.FileName, ro.FileName, m)
+	return err
+}
+
 func (r *Repository) ListBranches(rbo *RepositoryBranchOptions) (*RepositoryBranches, error) {
 
 	params := url.Values{}

@@ -158,6 +158,17 @@ type RepositoryBlobOptions struct {
 	Path     string `json:"path"`
 }
 
+// Based on https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/src#post
+type RepositoryBlobWriteOptions struct {
+	Owner    string `json:"owner"`
+	RepoSlug string `json:"repo_slug"`
+	FilePath string `json:"filepath"`
+	FileName string `json:"filename"`
+	Author   string `json:"author"`
+	Message  string `json:"message"`
+	Branch   string `json:"branch"`
+}
+
 type RepositoryBranchOptions struct {
 	Owner      string `json:"owner"`
 	RepoSlug   string `json:"repo_slug"`
@@ -347,12 +358,12 @@ func (e RepositoryEnvironmentTypeOption) String() string {
 }
 
 type RepositoryEnvironmentOptions struct {
-	Owner           string `json:"owner"`
-	RepoSlug        string `json:"repo_slug"`
-	Uuid            string `json:"uuid"`
-	Name            string `json:"name"`
+	Owner           string                          `json:"owner"`
+	RepoSlug        string                          `json:"repo_slug"`
+	Uuid            string                          `json:"uuid"`
+	Name            string                          `json:"name"`
 	EnvironmentType RepositoryEnvironmentTypeOption `json:"environment_type"`
-	Rank            int `json:"rank"`
+	Rank            int                             `json:"rank"`
 }
 
 type RepositoryEnvironmentDeleteOptions struct {
@@ -362,29 +373,29 @@ type RepositoryEnvironmentDeleteOptions struct {
 }
 
 type RepositoryDeploymentVariablesOptions struct {
-	Owner        string `json:"owner"`
-	RepoSlug     string `json:"repo_slug"`
+	Owner       string       `json:"owner"`
+	RepoSlug    string       `json:"repo_slug"`
 	Environment *Environment `json:"environment"`
-	Query        string `json:"q"`
-	Sort         string `json:"sort"`
-	PageNum      int    `json:"page"`
-	Pagelen      int    `json:"pagelen"`
-	MaxDepth     int    `json:"max_depth"`
+	Query       string       `json:"q"`
+	Sort        string       `json:"sort"`
+	PageNum     int          `json:"page"`
+	Pagelen     int          `json:"pagelen"`
+	MaxDepth    int          `json:"max_depth"`
 }
 
 type RepositoryDeploymentVariableOptions struct {
-	Owner        string `json:"owner"`
-	RepoSlug     string `json:"repo_slug"`
+	Owner       string       `json:"owner"`
+	RepoSlug    string       `json:"repo_slug"`
 	Environment *Environment `json:"environment"`
-	Uuid         string `json:"uuid"`
-	Key          string `json:"key"`
-	Value        string `json:"value"`
-	Secured      bool   `json:"secured"`
+	Uuid        string       `json:"uuid"`
+	Key         string       `json:"key"`
+	Value       string       `json:"value"`
+	Secured     bool         `json:"secured"`
 }
 
 type RepositoryDeploymentVariableDeleteOptions struct {
-	Owner        string `json:"owner"`
-	RepoSlug     string `json:"repo_slug"`
+	Owner       string       `json:"owner"`
+	RepoSlug    string       `json:"repo_slug"`
 	Environment *Environment `json:"environment"`
-	Uuid         string `json:"uuid"`
+	Uuid        string       `json:"uuid"`
 }
