@@ -358,12 +358,12 @@ func (e RepositoryEnvironmentTypeOption) String() string {
 }
 
 type RepositoryEnvironmentOptions struct {
-	Owner           string                          `json:"owner"`
-	RepoSlug        string                          `json:"repo_slug"`
-	Uuid            string                          `json:"uuid"`
-	Name            string                          `json:"name"`
+	Owner           string `json:"owner"`
+	RepoSlug        string `json:"repo_slug"`
+	Uuid            string `json:"uuid"`
+	Name            string `json:"name"`
 	EnvironmentType RepositoryEnvironmentTypeOption `json:"environment_type"`
-	Rank            int                             `json:"rank"`
+	Rank            int `json:"rank"`
 }
 
 type RepositoryEnvironmentDeleteOptions struct {
@@ -373,29 +373,29 @@ type RepositoryEnvironmentDeleteOptions struct {
 }
 
 type RepositoryDeploymentVariablesOptions struct {
-	Owner       string       `json:"owner"`
-	RepoSlug    string       `json:"repo_slug"`
+	Owner        string `json:"owner"`
+	RepoSlug     string `json:"repo_slug"`
 	Environment *Environment `json:"environment"`
-	Query       string       `json:"q"`
-	Sort        string       `json:"sort"`
-	PageNum     int          `json:"page"`
-	Pagelen     int          `json:"pagelen"`
-	MaxDepth    int          `json:"max_depth"`
+	Query        string `json:"q"`
+	Sort         string `json:"sort"`
+	PageNum      int    `json:"page"`
+	Pagelen      int    `json:"pagelen"`
+	MaxDepth     int    `json:"max_depth"`
 }
 
 type RepositoryDeploymentVariableOptions struct {
-	Owner       string       `json:"owner"`
-	RepoSlug    string       `json:"repo_slug"`
+	Owner        string `json:"owner"`
+	RepoSlug     string `json:"repo_slug"`
 	Environment *Environment `json:"environment"`
-	Uuid        string       `json:"uuid"`
-	Key         string       `json:"key"`
-	Value       string       `json:"value"`
-	Secured     bool         `json:"secured"`
+	Uuid         string `json:"uuid"`
+	Key          string `json:"key"`
+	Value        string `json:"value"`
+	Secured      bool   `json:"secured"`
 }
 
 type RepositoryDeploymentVariableDeleteOptions struct {
-	Owner       string       `json:"owner"`
-	RepoSlug    string       `json:"repo_slug"`
+	Owner        string `json:"owner"`
+	RepoSlug     string `json:"repo_slug"`
 	Environment *Environment `json:"environment"`
-	Uuid        string       `json:"uuid"`
+	Uuid         string `json:"uuid"`
 }
