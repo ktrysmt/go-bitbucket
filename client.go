@@ -262,7 +262,7 @@ func (c *Client) execute(method string, urlStr string, text string) (interface{}
 	return result, nil
 }
 
-func (c *Client) executeFileUpload(method string, urlStr string, filePath string, fileName string) (interface{}, error) {
+func (c *Client) executeFileUpload(method string, urlStr string, filePath string, fileName string, fieldname string, params map[string]string) (interface{}, error) {
 	fileReader, err := os.Open(filePath)
 	if err != nil {
 		return nil, err
@@ -274,12 +274,19 @@ func (c *Client) executeFileUpload(method string, urlStr string, filePath string
 	w := multipart.NewWriter(&b)
 
 	var fw io.Writer
-	if fw, err = w.CreateFormFile("files", fileName); err != nil {
+	if fw, err = w.CreateFormFile(fieldname, fileName); err != nil {
 		return nil, err
 	}
 
 	if _, err = io.Copy(fw, fileReader); err != nil {
 		return nil, err
+	}
+
+	for key, value := range params {
+		err = w.WriteField(key, value)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Don't forget to close the multipart writer.

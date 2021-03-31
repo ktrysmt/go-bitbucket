@@ -158,6 +158,17 @@ type RepositoryBlobOptions struct {
 	Path     string `json:"path"`
 }
 
+// Based on https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/src#post
+type RepositoryBlobWriteOptions struct {
+	Owner    string `json:"owner"`
+	RepoSlug string `json:"repo_slug"`
+	FilePath string `json:"filepath"`
+	FileName string `json:"filename"`
+	Author   string `json:"author"`
+	Message  string `json:"message"`
+	Branch   string `json:"branch"`
+}
+
 type RepositoryBranchOptions struct {
 	Owner      string `json:"owner"`
 	RepoSlug   string `json:"repo_slug"`
