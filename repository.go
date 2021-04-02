@@ -387,7 +387,11 @@ func (r *Repository) Update(ro *RepositoryOptions) (*Repository, error) {
 }
 
 func (r *Repository) Delete(ro *RepositoryOptions) (interface{}, error) {
-	urlStr := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.RepoSlug)
+	key := ro.RepoSlug
+	if ro.Uuid != "" {
+		key = ro.Uuid
+	}
+	urlStr := r.c.requestUrl("/repositories/%s/%s", ro.Owner, key)
 	return r.c.execute("DELETE", urlStr, "")
 }
 
