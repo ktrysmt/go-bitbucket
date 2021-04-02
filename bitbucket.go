@@ -115,6 +115,7 @@ type RepositoriesOptions struct {
 }
 
 type RepositoryOptions struct {
+	Uuid     string `json:"uuid"`
 	Owner    string `json:"owner"`
 	RepoSlug string `json:"repo_slug"`
 	Scm      string `json:"scm"`
