@@ -1,6 +1,12 @@
 package bitbucket
 
-import "net/url"
+import (
+	"encoding/json"
+	"net/url"
+	"os"
+
+	"github.com/k0kubun/pp"
+)
 
 type Issues struct {
 	c *Client
@@ -33,4 +39,66 @@ func (p *Issues) Gets(io *IssuesOptions) (interface{}, error) {
 	}
 
 	return p.c.execute("GET", url.String(), "")
+}
+
+func (p *Issues) Create(io *IssuesOptions) (interface{}, error) {
+	data := p.buildIssueBody(io)
+	urlStr := p.c.requestUrl("/repositories/%s/%s/issues", io.Owner, io.RepoSlug)
+	return p.c.execute("POST", urlStr, data)
+}
+
+func (p *Issues) buildIssueBody(io *IssuesOptions) string {
+	body := map[string]interface{}{}
+
+	data, err := json.Marshal(body)
+	if err != nil {
+		pp.Println(err)
+		os.Exit(9)
+	}
+
+	// This feld is required
+	body["title"] = io.Title
+
+	if io.Content != "" {
+		body["content"] = map[string]interface{}{
+			"raw": io.Content,
+		}
+	}
+
+	if io.State != "" {
+		body["state"] = io.State
+	}
+
+	if io.Kind != "" {
+		body["kind"] = io.Kind
+	}
+
+	if io.Priority != "" {
+		body["priority"] = io.Priority
+	}
+
+	if io.Milestone != "" {
+		body["milestone"] = map[string]interface{}{
+			"name": io.Milestone,
+		}
+	}
+
+	if io.Component != "" {
+		body["component"] = map[string]interface{}{
+			"name": io.Component,
+		}
+	}
+
+	if io.Version != "" {
+		body["version"] = map[string]interface{}{
+			"name": io.Component,
+		}
+	}
+	if io.Assignee != "" {
+		body["assignee"] = map[string]interface{}{
+			"uuid": io.Assignee,
+		}
+	}
+
+	return string(data)
 }

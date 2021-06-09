@@ -229,11 +229,20 @@ type PullRequestsOptions struct {
 }
 
 type IssuesOptions struct {
-	Owner    string   `json:"owner"`
-	RepoSlug string   `json:"repo_slug"`
-	States   []string `json:"states"`
-	Query    string   `json:"query"`
-	Sort     string   `json:"sort"`
+	Owner     string   `json:"owner"`
+	RepoSlug  string   `json:"repo_slug"`
+	States    []string `json:"states"`
+	Query     string   `json:"query"`
+	Sort      string   `json:"sort"`
+	Title     string   `json:"title"`
+	Content   string   `json:"content"`
+	State     string   `json:"state"`
+	Kind      string   `json:"kind"`
+	Milestone string   `json:"milestone"`
+	Component string   `json:"component"`
+	Priority  string   `json:"priority"`
+	Version   string   `json:"version"`
+	Assignee  string   `json:"assignee"`
 }
 
 type CommitsOptions struct {
