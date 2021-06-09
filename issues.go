@@ -111,12 +111,6 @@ func (p *Issues) DeleteWatch(io *IssuesOptions) error {
 func (p *Issues) buildIssueBody(io *IssuesOptions) string {
 	body := map[string]interface{}{}
 
-	data, err := json.Marshal(body)
-	if err != nil {
-		pp.Println(err)
-		os.Exit(9)
-	}
-
 	// This feld is required
 	body["title"] = io.Title
 
@@ -159,6 +153,12 @@ func (p *Issues) buildIssueBody(io *IssuesOptions) string {
 		body["assignee"] = map[string]interface{}{
 			"uuid": io.Assignee,
 		}
+	}
+
+	data, err := json.Marshal(body)
+	if err != nil {
+		pp.Println(err)
+		os.Exit(9)
 	}
 
 	return string(data)
