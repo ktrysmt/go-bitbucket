@@ -112,7 +112,9 @@ func (p *Issues) buildIssueBody(io *IssuesOptions) string {
 	body := map[string]interface{}{}
 
 	// This feld is required
-	body["title"] = io.Title
+	if io.Title != "" {
+		body["title"] = io.Title
+	}
 
 	if io.Content != "" {
 		body["content"] = map[string]interface{}{
@@ -182,7 +184,7 @@ func (p *Issues) CreateComment(ico *IssueCommentsOptions) (interface{}, error) {
 }
 
 func (p *Issues) GetComment(ico *IssueCommentsOptions) (interface{}, error) {
-	urlStr := p.c.GetApiBaseURL() + "/repositories/" + ico.Owner + "/" + ico.RepoSlug + "/issues/" + ico.ID + "/comments" + ico.CommentID
+	urlStr := p.c.GetApiBaseURL() + "/repositories/" + ico.Owner + "/" + ico.RepoSlug + "/issues/" + ico.ID + "/comments/" + ico.CommentID
 	return p.c.execute("GET", urlStr, "")
 }
 
@@ -200,7 +202,7 @@ func (p *Issues) UpdateComment(ico *IssueCommentsOptions) (interface{}, error) {
 }
 
 func (p *Issues) DeleteComment(ico *IssueCommentsOptions) (interface{}, error) {
-	urlStr := p.c.GetApiBaseURL() + "/repositories/" + ico.Owner + "/" + ico.RepoSlug + "/issues/" + ico.ID + "/comments" + ico.CommentID
+	urlStr := p.c.GetApiBaseURL() + "/repositories/" + ico.Owner + "/" + ico.RepoSlug + "/issues/" + ico.ID + "/comments/" + ico.CommentID
 	return p.c.execute("DELETE", urlStr, "")
 }
 
