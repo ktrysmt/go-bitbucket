@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/url"
 	"os"
+	"strings"
 
 	"github.com/k0kubun/pp"
 )
@@ -61,6 +62,28 @@ func (p *Issues) Create(io *IssuesOptions) (interface{}, error) {
 	data := p.buildIssueBody(io)
 	urlStr := p.c.requestUrl("/repositories/%s/%s/issues", io.Owner, io.RepoSlug)
 	return p.c.execute("POST", urlStr, data)
+}
+
+func (p *Issues) GetVote(io *IssuesOptions) (bool, error) {
+	// A 404 indicates that the user hasn't voted
+	urlStr := p.c.GetApiBaseURL() + "/repositories/" + io.Owner + "/" + io.RepoSlug + "/issues/" + io.ID + "/vote"
+	_, err := p.c.execute("GET", urlStr, "")
+	if strings.HasPrefix(err.Error(), "404") {
+		return false, nil
+	}
+	return true, err
+}
+
+func (p *Issues) PutVote(io *IssuesOptions) error {
+	urlStr := p.c.GetApiBaseURL() + "/repositories/" + io.Owner + "/" + io.RepoSlug + "/issues/" + io.ID + "/vote"
+	_, err := p.c.execute("PUT", urlStr, "")
+	return err
+}
+
+func (p *Issues) DeleteVote(io *IssuesOptions) error {
+	urlStr := p.c.GetApiBaseURL() + "/repositories/" + io.Owner + "/" + io.RepoSlug + "/issues/" + io.ID + "/vote"
+	_, err := p.c.execute("DELETE", urlStr, "")
+	return err
 }
 
 func (p *Issues) buildIssueBody(io *IssuesOptions) string {
