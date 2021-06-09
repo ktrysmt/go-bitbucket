@@ -228,6 +228,14 @@ type PullRequestsOptions struct {
 	Sort              string   `json:"sort"`
 }
 
+type IssuesOptions struct {
+	Owner    string   `json:"owner"`
+	RepoSlug string   `json:"repo_slug"`
+	States   []string `json:"states"`
+	Query    string   `json:"query"`
+	Sort     string   `json:"sort"`
+}
+
 type CommitsOptions struct {
 	Owner       string `json:"owner"`
 	RepoSlug    string `json:"repo_slug"`
