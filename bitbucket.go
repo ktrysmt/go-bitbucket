@@ -229,6 +229,7 @@ type PullRequestsOptions struct {
 }
 
 type IssuesOptions struct {
+	ID        string   `json:"id"`
 	Owner     string   `json:"owner"`
 	RepoSlug  string   `json:"repo_slug"`
 	States    []string `json:"states"`

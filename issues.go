@@ -41,6 +41,11 @@ func (p *Issues) Gets(io *IssuesOptions) (interface{}, error) {
 	return p.c.execute("GET", url.String(), "")
 }
 
+func (p *Issues) Get(io *IssuesOptions) (interface{}, error) {
+	urlStr := p.c.GetApiBaseURL() + "/repositories/" + io.Owner + "/" + io.RepoSlug + "/issues/" + io.ID
+	return p.c.execute("GET", urlStr, "")
+}
+
 func (p *Issues) Create(io *IssuesOptions) (interface{}, error) {
 	data := p.buildIssueBody(io)
 	urlStr := p.c.requestUrl("/repositories/%s/%s/issues", io.Owner, io.RepoSlug)
