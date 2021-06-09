@@ -183,6 +183,24 @@ type DeploymentVariable struct {
 	Secured bool
 }
 
+type DefaultReviewer struct {
+	Nickname    string
+	DisplayName string `mapstructure:"display_name"`
+	Type        string
+	Uuid        string
+	AccountId   string `mapstructure:"account_id"`
+	Links       map[string]map[string]string
+}
+
+type DefaultReviewers struct {
+	Page             int
+	Pagelen          int
+	MaxDepth         int
+	Size             int
+	Next             string
+	DefaultReviewers []DefaultReviewer
+}
+
 func (r *Repository) Create(ro *RepositoryOptions) (*Repository, error) {
 	data := r.buildRepositoryBody(ro)
 	urlStr := r.c.requestUrl("/repositories/%s/%s", ro.Owner, ro.RepoSlug)
@@ -405,9 +423,37 @@ func (r *Repository) ListForks(ro *RepositoryOptions) (interface{}, error) {
 	return r.c.execute("GET", urlStr, "")
 }
 
-func (r *Repository) ListDefaultReviewers(ro *RepositoryOptions) (interface{}, error) {
+func (r *Repository) ListDefaultReviewers(ro *RepositoryOptions) (*DefaultReviewers, error) {
 	urlStr := r.c.requestUrl("/repositories/%s/%s/default-reviewers?pagelen=1", ro.Owner, ro.RepoSlug)
-	return r.c.execute("GET", urlStr, "")
+
+	res, err := r.c.execute("GET", urlStr, "")
+	if err != nil {
+		return nil, err
+	}
+	return decodeDefaultReviewers(res)
+}
+
+func (r *Repository) GetDefaultReviewer(rdro *RepositoryDefaultReviewerOptions) (*DefaultReviewer, error) {
+	urlStr := r.c.requestUrl("/repositories/%s/%s/default-reviewers/%s", rdro.Owner, rdro.RepoSlug, rdro.Username)
+	res, err := r.c.execute("GET", urlStr, "")
+	if err != nil {
+		return nil, fmt.Errorf("unable to get default reviewer: %w", err)
+	}
+	return decodeDefaultReviewer(res)
+}
+
+func (r *Repository) AddDefaultReviewer(rdro *RepositoryDefaultReviewerOptions) (*DefaultReviewer, error) {
+	urlStr := r.c.requestUrl("/repositories/%s/%s/default-reviewers/%s", rdro.Owner, rdro.RepoSlug, rdro.Username)
+	res, err := r.c.execute("PUT", urlStr, "")
+	if err != nil {
+		return nil, err
+	}
+	return decodeDefaultReviewer(res)
+}
+
+func (r *Repository) DeleteDefaultReviewer(rdro *RepositoryDefaultReviewerOptions) (interface{}, error) {
+	urlStr := r.c.requestUrl("/repositories/%s/%s/default-reviewers/%s", rdro.Owner, rdro.RepoSlug, rdro.Username)
+	return r.c.execute("DELETE", urlStr, "")
 }
 
 func (r *Repository) UpdatePipelineConfig(rpo *RepositoryPipelineOptions) (*Pipeline, error) {
@@ -1261,4 +1307,59 @@ func (rf RepositoryFile) String() string {
 
 func (rb RepositoryBlob) String() string {
 	return string(rb.Content)
+}
+
+func decodeDefaultReviewer(response interface{}) (*DefaultReviewer, error) {
+	var defaultReviewerVariable DefaultReviewer
+	err := mapstructure.Decode(response, &defaultReviewerVariable)
+	if err != nil {
+		return nil, err
+	}
+	return &defaultReviewerVariable, nil
+}
+
+func decodeDefaultReviewers(response interface{}) (*DefaultReviewers, error) {
+	responseMap := response.(map[string]interface{})
+	values := responseMap["values"].([]interface{})
+	var variables []DefaultReviewer
+	for _, variable := range values {
+		var defaultReviewerVariable DefaultReviewer
+		err := mapstructure.Decode(variable, &defaultReviewerVariable)
+		if err == nil {
+			variables = append(variables, defaultReviewerVariable)
+		}
+	}
+
+	page, ok := responseMap["page"].(float64)
+	if !ok {
+		page = 0
+	}
+
+	pagelen, ok := responseMap["pagelen"].(float64)
+	if !ok {
+		pagelen = 0
+	}
+	max_depth, ok := responseMap["max_depth"].(float64)
+	if !ok {
+		max_depth = 0
+	}
+	size, ok := responseMap["size"].(float64)
+	if !ok {
+		size = 0
+	}
+
+	next, ok := responseMap["next"].(string)
+	if !ok {
+		next = ""
+	}
+
+	defaultReviewerVariables := DefaultReviewers{
+		Page:             int(page),
+		Pagelen:          int(pagelen),
+		MaxDepth:         int(max_depth),
+		Size:             int(size),
+		Next:             next,
+		DefaultReviewers: variables,
+	}
+	return &defaultReviewerVariables, nil
 }

@@ -32,7 +32,10 @@ type repository interface {
 	Delete(opt RepositoryOptions) (interface{}, error)
 	ListWatchers(opt RepositoryOptions) (interface{}, error)
 	ListForks(opt RepositoryOptions) (interface{}, error)
-	ListDefaultReviewers(opt RepositoryOptions) (interface{}, error)
+	ListDefaultReviewers(opt RepositoryOptions) (*DefaultReviewers, error)
+	GetDefaultReviewer(opt RepositoryDefaultReviewerOptions) (*DefaultReviewer, error)
+	AddDefaultReviewer(opt RepositoryDefaultReviewerOptions) (*DefaultReviewer, error)
+	DeleteDefaultReviewer(opt RepositoryDefaultReviewerOptions) (interface{}, error)
 	UpdatePipelineConfig(opt RepositoryPipelineOptions) (*Pipeline, error)
 	ListPipelineVariables(opt RepositoryPipelineVariablesOptions) (*PipelineVariables, error)
 	AddPipelineVariable(opt RepositoryPipelineVariableOptions) (*PipelineVariable, error)
@@ -272,6 +275,12 @@ type RepositoryPipelineOptions struct {
 	Owner    string `json:"owner"`
 	RepoSlug string `json:"repo_slug"`
 	Enabled  bool   `json:"has_pipelines"`
+}
+
+type RepositoryDefaultReviewerOptions struct {
+	Owner    string `json:"owner"`
+	RepoSlug string `json:"repo_slug"`
+	Username string `json:"username"`
 }
 
 type RepositoryPipelineVariablesOptions struct {
