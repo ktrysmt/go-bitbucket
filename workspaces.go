@@ -15,6 +15,7 @@ type Workspace struct {
 	Slug       string
 	Is_Private bool
 	Name       string
+	workspace
 }
 
 type WorkspaceList struct {

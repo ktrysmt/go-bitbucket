@@ -15,11 +15,6 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-type Project struct {
-	Key  string
-	Name string
-}
-
 type Repository struct {
 	c *Client
 

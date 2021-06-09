@@ -25,6 +25,10 @@ type pullrequests interface {
 	Merge(opt PullRequestsOptions) (interface{}, error)
 	Decline(opt PullRequestsOptions) (interface{}, error)
 }
+type workspace interface {
+	GetProject(opt ProjectOptions) (*Project, error)
+	CreateProject(opt ProjectOptions) (*Project, error)
+}
 
 type repository interface {
 	Get(opt RepositoryOptions) (*Repository, error)
