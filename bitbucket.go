@@ -246,6 +246,12 @@ type IssuesOptions struct {
 	Assignee  string   `json:"assignee"`
 }
 
+type IssueCommentsOptions struct {
+	IssuesOptions
+	CommentContent string `json:"comment_content"`
+	CommentID      string `json:"comment_id"`
+}
+
 type CommitsOptions struct {
 	Owner       string `json:"owner"`
 	RepoSlug    string `json:"repo_slug"`

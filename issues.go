@@ -163,3 +163,56 @@ func (p *Issues) buildIssueBody(io *IssuesOptions) string {
 
 	return string(data)
 }
+
+func (p *Issues) GetComments(ico *IssueCommentsOptions) (interface{}, error) {
+	urlStr := p.c.GetApiBaseURL() + "/repositories/" + ico.Owner + "/" + ico.RepoSlug + "/issues/" + ico.ID + "/comments"
+	return p.c.execute("GET", urlStr, "")
+}
+
+func (p *Issues) CreateComment(ico *IssueCommentsOptions) (interface{}, error) {
+	urlStr := p.c.requestUrl("/repositories/%s/%s/issues/%s/comments", ico.Owner, ico.RepoSlug, ico.ID)
+	// as the body/map only takes a single value, I do not think it's useful to create a seperate method here
+
+	data, err := p.buildCommentBody(ico)
+	if err != nil {
+		return nil, err
+	}
+
+	return p.c.execute("POST", urlStr, data)
+}
+
+func (p *Issues) GetComment(ico *IssueCommentsOptions) (interface{}, error) {
+	urlStr := p.c.GetApiBaseURL() + "/repositories/" + ico.Owner + "/" + ico.RepoSlug + "/issues/" + ico.ID + "/comments" + ico.CommentID
+	return p.c.execute("GET", urlStr, "")
+}
+
+func (p *Issues) UpdateComment(ico *IssueCommentsOptions) (interface{}, error) {
+	urlStr := p.c.requestUrl("/repositories/%s/%s/issues/%s/comments/%s", ico.Owner, ico.RepoSlug, ico.ID, ico.CommentID)
+	// as the body/map only takes a single value, I do not think it's useful to create a seperate method here
+
+	data, err := p.buildCommentBody(ico)
+	if err != nil {
+		return nil, err
+	}
+
+	return p.c.execute("PUT", urlStr, data)
+
+}
+
+func (p *Issues) DeleteComment(ico *IssueCommentsOptions) (interface{}, error) {
+	urlStr := p.c.GetApiBaseURL() + "/repositories/" + ico.Owner + "/" + ico.RepoSlug + "/issues/" + ico.ID + "/comments" + ico.CommentID
+	return p.c.execute("DELETE", urlStr, "")
+}
+
+func (p *Issues) buildCommentBody(ico *IssueCommentsOptions) (string, error) {
+	body := map[string]interface{}{}
+	body["content"] = map[string]interface{}{
+		"raw": ico.CommentContent,
+	}
+
+	data, err := json.Marshal(body)
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
+}
