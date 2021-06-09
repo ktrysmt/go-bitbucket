@@ -64,14 +64,14 @@ func (p *Issues) Create(io *IssuesOptions) (interface{}, error) {
 	return p.c.execute("POST", urlStr, data)
 }
 
-func (p *Issues) GetVote(io *IssuesOptions) (bool, error) {
+func (p *Issues) GetVote(io *IssuesOptions) (bool, interface{}, error) {
 	// A 404 indicates that the user hasn't voted
 	urlStr := p.c.GetApiBaseURL() + "/repositories/" + io.Owner + "/" + io.RepoSlug + "/issues/" + io.ID + "/vote"
-	_, err := p.c.execute("GET", urlStr, "")
+	data, err := p.c.execute("GET", urlStr, "")
 	if strings.HasPrefix(err.Error(), "404") {
-		return false, nil
+		return false, data, nil
 	}
-	return true, err
+	return true, nil, err
 }
 
 func (p *Issues) PutVote(io *IssuesOptions) error {
@@ -82,6 +82,28 @@ func (p *Issues) PutVote(io *IssuesOptions) error {
 
 func (p *Issues) DeleteVote(io *IssuesOptions) error {
 	urlStr := p.c.GetApiBaseURL() + "/repositories/" + io.Owner + "/" + io.RepoSlug + "/issues/" + io.ID + "/vote"
+	_, err := p.c.execute("DELETE", urlStr, "")
+	return err
+}
+
+func (p *Issues) GetWatch(io *IssuesOptions) (bool, interface{}, error) {
+	// A 404 indicates that the user hasn't watchd
+	urlStr := p.c.GetApiBaseURL() + "/repositories/" + io.Owner + "/" + io.RepoSlug + "/issues/" + io.ID + "/watch"
+	data, err := p.c.execute("GET", urlStr, "")
+	if strings.HasPrefix(err.Error(), "404") {
+		return false, data, nil
+	}
+	return true, nil, err
+}
+
+func (p *Issues) PutWatch(io *IssuesOptions) error {
+	urlStr := p.c.GetApiBaseURL() + "/repositories/" + io.Owner + "/" + io.RepoSlug + "/issues/" + io.ID + "/watch"
+	_, err := p.c.execute("PUT", urlStr, "")
+	return err
+}
+
+func (p *Issues) DeleteWatch(io *IssuesOptions) error {
+	urlStr := p.c.GetApiBaseURL() + "/repositories/" + io.Owner + "/" + io.RepoSlug + "/issues/" + io.ID + "/watch"
 	_, err := p.c.execute("DELETE", urlStr, "")
 	return err
 }
