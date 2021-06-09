@@ -11,6 +11,7 @@ import (
 type Repositories struct {
 	c                  *Client
 	PullRequests       *PullRequests
+	Issues             *Issues
 	Pipelines          *Pipelines
 	Repository         *Repository
 	Commits            *Commits

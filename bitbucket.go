@@ -30,6 +30,25 @@ type workspace interface {
 	CreateProject(opt ProjectOptions) (*Project, error)
 }
 
+type issues interface {
+	Gets(io *IssuesOptions) (interface{}, error)
+	Get(io *IssuesOptions) (interface{}, error)
+	Delete(io *IssuesOptions) (interface{}, error)
+	Update(io *IssuesOptions) (interface{}, error)
+	Create(io *IssuesOptions) (interface{}, error)
+	GetVote(io *IssuesOptions) (bool, interface{}, error)
+	PutVote(io *IssuesOptions) error
+	DeleteVote(io *IssuesOptions) error
+	GetWatch(io *IssuesOptions) (bool, interface{}, error)
+	PutWatch(io *IssuesOptions) error
+	DeleteWatch(io *IssuesOptions) error
+	GetComments(ico *IssueCommentsOptions) (interface{}, error)
+	CreateComment(ico *IssueCommentsOptions) (interface{}, error)
+	GetComment(ico *IssueCommentsOptions) (interface{}, error)
+	UpdateComment(ico *IssueCommentsOptions) (interface{}, error)
+	DeleteComment(ico *IssueCommentsOptions) (interface{}, error)
+}
+
 type repository interface {
 	Get(opt RepositoryOptions) (*Repository, error)
 	Create(opt RepositoryOptions) (*Repository, error)
