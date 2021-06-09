@@ -55,7 +55,7 @@ func (p *Issues) Delete(io *IssuesOptions) (interface{}, error) {
 func (p *Issues) Update(io *IssuesOptions) (interface{}, error) {
 	data := p.buildIssueBody(io)
 	urlStr := p.c.requestUrl("/repositories/%s/%s/issues/%s", io.Owner, io.RepoSlug, io.ID)
-	return p.c.execute("POST", urlStr, data)
+	return p.c.execute("PUT", urlStr, data)
 }
 
 func (p *Issues) Create(io *IssuesOptions) (interface{}, error) {
