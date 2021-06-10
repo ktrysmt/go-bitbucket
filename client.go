@@ -35,15 +35,16 @@ func apiBaseUrl() (*url.URL, error) {
 }
 
 type Client struct {
-	Auth         *auth
-	Users        users
-	User         user
-	Teams        teams
-	Repositories *Repositories
-	Workspaces   *Workspace
-	Pagelen      uint64
-	MaxDepth     uint64
-	apiBaseURL   *url.URL
+	Auth            *auth
+	Users           users
+	User            user
+	Teams           teams
+	Repositories    *Repositories
+	Workspaces      *Workspace
+	GroupPrivileges *GroupPrivileges
+	Pagelen         uint64
+	MaxDepth        uint64
+	apiBaseURL      *url.URL
 
 	HttpClient *http.Client
 }
@@ -156,6 +157,7 @@ func injectClient(a *auth) *Client {
 	c.User = &User{c: c}
 	c.Teams = &Teams{c: c}
 	c.Workspaces = &Workspace{c: c, Repositories: c.Repositories, Permissions: &Permission{c: c}}
+	c.GroupPrivileges = &GroupPrivileges{c: c}
 	c.HttpClient = new(http.Client)
 	return c
 }
