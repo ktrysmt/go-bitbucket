@@ -68,7 +68,7 @@ func (p *Issues) GetVote(io *IssuesOptions) (bool, interface{}, error) {
 	// A 404 indicates that the user hasn't voted
 	urlStr := p.c.GetApiBaseURL() + "/repositories/" + io.Owner + "/" + io.RepoSlug + "/issues/" + io.ID + "/vote"
 	data, err := p.c.execute("GET", urlStr, "")
-	if strings.HasPrefix(err.Error(), "404") {
+	if err != nil && strings.HasPrefix(err.Error(), "404") {
 		return false, data, nil
 	}
 	return true, nil, err
@@ -90,7 +90,7 @@ func (p *Issues) GetWatch(io *IssuesOptions) (bool, interface{}, error) {
 	// A 404 indicates that the user hasn't watchd
 	urlStr := p.c.GetApiBaseURL() + "/repositories/" + io.Owner + "/" + io.RepoSlug + "/issues/" + io.ID + "/watch"
 	data, err := p.c.execute("GET", urlStr, "")
-	if strings.HasPrefix(err.Error(), "404") {
+	if err != nil && strings.HasPrefix(err.Error(), "404") {
 		return false, data, nil
 	}
 	return true, nil, err
