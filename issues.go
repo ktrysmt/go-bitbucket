@@ -2,6 +2,7 @@ package bitbucket
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/url"
 	"os"
 	"strings"
@@ -232,4 +233,63 @@ func (p *Issues) buildCommentBody(ico *IssueCommentsOptions) (string, error) {
 		return "", err
 	}
 	return string(data), nil
+}
+
+func (p *Issues) GetChanges(ico *IssueChangesOptions) (interface{}, error) {
+	url, err := url.Parse(p.c.GetApiBaseURL() + "/repositories/" + ico.Owner + "/" + ico.RepoSlug + "/issues/" + ico.ID + "/changes")
+	if err != nil {
+		return nil, err
+	}
+
+	if ico.Query != "" {
+		query := url.Query()
+		query.Set("q", ico.Query)
+		url.RawQuery = query.Encode()
+	}
+
+	if ico.Sort != "" {
+		query := url.Query()
+		query.Set("sort", ico.Sort)
+		url.RawQuery = query.Encode()
+	}
+
+	return p.c.execute("GET", url.String(), "")
+}
+
+func (p *Issues) CreateChange(ico *IssueChangesOptions) (interface{}, error) {
+	url, err := url.Parse(p.c.GetApiBaseURL() + "/repositories/" + ico.Owner + "/" + ico.RepoSlug + "/issues/" + ico.ID + "/changes")
+	if err != nil {
+		return nil, err
+	}
+
+	body := map[string]interface{}{}
+	if ico.Message != "" {
+		body["message"] = map[string]interface{}{
+			"raw": ico.Message,
+		}
+	}
+
+	changes := map[string]interface{}{}
+	for _, change := range ico.Changes {
+		changes[change.Type] = map[string]interface{}{
+			"new": change.NewValue,
+		}
+	}
+	if len(changes) > 0 {
+		body["changes"] = changes
+	}
+
+	data, err := json.Marshal(body)
+	if err != nil {
+		return "", err
+	}
+
+	fmt.Printf("data %s", data)
+
+	return p.c.execute("POST", url.String(), string(data))
+}
+
+func (p *Issues) GetChange(ico *IssueChangesOptions) (interface{}, error) {
+	urlStr := p.c.GetApiBaseURL() + "/repositories/" + ico.Owner + "/" + ico.RepoSlug + "/issues/" + ico.ID + "/changes/" + ico.ChangeID
+	return p.c.execute("GET", urlStr, "")
 }

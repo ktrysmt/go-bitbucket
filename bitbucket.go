@@ -47,6 +47,9 @@ type issues interface {
 	GetComment(ico *IssueCommentsOptions) (interface{}, error)
 	UpdateComment(ico *IssueCommentsOptions) (interface{}, error)
 	DeleteComment(ico *IssueCommentsOptions) (interface{}, error)
+	GetChanges(ico *IssueChangesOptions) (interface{}, error)
+	CreateChange(ico *IssueChangesOptions) (interface{}, error)
+	GetChange(ico *IssueChangesOptions) (interface{}, error)
 }
 
 type repository interface {
@@ -271,6 +274,18 @@ type IssueCommentsOptions struct {
 	Sort           string `json:"sort"`
 	CommentContent string `json:"comment_content"`
 	CommentID      string `json:"comment_id"`
+}
+
+type IssueChangesOptions struct {
+	IssuesOptions
+	Query    string `json:"query"`
+	Sort     string `json:"sort"`
+	Message  string `json:"message"`
+	ChangeID string `json:"change_id"`
+	Changes  []struct {
+		Type     string
+		NewValue string
+	} `json:"changes"`
 }
 
 type CommitsOptions struct {
