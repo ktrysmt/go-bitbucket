@@ -167,8 +167,23 @@ func (p *Issues) buildIssueBody(io *IssuesOptions) string {
 }
 
 func (p *Issues) GetComments(ico *IssueCommentsOptions) (interface{}, error) {
-	urlStr := p.c.GetApiBaseURL() + "/repositories/" + ico.Owner + "/" + ico.RepoSlug + "/issues/" + ico.ID + "/comments"
-	return p.c.execute("GET", urlStr, "")
+	url, err := url.Parse(p.c.GetApiBaseURL() + "/repositories/" + ico.Owner + "/" + ico.RepoSlug + "/issues/" + ico.ID + "/comments")
+	if err != nil {
+		return nil, err
+	}
+
+	if ico.Query != "" {
+		query := url.Query()
+		query.Set("q", ico.Query)
+		url.RawQuery = query.Encode()
+	}
+
+	if ico.Sort != "" {
+		query := url.Query()
+		query.Set("sort", ico.Sort)
+		url.RawQuery = query.Encode()
+	}
+	return p.c.execute("GET", url.String(), "")
 }
 
 func (p *Issues) CreateComment(ico *IssueCommentsOptions) (interface{}, error) {

@@ -267,6 +267,8 @@ type IssuesOptions struct {
 
 type IssueCommentsOptions struct {
 	IssuesOptions
+	Query          string `json:"query"`
+	Sort           string `json:"sort"`
 	CommentContent string `json:"comment_content"`
 	CommentID      string `json:"comment_id"`
 }
