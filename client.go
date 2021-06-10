@@ -173,6 +173,10 @@ func (c *Client) SetApiBaseURL(urlStr url.URL) {
 }
 
 func (c *Client) executeRaw(method string, urlStr string, text string) (io.ReadCloser, error) {
+	return c.executeRawContentType(method, urlStr, text, "application/json")
+}
+
+func (c *Client) executeRawContentType(method, urlStr, text, contentType string) (io.ReadCloser, error) {
 	body := strings.NewReader(text)
 
 	req, err := http.NewRequest(method, urlStr, body)
@@ -180,7 +184,7 @@ func (c *Client) executeRaw(method string, urlStr string, text string) (io.ReadC
 		return nil, err
 	}
 	if text != "" {
-		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Content-Type", contentType)
 	}
 
 	c.authenticateRequest(req)
@@ -188,6 +192,10 @@ func (c *Client) executeRaw(method string, urlStr string, text string) (io.ReadC
 }
 
 func (c *Client) execute(method string, urlStr string, text string) (interface{}, error) {
+	return c.executeContentType(method, urlStr, text, "application/json")
+}
+
+func (c *Client) executeContentType(method string, urlStr string, text string, contentType string) (interface{}, error) {
 	// Use pagination if changed from default value
 	const DEC_RADIX = 10
 	if strings.Contains(urlStr, "/repositories/") {
@@ -221,7 +229,7 @@ func (c *Client) execute(method string, urlStr string, text string) (interface{}
 		return nil, err
 	}
 	if text != "" {
-		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Content-Type", contentType)
 	}
 
 	c.authenticateRequest(req)
