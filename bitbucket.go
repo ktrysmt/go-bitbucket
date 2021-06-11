@@ -30,6 +30,28 @@ type workspace interface {
 	CreateProject(opt ProjectOptions) (*Project, error)
 }
 
+type issues interface {
+	Gets(io *IssuesOptions) (interface{}, error)
+	Get(io *IssuesOptions) (interface{}, error)
+	Delete(io *IssuesOptions) (interface{}, error)
+	Update(io *IssuesOptions) (interface{}, error)
+	Create(io *IssuesOptions) (interface{}, error)
+	GetVote(io *IssuesOptions) (bool, interface{}, error)
+	PutVote(io *IssuesOptions) error
+	DeleteVote(io *IssuesOptions) error
+	GetWatch(io *IssuesOptions) (bool, interface{}, error)
+	PutWatch(io *IssuesOptions) error
+	DeleteWatch(io *IssuesOptions) error
+	GetComments(ico *IssueCommentsOptions) (interface{}, error)
+	CreateComment(ico *IssueCommentsOptions) (interface{}, error)
+	GetComment(ico *IssueCommentsOptions) (interface{}, error)
+	UpdateComment(ico *IssueCommentsOptions) (interface{}, error)
+	DeleteComment(ico *IssueCommentsOptions) (interface{}, error)
+	GetChanges(ico *IssueChangesOptions) (interface{}, error)
+	CreateChange(ico *IssueChangesOptions) (interface{}, error)
+	GetChange(ico *IssueChangesOptions) (interface{}, error)
+}
+
 type repository interface {
 	Get(opt RepositoryOptions) (*Repository, error)
 	Create(opt RepositoryOptions) (*Repository, error)
@@ -226,6 +248,44 @@ type PullRequestsOptions struct {
 	States            []string `json:"states"`
 	Query             string   `json:"query"`
 	Sort              string   `json:"sort"`
+}
+
+type IssuesOptions struct {
+	ID        string   `json:"id"`
+	Owner     string   `json:"owner"`
+	RepoSlug  string   `json:"repo_slug"`
+	States    []string `json:"states"`
+	Query     string   `json:"query"`
+	Sort      string   `json:"sort"`
+	Title     string   `json:"title"`
+	Content   string   `json:"content"`
+	State     string   `json:"state"`
+	Kind      string   `json:"kind"`
+	Milestone string   `json:"milestone"`
+	Component string   `json:"component"`
+	Priority  string   `json:"priority"`
+	Version   string   `json:"version"`
+	Assignee  string   `json:"assignee"`
+}
+
+type IssueCommentsOptions struct {
+	IssuesOptions
+	Query          string `json:"query"`
+	Sort           string `json:"sort"`
+	CommentContent string `json:"comment_content"`
+	CommentID      string `json:"comment_id"`
+}
+
+type IssueChangesOptions struct {
+	IssuesOptions
+	Query    string `json:"query"`
+	Sort     string `json:"sort"`
+	Message  string `json:"message"`
+	ChangeID string `json:"change_id"`
+	Changes  []struct {
+		Type     string
+		NewValue string
+	} `json:"changes"`
 }
 
 type CommitsOptions struct {
