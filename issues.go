@@ -149,7 +149,7 @@ func (p *Issues) buildIssueBody(io *IssuesOptions) string {
 
 	if io.Version != "" {
 		body["version"] = map[string]interface{}{
-			"name": io.Component,
+			"name": io.Version,
 		}
 	}
 	if io.Assignee != "" {
