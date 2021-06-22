@@ -25,13 +25,13 @@ const DEFAULT_PAGE_LENGTH = 10
 const DEFAULT_MAX_DEPTH = 1
 const DEFAULT_BITBUCKET_API_BASE_URL = "https://api.bitbucket.org/2.0"
 
-func apiBaseUrl() string {
+func apiBaseUrl() (*url.URL, error) {
 	ev := os.Getenv("BITBUCKET_API_BASE_URL")
-	if ev != "" {
-		return ev
+	if ev == "" {
+		ev = DEFAULT_BITBUCKET_API_BASE_URL
 	}
 
-	return DEFAULT_BITBUCKET_API_BASE_URL
+	return url.Parse(ev)
 }
 
 type Client struct {
@@ -43,7 +43,7 @@ type Client struct {
 	Workspaces   *Workspace
 	Pagelen      uint64
 	MaxDepth     uint64
-	apiBaseURL   string
+	apiBaseURL   *url.URL
 
 	HttpClient *http.Client
 }
@@ -135,7 +135,11 @@ func NewBasicAuth(u, p string) *Client {
 }
 
 func injectClient(a *auth) *Client {
-	c := &Client{Auth: a, Pagelen: DEFAULT_PAGE_LENGTH, MaxDepth: DEFAULT_MAX_DEPTH, apiBaseURL: apiBaseUrl()}
+	bitbucketUrl, err := apiBaseUrl()
+	if err != nil {
+		log.Fatalf("invalid bitbucket url")
+	}
+	c := &Client{Auth: a, Pagelen: DEFAULT_PAGE_LENGTH, MaxDepth: DEFAULT_MAX_DEPTH, apiBaseURL: bitbucketUrl}
 	c.Repositories = &Repositories{
 		c:                  c,
 		PullRequests:       &PullRequests{c: c},
@@ -157,11 +161,15 @@ func injectClient(a *auth) *Client {
 }
 
 func (c *Client) GetApiBaseURL() string {
-	return c.apiBaseURL
+	return fmt.Sprintf("%s%s", c.apiBaseURL.GetApiHostnameURL(), c.apiBaseURL.Path)
 }
 
-func (c *Client) SetApiBaseURL(urlStr string) {
-	c.apiBaseURL = urlStr
+func (c *Client) GetApiHostnameURL() string {
+	return fmt.Sprintf("%s://%s", c.apiBaseURL.Scheme, c.apiBaseURL.Host)
+}
+
+func (c *Client) SetApiBaseURL(urlStr url.URL) {
+	c.apiBaseURL = &urlStr
 }
 
 func (c *Client) executeRaw(method string, urlStr string, text string) (io.ReadCloser, error) {
@@ -379,7 +387,7 @@ func unexpectedHttpStatusCode(statusCode int) bool {
 func (c *Client) requestUrl(template string, args ...interface{}) string {
 
 	if len(args) == 1 && args[0] == "" {
-		return c.apiBaseURL + template
+		return c.GetApiBaseURL() + template
 	}
-	return c.apiBaseURL + fmt.Sprintf(template, args...)
+	return c.GetApiBaseURL() + fmt.Sprintf(template, args...)
 }
