@@ -161,7 +161,7 @@ func injectClient(a *auth) *Client {
 }
 
 func (c *Client) GetApiBaseURL() string {
-	return fmt.Sprintf("%s%s", c.apiBaseURL.GetApiHostnameURL(), c.apiBaseURL.Path)
+	return fmt.Sprintf("%s%s", c.GetApiHostnameURL(), c.apiBaseURL.Path)
 }
 
 func (c *Client) GetApiHostnameURL() string {
