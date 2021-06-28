@@ -331,6 +331,24 @@ func (r *Repository) GetBranch(rbo *RepositoryBranchOptions) (*RepositoryBranch,
 	return decodeRepositoryBranch(bodyString)
 }
 
+func (r *Repository) CreateBranch(rbo *RepositoryBranchCreationOptions) (*RepositoryBranch, error) {
+	urlStr := r.c.requestUrl("/repositories/%s/%s/refs/branches", rbo.Owner, rbo.RepoSlug)
+	data := r.buildBranchBody(rbo)
+
+	response, err := r.c.executeRaw("POST", urlStr, data)
+	if err != nil {
+		return nil, err
+	}
+
+	bodyBytes, err := ioutil.ReadAll(response)
+	if err != nil {
+		return nil, err
+	}
+
+	bodyString := string(bodyBytes)
+	return decodeRepositoryBranchCreated(bodyString)
+}
+
 func (r *Repository) ListTags(rbo *RepositoryTagOptions) (*RepositoryTags, error) {
 
 	params := url.Values{}
@@ -798,6 +816,17 @@ func (r *Repository) buildPipelineBuildNumberBody(rpbno *RepositoryPipelineBuild
 	return r.buildJsonBody(body)
 }
 
+func (r *Repository) buildBranchBody(rbo *RepositoryBranchCreationOptions) string {
+	body := map[string]interface{}{
+		"name": rbo.Name,
+		"target": map[string]string{
+			"hash": rbo.Target.Hash,
+		},
+	}
+
+	return r.buildJsonBody(body)
+}
+
 func (r *Repository) buildTagBody(rbo *RepositoryTagCreationOptions) string {
 	body := map[string]interface{}{
 		"name": rbo.Name,
@@ -947,6 +976,15 @@ func decodeRepositoryBranch(branchResponseStr string) (*RepositoryBranch, error)
 		return nil, err
 	}
 	return &repositoryBranch, nil
+}
+
+func decodeRepositoryBranchCreated(branchResponseStr string) (*RepositoryBranch, error) {
+	var responseBranchCreated RepositoryBranch
+	err := json.Unmarshal([]byte(branchResponseStr), &responseBranchCreated)
+	if err != nil {
+		return nil, err
+	}
+	return &responseBranchCreated, nil
 }
 
 func decodeRepositoryTagCreated(tagResponseStr string) (*RepositoryTag, error) {
