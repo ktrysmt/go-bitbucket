@@ -210,6 +210,17 @@ type RepositoryBranchOptions struct {
 	BranchName string `json:"branch_name"`
 }
 
+type RepositoryBranchCreationOptions struct {
+	Owner    string                 `json:"owner"`
+	RepoSlug string                 `json:"repo_slug"`
+	Name     string                 `json:"name"`
+	Target   RepositoryBranchTarget `json:"target"`
+}
+
+type RepositoryBranchTarget struct {
+	Hash string `json:"hash"`
+}
+
 type RepositoryTagOptions struct {
 	Owner    string `json:"owner"`
 	RepoSlug string `json:"repo_slug"`
