@@ -13,16 +13,22 @@ type Diff struct {
 	c *Client
 }
 
-type DiffStats struct {
-	Page     int
-	Pagelen  int
-	MaxDepth int
-	Size     int
-	Next     string
-	DiffStat []DiffStat
+type DiffStatRes struct {
+	Page      int
+	Pagelen   int
+	MaxDepth  int
+	Size      int
+	Next      string
+	DiffStats []DiffStat
 }
 
 type DiffStat struct {
+	Type         string
+	Status       string
+	LinesRemoved int
+	LinedAdded   int
+	Old          map[string]interface{}
+	New          map[string]interface{}
 }
 
 func (d *Diff) GetDiff(do *DiffOptions) (interface{}, error) {
@@ -35,7 +41,7 @@ func (d *Diff) GetPatch(do *DiffOptions) (interface{}, error) {
 	return d.c.executeRaw("GET", urlStr, "")
 }
 
-func (d *Diff) GetDiffStat(dso *DiffStatOptions) (interface{}, error) {
+func (d *Diff) GetDiffStat(dso *DiffStatOptions) (*DiffStatRes, error) {
 
 	params := url.Values{}
 	if dso.Whitespace == true {
@@ -81,7 +87,7 @@ func (d *Diff) GetDiffStat(dso *DiffStatOptions) (interface{}, error) {
 	return decodeDiffStat(bodyString)
 }
 
-func decodeDiffStat(diffStatResponseStr string) (*DiffStats, error) {
+func decodeDiffStat(diffStatResponseStr string) (*DiffStatRes, error) {
 
 	var diffStatResponseMap map[string]interface{}
 	err := json.Unmarshal([]byte(diffStatResponseStr), &diffStatResponseMap)
@@ -108,10 +114,12 @@ func decodeDiffStat(diffStatResponseStr string) (*DiffStats, error) {
 	if !ok {
 		pagelen = 0
 	}
+
 	max_depth, ok := diffStatResponseMap["max_depth"].(float64)
 	if !ok {
 		max_depth = 0
 	}
+
 	size, ok := diffStatResponseMap["size"].(float64)
 	if !ok {
 		size = 0
@@ -122,13 +130,13 @@ func decodeDiffStat(diffStatResponseStr string) (*DiffStats, error) {
 		next = ""
 	}
 
-	diffStats := DiffStats{
-		Page:     int(page),
-		Pagelen:  int(pagelen),
-		MaxDepth: int(max_depth),
-		Size:     int(size),
-		Next:     next,
-		DiffStat: diffStatsSlice,
+	diffStats := DiffStatRes{
+		Page:      int(page),
+		Pagelen:   int(pagelen),
+		MaxDepth:  int(max_depth),
+		Size:      int(size),
+		Next:      next,
+		DiffStats: diffStatsSlice,
 	}
 	return &diffStats, nil
 }
