@@ -73,6 +73,8 @@ func TestGetDiffStat(t *testing.T) {
 		t.Error(err)
 	}
 
+	pp.Println(res)
+
 	if res == nil {
 		t.Error("Cannot get diffstat.")
 	}
