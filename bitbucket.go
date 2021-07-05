@@ -336,6 +336,19 @@ type DiffOptions struct {
 	Spec     string `json:"spec"`
 }
 
+type DiffStatOptions struct {
+	Owner      string `json:"owner"`
+	RepoSlug   string `json:"repo_slug"`
+	Spec       string `json:"spec"`
+	Whitespace bool   `json:"ignore_whitespace"`
+	Merge      bool   `json:"merge"`
+	Path       string `json:"path"`
+	Renames    bool   `json:"renames"`
+	PageNum    int    `json:"page"`
+	Pagelen    int    `json:"pagelen"`
+	MaxDepth   int    `json:"max_depth"`
+}
+
 type WebhooksOptions struct {
 	Owner       string   `json:"owner"`
 	RepoSlug    string   `json:"repo_slug"`
