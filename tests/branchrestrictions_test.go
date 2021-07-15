@@ -48,11 +48,7 @@ func TestCreateBranchRestrictionsKindPush(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	jsonMap := res.(map[string]interface{})
-	if jsonMap["type"] != "branchrestriction" {
-		t.Error("is not branchrestriction type")
-	}
-	if jsonMap["kind"] != "push" {
+	if res.Kind != "push" {
 		t.Error("did not match branchrestriction kind")
 	}
 }
@@ -72,11 +68,7 @@ func TestCreateBranchRestrictionsKindRequirePassingBuilds(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	jsonMap := res.(map[string]interface{})
-	if jsonMap["type"] != "branchrestriction" {
-		t.Error("is not branchrestriction type")
-	}
-	if jsonMap["kind"] != "require_passing_builds_to_merge" {
+	if res.Kind != "require_passing_builds_to_merge" {
 		t.Error("did not match branchrestriction kind")
 	}
 }
