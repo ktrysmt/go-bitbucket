@@ -1,6 +1,8 @@
 package bitbucket
 
 import (
+	"errors"
+
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -31,6 +33,14 @@ type Permission struct {
 	c *Client
 
 	Type string
+}
+
+type ProjectsRes struct {
+	Page     int32
+	Pagelen  int32
+	MaxDepth int32
+	Size     int32
+	Items    []Project
 }
 
 func (t *Permission) GetUserPermissions(organization, member string) (*Permission, error) {
@@ -78,9 +88,14 @@ func (w *Workspace) Members(teamname string) (interface{}, error) {
 	return w.c.execute("GET", urlStr, "")
 }
 
-func (w *Workspace) Projects(teamname string) (interface{}, error) {
+func (w *Workspace) Projects(teamname string) (*ProjectsRes, error) {
 	urlStr := w.c.requestUrl("/workspaces/%s/projects/", teamname)
-	return w.c.execute("GET", urlStr, "")
+	response, err := w.c.execute("GET", urlStr, "")
+	if err != nil {
+		return nil, err
+	}
+
+	return decodeProjects(response)
 }
 
 func decodePermission(permission interface{}) *Permission {
@@ -158,4 +173,47 @@ func decodeWorkspaceList(workspaceResponse interface{}) (*WorkspaceList, error) 
 	}
 
 	return &workspacesList, nil
+}
+
+func decodeProjects(projectResponse interface{}) (*ProjectsRes, error) {
+	projectsResponseMap, ok := projectResponse.(map[string]interface{})
+	if !ok {
+		return nil, errors.New("Not a valid format")
+	}
+
+	var projects []Project
+	projectArray := projectsResponseMap["values"].([]interface{})
+	for _, projectEntry := range projectArray {
+		var project Project
+		if err := mapstructure.Decode(projectEntry, &project); err == nil {
+			projects = append(projects, project)
+		}
+	}
+
+	page, ok := projectsResponseMap["page"].(float64)
+	if !ok {
+		page = 0
+	}
+
+	pagelen, ok := projectsResponseMap["pagelen"].(float64)
+	if !ok {
+		pagelen = 0
+	}
+	max_depth, ok := projectsResponseMap["max_width"].(float64)
+	if !ok {
+		max_depth = 0
+	}
+	size, ok := projectsResponseMap["size"].(float64)
+	if !ok {
+		size = 0
+	}
+
+	res := ProjectsRes{
+		Page:     int32(page),
+		Pagelen:  int32(pagelen),
+		MaxDepth: int32(max_depth),
+		Size:     int32(size),
+		Items:    projects,
+	}
+	return &res, nil
 }
