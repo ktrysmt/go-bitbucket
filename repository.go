@@ -49,6 +49,15 @@ type RepositoryBlob struct {
 	Content []byte
 }
 
+type RepositoryRefs struct {
+	Page     int
+	Pagelen  int
+	MaxDepth int
+	Size     int
+	Next     string
+	Refs     []map[string]interface{}
+}
+
 type RepositoryBranches struct {
 	Page     int
 	Pagelen  int
@@ -276,6 +285,42 @@ func (r *Repository) WriteFileBlob(ro *RepositoryBlobWriteOptions) error {
 
 	_, err := r.c.executeFileUpload("POST", urlStr, ro.FilePath, ro.FileName, ro.FileName, m)
 	return err
+}
+
+func (r *Repository) ListRefs(rbo *RepositoryBranchOptions) (*RepositoryRefs, error) {
+
+	params := url.Values{}
+	if rbo.Query != "" {
+		params.Add("q", rbo.Query)
+	}
+
+	if rbo.Sort != "" {
+		params.Add("sort", rbo.Sort)
+	}
+
+	if rbo.PageNum > 0 {
+		params.Add("page", strconv.Itoa(rbo.PageNum))
+	}
+
+	if rbo.Pagelen > 0 {
+		params.Add("pagelen", strconv.Itoa(rbo.Pagelen))
+	}
+
+	if rbo.MaxDepth > 0 {
+		params.Add("max_depth", strconv.Itoa(rbo.MaxDepth))
+	}
+
+	urlStr := r.c.requestUrl("/repositories/%s/%s/refs?%s", rbo.Owner, rbo.RepoSlug, params.Encode())
+	response, err := r.c.executeRaw("GET", urlStr, "")
+	if err != nil {
+		return nil, err
+	}
+	bodyBytes, err := ioutil.ReadAll(response)
+	if err != nil {
+		return nil, err
+	}
+	bodyString := string(bodyBytes)
+	return decodeRepositoryRefs(bodyString)
 }
 
 func (r *Repository) ListBranches(rbo *RepositoryBranchOptions) (*RepositoryBranches, error) {
@@ -909,6 +954,58 @@ func decodeRepositoryFiles(repoResponse interface{}) ([]RepositoryFile, error) {
 	}
 
 	return *repositoryFiles, nil
+}
+
+func decodeRepositoryRefs(refResponseStr string) (*RepositoryRefs, error) {
+
+	var refResponseMap map[string]interface{}
+	err := json.Unmarshal([]byte(refResponseStr), &refResponseMap)
+	if err != nil {
+		return nil, err
+	}
+
+	refArray := refResponseMap["values"].([]interface{})
+	var refs []map[string]interface{}
+	for _, refEntry := range refArray {
+		var ref map[string]interface{}
+		err = mapstructure.Decode(refEntry, &ref)
+		if err == nil {
+			refs = append(refs, ref)
+		}
+	}
+
+	page, ok := refResponseMap["page"].(float64)
+	if !ok {
+		page = 0
+	}
+
+	pagelen, ok := refResponseMap["pagelen"].(float64)
+	if !ok {
+		pagelen = 0
+	}
+	max_depth, ok := refResponseMap["max_depth"].(float64)
+	if !ok {
+		max_depth = 0
+	}
+	size, ok := refResponseMap["size"].(float64)
+	if !ok {
+		size = 0
+	}
+
+	next, ok := refResponseMap["next"].(string)
+	if !ok {
+		next = ""
+	}
+
+	repositoryBranches := RepositoryRefs{
+		Page:     int(page),
+		Pagelen:  int(pagelen),
+		MaxDepth: int(max_depth),
+		Size:     int(size),
+		Next:     next,
+		Refs:     refs,
+	}
+	return &repositoryBranches, nil
 }
 
 func decodeRepositoryBranches(branchResponseStr string) (*RepositoryBranches, error) {
