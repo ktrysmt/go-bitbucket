@@ -287,7 +287,9 @@ func (r *Repository) WriteFileBlob(ro *RepositoryBlobWriteOptions) error {
 	return err
 }
 
-func (r *Repository) ListRefs(rbo *RepositoryBranchOptions) (*RepositoryRefs, error) {
+// ListRefs gets all refs in the Bitbucket repository and returns them as a RepositoryRefs.
+// It takes in a RepositoryRefOptions instance as its only parameter.
+func (r *Repository) ListRefs(rbo *RepositoryRefOptions) (*RepositoryRefs, error) {
 
 	params := url.Values{}
 	if rbo.Query != "" {
