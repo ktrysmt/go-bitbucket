@@ -104,3 +104,17 @@ func TestGetWorkspacePermissionForUser(t *testing.T) {
 		t.Error("The workspace was not returned")
 	}
 }
+
+func TestGetWorkspaceProjects(t *testing.T) {
+	c := getBitbucketClient(t)
+	workspaceName := getWorkspace(t)
+
+	res, err := c.Workspaces.Projects(workspaceName)
+	if err != nil {
+		t.Error("could not get workspace projects")
+	}
+
+	if res == nil || len(res.Items) == 0 {
+		t.Error("no workspace projects were returned")
+	}
+}
