@@ -199,6 +199,21 @@ type RepositoryBlobWriteOptions struct {
 	Branch   string `json:"branch"`
 }
 
+// RepositoryRefOptions represents the options for describing a repository's refs (i.e.
+// tags and branches). The field BranchFlg is a boolean that is indicates whether a specific
+// RepositoryRefOptions instance is meant for Branch specific set of api methods.
+type RepositoryRefOptions struct {
+	Owner     string `json:"owner"`
+	RepoSlug  string `json:"repo_slug"`
+	Query     string `json:"query"`
+	Sort      string `json:"sort"`
+	PageNum   int    `json:"page"`
+	Pagelen   int    `json:"pagelen"`
+	MaxDepth  int    `json:"max_depth"`
+	Name      string `json:"name"`
+	BranchFlg bool
+}
+
 type RepositoryBranchOptions struct {
 	Owner      string `json:"owner"`
 	RepoSlug   string `json:"repo_slug"`
