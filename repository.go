@@ -366,10 +366,10 @@ func (r *Repository) ListBranches(rbo *RepositoryBranchOptions) (*RepositoryBran
 }
 
 func (r *Repository) GetBranch(rbo *RepositoryBranchOptions) (*RepositoryBranch, error) {
-	if rbo.BranchName == "" {
+	if rbo.Name == "" {
 		return nil, errors.New("Error: Branch Name is empty")
 	}
-	urlStr := r.c.requestUrl("/repositories/%s/%s/refs/branches/%s", rbo.Owner, rbo.RepoSlug, rbo.BranchName)
+	urlStr := r.c.requestUrl("/repositories/%s/%s/refs/branches/%s", rbo.Owner, rbo.RepoSlug, rbo.Name)
 	response, err := r.c.executeRaw("GET", urlStr, "")
 	if err != nil {
 		return nil, err
@@ -380,21 +380,6 @@ func (r *Repository) GetBranch(rbo *RepositoryBranchOptions) (*RepositoryBranch,
 	}
 	bodyString := string(bodyBytes)
 	return decodeRepositoryBranch(bodyString)
-}
-
-// DeleteBranch https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/refs/branches/%7Bname%7D#delete
-func (r *Repository) DeleteBranch(rbo *RepositoryBranchDeleteOptions) error {
-	repo := rbo.RepoSlug
-	if rbo.RepoUUID != "" {
-		repo = rbo.RepoUUID
-	}
-	ref := rbo.RefName
-	if rbo.RefUUID != "" {
-		ref = rbo.RefUUID
-	}
-	urlStr := r.c.requestUrl("/repositories/%s/%s/refs/branches/%s", rbo.Owner, repo, ref)
-	_, err := r.c.execute("DELETE", urlStr, "")
-	return err
 }
 
 func (r *Repository) CreateBranch(rbo *RepositoryBranchCreationOptions) (*RepositoryBranch, error) {
@@ -418,30 +403,36 @@ func (r *Repository) CreateBranch(rbo *RepositoryBranchCreationOptions) (*Reposi
 	return decodeRepositoryBranchCreated(bodyString)
 }
 
-func (r *Repository) ListTags(rbo *RepositoryTagOptions) (*RepositoryTags, error) {
+func (r *Repository) DeleteBranch(rbo *RepositoryBranchOptions) (interface{}, error) {
+	urlStr := r.c.requestUrl("/repositories/%s/%s/refs/branches/%s", rbo.Owner, rbo.RepoSlug,
+		rbo.Name)
+	return r.c.execute("DELETE", urlStr, "")
+}
+
+func (r *Repository) ListTags(rto *RepositoryTagOptions) (*RepositoryTags, error) {
 
 	params := url.Values{}
-	if rbo.Query != "" {
-		params.Add("q", rbo.Query)
+	if rto.Query != "" {
+		params.Add("q", rto.Query)
 	}
 
-	if rbo.Sort != "" {
-		params.Add("sort", rbo.Sort)
+	if rto.Sort != "" {
+		params.Add("sort", rto.Sort)
 	}
 
-	if rbo.PageNum > 0 {
-		params.Add("page", strconv.Itoa(rbo.PageNum))
+	if rto.PageNum > 0 {
+		params.Add("page", strconv.Itoa(rto.PageNum))
 	}
 
-	if rbo.Pagelen > 0 {
-		params.Add("pagelen", strconv.Itoa(rbo.Pagelen))
+	if rto.Pagelen > 0 {
+		params.Add("pagelen", strconv.Itoa(rto.Pagelen))
 	}
 
-	if rbo.MaxDepth > 0 {
-		params.Add("max_depth", strconv.Itoa(rbo.MaxDepth))
+	if rto.MaxDepth > 0 {
+		params.Add("max_depth", strconv.Itoa(rto.MaxDepth))
 	}
 
-	urlStr := r.c.requestUrl("/repositories/%s/%s/refs/tags?%s", rbo.Owner, rbo.RepoSlug, params.Encode())
+	urlStr := r.c.requestUrl("/repositories/%s/%s/refs/tags?%s", rto.Owner, rto.RepoSlug, params.Encode())
 	response, err := r.c.executeRaw("GET", urlStr, "")
 	if err != nil {
 		return nil, err
@@ -454,9 +445,9 @@ func (r *Repository) ListTags(rbo *RepositoryTagOptions) (*RepositoryTags, error
 	return decodeRepositoryTags(bodyString)
 }
 
-func (r *Repository) CreateTag(rbo *RepositoryTagCreationOptions) (*RepositoryTag, error) {
-	urlStr := r.c.requestUrl("/repositories/%s/%s/refs/tags", rbo.Owner, rbo.RepoSlug)
-	data, err := r.buildTagBody(rbo)
+func (r *Repository) CreateTag(rto *RepositoryTagCreationOptions) (*RepositoryTag, error) {
+	urlStr := r.c.requestUrl("/repositories/%s/%s/refs/tags", rto.Owner, rto.RepoSlug)
+	data, err := r.buildTagBody(rto)
 	if err != nil {
 		return nil, err
 	}
@@ -473,6 +464,12 @@ func (r *Repository) CreateTag(rbo *RepositoryTagCreationOptions) (*RepositoryTa
 
 	bodyString := string(bodyBytes)
 	return decodeRepositoryTagCreated(bodyString)
+}
+
+func (r *Repository) DeleteTag(rto *RepositoryTagOptions) (interface{}, error) {
+	urlStr := r.c.requestUrl("/repositories/%s/%s/refs/tags/%s", rto.Owner, rto.RepoSlug,
+		rto.Name)
+	return r.c.execute("DELETE", urlStr, "")
 }
 
 func (r *Repository) Update(ro *RepositoryOptions) (*Repository, error) {
