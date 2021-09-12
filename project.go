@@ -15,7 +15,7 @@ type Project struct {
 	Key         string
 	Name        string
 	Description string
-	IsPrivate   bool
+	Is_private  bool
 }
 
 type ProjectOptions struct {
