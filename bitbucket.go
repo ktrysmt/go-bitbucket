@@ -276,6 +276,13 @@ type PullRequestsOptions struct {
 	Sort              string   `json:"sort"`
 }
 
+type PullRequestCommentOptions struct {
+	Owner         string `json:"owner"`
+	RepoSlug      string `json:"repo_slug"`
+	PullRequestID string `json:"id"`
+	Content       string `json:"content"`
+}
+
 type IssuesOptions struct {
 	ID        string   `json:"id"`
 	Owner     string   `json:"owner"`

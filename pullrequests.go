@@ -127,6 +127,16 @@ func (p *PullRequests) UnRequestChanges(po *PullRequestsOptions) (interface{}, e
 	return p.c.execute("DELETE", urlStr, "")
 }
 
+func (p *PullRequests) AddComment(co *PullRequestCommentOptions) (interface{}, error) {
+	data, err := p.buildPullRequestCommentBody(co)
+	if err != nil {
+		return nil, err
+	}
+
+	urlStr := p.c.requestUrl("/repositories/%s/%s/pullrequests/%s/comments", co.Owner, co.RepoSlug, co.PullRequestID)
+	return p.c.execute("POST", urlStr, data)
+}
+
 func (p *PullRequests) GetComments(po *PullRequestsOptions) (interface{}, error) {
 	urlStr := p.c.GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/" + po.ID + "/comments/"
 	return p.c.execute("GET", urlStr, "")
@@ -220,4 +230,18 @@ func (p *PullRequests) buildPullRequestBody(po *PullRequestsOptions) string {
 	}
 
 	return string(data)
+}
+
+func (p *PullRequests) buildPullRequestCommentBody(co *PullRequestCommentOptions) (string, error) {
+	body := map[string]interface{}{}
+	body["content"] = map[string]interface{}{
+		"raw": co.Content,
+	}
+
+	data, err := json.Marshal(body)
+	if err != nil {
+		return "", err
+	}
+
+	return string(data), nil
 }
