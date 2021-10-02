@@ -276,6 +276,12 @@ type PullRequestsOptions struct {
 	Sort              string   `json:"sort"`
 }
 
+type CommentContentOptions struct {
+	Raw    string `json:"raw,omitempty"`
+	HTML   string `json:"html,omitempty"`
+	Markup string `json:"markup,omitempty"`
+}
+
 type IssuesOptions struct {
 	ID        string   `json:"id"`
 	Owner     string   `json:"owner"`
