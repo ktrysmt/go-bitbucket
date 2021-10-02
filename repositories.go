@@ -2,6 +2,7 @@ package bitbucket
 
 import (
 	"errors"
+  "fmt"
 
 	"github.com/mitchellh/mapstructure"
 )
@@ -31,7 +32,11 @@ type RepositoriesRes struct {
 }
 
 func (r *Repositories) ListForAccount(ro *RepositoriesOptions) (*RepositoriesRes, error) {
-	urlStr := r.c.requestUrl("/repositories/%s", ro.Owner)
+	url := "/repositories"
+	if ro.Owner != "" {
+		url += fmt.Sprintf("/%s", ro.Owner)
+	}
+	urlStr := r.c.requestUrl(url)
 	if ro.Role != "" {
 		urlStr += "?role=" + ro.Role
 	}
