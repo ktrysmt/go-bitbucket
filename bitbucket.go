@@ -527,3 +527,11 @@ type RepositoryDeploymentVariableDeleteOptions struct {
 	Environment *Environment `json:"environment"`
 	Uuid        string       `json:"uuid"`
 }
+
+type DeployKeyOptions struct {
+	Owner    string `json:"owner"`
+	RepoSlug string `json:"repo_slug"`
+	Id       int    `json:"id"`
+	Label    string `json:"label"`
+	Key      string `json:"key"`
+}
