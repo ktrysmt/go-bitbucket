@@ -774,6 +774,20 @@ func (r *Repository) buildRepositoryBody(ro *RepositoryOptions) string {
 	}
 	if ro.ForkPolicy != "" {
 		body["fork_policy"] = ro.ForkPolicy
+
+		// Due to this undocumented asymmetric behaviour (https://jira.atlassian.com/browse/BCLOUD-13093)
+		// we have to do this, to allow `fork_policy` to be updated after initial creation (i.e. PUT/POST requests)
+		switch ro.ForkPolicy {
+		case "allow_forks":
+			body["no_forks"] = false
+			body["no_public_forks"] = false
+		case "no_public_forks":
+			body["no_forks"] = false
+			body["no_public_forks"] = true
+		case "no_forks":
+			body["no_forks"] = true
+			body["no_public_forks"] = true
+		}
 	}
 	if ro.Language != "" {
 		body["language"] = ro.Language

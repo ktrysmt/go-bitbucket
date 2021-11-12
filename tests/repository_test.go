@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	_ "github.com/k0kubun/pp"
+
 	"github.com/ktrysmt/go-bitbucket"
 )
 
@@ -42,6 +43,149 @@ func TestGetRepositoryRepositories(t *testing.T) {
 
 	if res.Full_name != owner+"/"+repo {
 		t.Error("Cannot catch repos full name.")
+	}
+}
+
+func TestCreateRepositoryRepositories(t *testing.T) {
+	user := os.Getenv("BITBUCKET_TEST_USERNAME")
+	pass := os.Getenv("BITBUCKET_TEST_PASSWORD")
+	owner := os.Getenv("BITBUCKET_TEST_OWNER")
+
+	if user == "" {
+		t.Error("BITBUCKET_TEST_USERNAME is empty.")
+	}
+	if pass == "" {
+		t.Error("BITBUCKET_TEST_PASSWORD is empty.")
+	}
+	if owner == "" {
+		t.Error("BITBUCKET_TEST_OWNER is empty.")
+	}
+
+	c := bitbucket.NewBasicAuth(user, pass)
+
+	// Create project - needed prior to creating repo
+	projOpt := &bitbucket.ProjectOptions{
+		Owner:     owner,
+		Name:      "go-bitbucket-test-project",
+		Key:       "GO_BB_TEST_PROJECT",
+		IsPrivate: true,
+	}
+	project, err := c.Workspaces.CreateProject(projOpt)
+	if err != nil {
+		t.Error("The project could not be created.", err)
+	}
+
+	repoSlug := "go-bb-test-repo-create"
+	forkPolicy := "no_forks"
+	repoOpt := &bitbucket.RepositoryOptions{
+		Owner:      owner,
+		RepoSlug:   repoSlug,
+		ForkPolicy: forkPolicy,
+		Project:    project.Key,
+		IsPrivate:  "true",
+	}
+
+	res, err := c.Repositories.Repository.Create(repoOpt)
+	if err != nil {
+		t.Error("The project could not be created.", err)
+	}
+
+	if res.Full_name != owner+"/"+repoSlug {
+		t.Error("The repository `Full_name` attribute does not match the expected value.")
+	}
+	if res.Fork_policy != forkPolicy {
+		t.Error("The repository `Fork_policy` attribute does not match the expected value.")
+	}
+
+	// Clean up
+	_, err = c.Repositories.Repository.Delete(repoOpt)
+	if err != nil {
+		t.Error("The repository could not be deleted.", err)
+	}
+
+	_, err = c.Workspaces.DeleteProject(projOpt)
+	if err != nil {
+		t.Error("The project could not be deleted.", err)
+	}
+}
+
+func TestRepositoryUpdateForkPolicy(t *testing.T) {
+	user := os.Getenv("BITBUCKET_TEST_USERNAME")
+	pass := os.Getenv("BITBUCKET_TEST_PASSWORD")
+	owner := os.Getenv("BITBUCKET_TEST_OWNER")
+	repo := os.Getenv("BITBUCKET_TEST_REPOSLUG")
+
+	if user == "" {
+		t.Error("BITBUCKET_TEST_USERNAME is empty.")
+	}
+	if pass == "" {
+		t.Error("BITBUCKET_TEST_PASSWORD is empty.")
+	}
+	if owner == "" {
+		t.Error("BITBUCKET_TEST_OWNER is empty.")
+	}
+	if repo == "" {
+		t.Error("BITBUCKET_TEST_REPOSLUG is empty.")
+	}
+
+	c := bitbucket.NewBasicAuth(user, pass)
+
+	opt := &bitbucket.RepositoryOptions{
+		Owner:    owner,
+		RepoSlug: repo,
+	}
+
+	res, err := c.Repositories.Repository.Get(opt)
+	if err != nil {
+		t.Error("The repository is not found.", err)
+	}
+
+	forkPolicy := "allow_forks"
+	opt = &bitbucket.RepositoryOptions{
+		Uuid:       res.Uuid,
+		Owner:      owner,
+		RepoSlug:   res.Slug,
+		ForkPolicy: forkPolicy,
+	}
+	res, err = c.Repositories.Repository.Update(opt)
+	if err != nil {
+		t.Error("The repository could not be updated.", err)
+	}
+
+	if res.Fork_policy != forkPolicy {
+		t.Errorf("The repository's fork_policy did not match the expected: '%s'.", forkPolicy)
+	}
+
+	forkPolicy = "no_public_forks"
+	opt = &bitbucket.RepositoryOptions{
+		Uuid:       res.Uuid,
+		Owner:      owner,
+		RepoSlug:   res.Slug,
+		ForkPolicy: forkPolicy,
+	}
+	res, err = c.Repositories.Repository.Update(opt)
+	if err != nil {
+		t.Error("The repository could not be updated.", err)
+	}
+
+	if res.Fork_policy != forkPolicy {
+		t.Errorf("The repository's fork_policy did not match the expected: '%s'.", forkPolicy)
+	}
+
+	forkPolicy = "no_forks"
+	opt = &bitbucket.RepositoryOptions{
+		Uuid:       res.Uuid,
+		Owner:      owner,
+		RepoSlug:   res.Slug,
+		ForkPolicy: forkPolicy,
+	}
+	res, err = c.Repositories.Repository.Update(opt)
+	if err != nil {
+		t.Error("The repository could not be updated.", err)
+	}
+
+	if res.Fork_policy != forkPolicy {
+		t.Errorf("The repository's fork_policy did not match the expected: '%s'.", forkPolicy)
 	}
 }
 
