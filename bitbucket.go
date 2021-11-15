@@ -386,7 +386,7 @@ type WebhooksOptions struct {
 	Description string   `json:"description"`
 	Url         string   `json:"url"`
 	Active      bool     `json:"active"`
-	Events      []string `json:"events"` // EX) {'repo:push','issue:created',..} REF) https://goo.gl/VTj93b
+	Events      []string `json:"events"` // EX: {'repo:push','issue:created',..} REF: https://bit.ly/3FjRHHu
 }
 
 type RepositoryPipelineOptions struct {
