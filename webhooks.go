@@ -5,10 +5,37 @@ import (
 	"os"
 
 	"github.com/k0kubun/pp"
+	"github.com/mitchellh/mapstructure"
 )
 
 type Webhooks struct {
 	c *Client
+}
+
+type Webhook struct {
+	Owner       string   `json:"owner"`
+	RepoSlug    string   `json:"repo_slug"`
+	Uuid        string   `json:"uuid"`
+	Description string   `json:"description"`
+	Url         string   `json:"url"`
+	Active      bool     `json:"active"`
+	Events      []string `json:"events"` // EX: {'repo:push','issue:created',..} REF: https://bit.ly/3FjRHHu
+}
+
+func decodeWebhook(response interface{}) (*Webhook, error) {
+	respMap := response.(map[string]interface{})
+
+	if respMap["type"] == "error" {
+		return nil, DecodeError(respMap)
+	}
+
+	var webhook = new(Webhook)
+	err := mapstructure.Decode(respMap, webhook)
+	if err != nil {
+		return nil, err
+	}
+
+	return webhook, nil
 }
 
 func (r *Webhooks) buildWebhooksBody(ro *WebhooksOptions) string {
@@ -41,26 +68,39 @@ func (r *Webhooks) Gets(ro *WebhooksOptions) (interface{}, error) {
 	return r.c.execute("GET", urlStr, "")
 }
 
-func (r *Webhooks) Create(ro *WebhooksOptions) (interface{}, error) {
+func (r *Webhooks) Create(ro *WebhooksOptions) (*Webhook, error) {
 	data := r.buildWebhooksBody(ro)
 	urlStr := r.c.requestUrl("/repositories/%s/%s/hooks", ro.Owner, ro.RepoSlug)
-	return r.c.execute("POST", urlStr, data)
+	response, err := r.c.execute("POST", urlStr, data)
+	if err != nil {
+		return nil, err
+	}
+
+	return decodeWebhook(response)
 }
 
-func (r *Webhooks) Get(ro *WebhooksOptions) (interface{}, error) {
+func (r *Webhooks) Get(ro *WebhooksOptions) (*Webhook, error) {
 	urlStr := r.c.requestUrl("/repositories/%s/%s/hooks/%s", ro.Owner, ro.RepoSlug, ro.Uuid)
-	return r.c.execute("GET", urlStr, "")
+	response, err := r.c.execute("GET", urlStr, "")
+	if err != nil {
+		return nil, err
+	}
+
+	return decodeWebhook(response)
 }
 
-func (r *Webhooks) Update(ro *WebhooksOptions) (interface{}, error) {
+func (r *Webhooks) Update(ro *WebhooksOptions) (*Webhook, error) {
 	data := r.buildWebhooksBody(ro)
 	urlStr := r.c.requestUrl("/repositories/%s/%s/hooks/%s", ro.Owner, ro.RepoSlug, ro.Uuid)
-	return r.c.execute("PUT", urlStr, data)
+	response, err := r.c.execute("PUT", urlStr, data)
+	if err != nil {
+		return nil, err
+	}
+
+	return decodeWebhook(response)
 }
 
 func (r *Webhooks) Delete(ro *WebhooksOptions) (interface{}, error) {
 	urlStr := r.c.requestUrl("/repositories/%s/%s/hooks/%s", ro.Owner, ro.RepoSlug, ro.Uuid)
 	return r.c.execute("DELETE", urlStr, "")
 }
-
-//
