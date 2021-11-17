@@ -377,6 +377,7 @@ type DiffStatOptions struct {
 	PageNum    int    `json:"page"`
 	Pagelen    int    `json:"pagelen"`
 	MaxDepth   int    `json:"max_depth"`
+	Fields     []string
 }
 
 type WebhooksOptions struct {
