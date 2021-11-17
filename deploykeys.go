@@ -13,9 +13,10 @@ type DeployKeys struct {
 }
 
 type DeployKey struct {
-	Id    int    `json:"id"`
-	Label string `json:"label"`
-	Key   string `json:"key"`
+	Id      int    `json:"id"`
+	Label   string `json:"label"`
+	Key     string `json:"key"`
+	Comment string `json:"comment"`
 }
 
 func decodeDeployKey(response interface{}) (*DeployKey, error) {
