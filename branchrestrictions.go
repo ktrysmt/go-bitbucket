@@ -82,10 +82,9 @@ type branchRestrictionsBodyGroup struct {
 		Html struct {
 			Href string `json:"href"`
 		} `json:"html"`
-		FullSlug string `json:"full_slug"`
-		Members  int    `json:"members"`
-		Slug     string `json:"slug"`
 	} `json:"links"`
+	FullSlug string `json:"full_slug"`
+	Slug     string `json:"slug"`
 }
 
 type branchRestrictionsBodyUser struct {
@@ -128,7 +127,7 @@ func (b *BranchRestrictions) buildBranchRestrictionsBody(bo *BranchRestrictionsO
 	}
 	for _, g := range bo.Groups {
 		group := branchRestrictionsBodyGroup{
-			Name: g,
+			Slug: g,
 		}
 		groups = append(groups, group)
 	}
