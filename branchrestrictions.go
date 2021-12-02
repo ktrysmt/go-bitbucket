@@ -2,9 +2,7 @@ package bitbucket
 
 import (
 	"encoding/json"
-	"os"
 
-	"github.com/k0kubun/pp"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -23,7 +21,10 @@ func (b *BranchRestrictions) Gets(bo *BranchRestrictionsOptions) (interface{}, e
 }
 
 func (b *BranchRestrictions) Create(bo *BranchRestrictionsOptions) (*BranchRestrictions, error) {
-	data := b.buildBranchRestrictionsBody(bo)
+	data, err := b.buildBranchRestrictionsBody(bo)
+	if err != nil {
+		return nil, err
+	}
 	urlStr := b.c.requestUrl("/repositories/%s/%s/branch-restrictions", bo.Owner, bo.RepoSlug)
 	response, err := b.c.execute("POST", urlStr, data)
 	if err != nil {
@@ -44,7 +45,10 @@ func (b *BranchRestrictions) Get(bo *BranchRestrictionsOptions) (*BranchRestrict
 }
 
 func (b *BranchRestrictions) Update(bo *BranchRestrictionsOptions) (interface{}, error) {
-	data := b.buildBranchRestrictionsBody(bo)
+	data, err := b.buildBranchRestrictionsBody(bo)
+	if err != nil {
+		return nil, err
+	}
 	urlStr := b.c.requestUrl("/repositories/%s/%s/branch-restrictions/%s", bo.Owner, bo.RepoSlug, bo.ID)
 	response, err := b.c.execute("PUT", urlStr, data)
 	if err != nil {
@@ -115,8 +119,7 @@ type branchRestrictionsBodyUser struct {
 	} `json:"links"`
 }
 
-func (b *BranchRestrictions) buildBranchRestrictionsBody(bo *BranchRestrictionsOptions) string {
-
+func (b *BranchRestrictions) buildBranchRestrictionsBody(bo *BranchRestrictionsOptions) (string, error) {
 	var users []branchRestrictionsBodyUser
 	var groups []branchRestrictionsBodyGroup
 	for _, u := range bo.Users {
@@ -142,11 +145,10 @@ func (b *BranchRestrictions) buildBranchRestrictionsBody(bo *BranchRestrictionsO
 
 	data, err := json.Marshal(body)
 	if err != nil {
-		pp.Println(err)
-		os.Exit(9)
+		return "", err
 	}
 
-	return string(data)
+	return string(data), nil
 }
 
 func decodeBranchRestriction(branchResponse interface{}) (*BranchRestrictions, error) {
