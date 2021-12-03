@@ -2,9 +2,7 @@ package bitbucket
 
 import (
 	"encoding/json"
-	"os"
 
-	"github.com/k0kubun/pp"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -35,22 +33,24 @@ func decodeDeployKey(response interface{}) (*DeployKey, error) {
 	return deployKey, nil
 }
 
-func buildDeployKeysBody(opt *DeployKeyOptions) string {
+func buildDeployKeysBody(opt *DeployKeyOptions) (string, error) {
 	body := map[string]interface{}{}
 	body["label"] = opt.Label
 	body["key"] = opt.Key
 
 	data, err := json.Marshal(body)
 	if err != nil {
-		_, _ = pp.Println(err)
-		os.Exit(9)
+		return "", err
 	}
 
-	return string(data)
+	return string(data), nil
 }
 
 func (dk *DeployKeys) Create(opt *DeployKeyOptions) (*DeployKey, error) {
-	data := buildDeployKeysBody(opt)
+	data, err := buildDeployKeysBody(opt)
+	if err != nil {
+		return nil, err
+	}
 	urlStr := dk.c.requestUrl("/repositories/%s/%s/deploy-keys", opt.Owner, opt.RepoSlug)
 	response, err := dk.c.execute("POST", urlStr, data)
 	if err != nil {
