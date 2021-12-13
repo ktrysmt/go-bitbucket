@@ -189,6 +189,103 @@ func TestRepositoryUpdateForkPolicy(t *testing.T) {
 	}
 }
 
+func TestGetRepositoryPipelineConfig(t *testing.T) {
+	user := os.Getenv("BITBUCKET_TEST_USERNAME")
+	pass := os.Getenv("BITBUCKET_TEST_PASSWORD")
+	owner := os.Getenv("BITBUCKET_TEST_OWNER")
+	repo := os.Getenv("BITBUCKET_TEST_REPOSLUG")
+
+	if user == "" {
+		t.Error("BITBUCKET_TEST_USERNAME is empty.")
+	}
+	if pass == "" {
+		t.Error("BITBUCKET_TEST_PASSWORD is empty.")
+	}
+	if owner == "" {
+		t.Error("BITBUCKET_TEST_OWNER is empty.")
+	}
+	if repo == "" {
+		t.Error("BITBUCKET_TEST_REPOSLUG is empty.")
+	}
+
+	c := bitbucket.NewBasicAuth(user, pass)
+
+	opt := &bitbucket.RepositoryPipelineOptions{
+		Owner:    owner,
+		RepoSlug: repo,
+	}
+
+	res, err := c.Repositories.Repository.GetPipelineConfig(opt)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if res == nil {
+		t.Error("Cannot get pipeline config")
+	}
+	if res.Enabled != false {
+		t.Error("Got wrong pipelines config data")
+	}
+}
+
+func TestUpdateRepositoryPipelineConfig(t *testing.T) {
+	user := os.Getenv("BITBUCKET_TEST_USERNAME")
+	pass := os.Getenv("BITBUCKET_TEST_PASSWORD")
+	owner := os.Getenv("BITBUCKET_TEST_OWNER")
+	repo := os.Getenv("BITBUCKET_TEST_REPOSLUG")
+
+	if user == "" {
+		t.Error("BITBUCKET_TEST_USERNAME is empty.")
+	}
+	if pass == "" {
+		t.Error("BITBUCKET_TEST_PASSWORD is empty.")
+	}
+	if owner == "" {
+		t.Error("BITBUCKET_TEST_OWNER is empty.")
+	}
+	if repo == "" {
+		t.Error("BITBUCKET_TEST_REPOSLUG is empty.")
+	}
+
+	c := bitbucket.NewBasicAuth(user, pass)
+
+	opt := &bitbucket.RepositoryPipelineOptions{
+		Owner:    owner,
+		RepoSlug: repo,
+		Enabled:  true,
+	}
+
+	res, err := c.Repositories.Repository.UpdatePipelineConfig(opt)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if res == nil {
+		t.Error("Cannot update pipeline config")
+	}
+	if res.Enabled != true {
+		t.Error("Got wrong pipelines config data")
+	}
+
+	opt = &bitbucket.RepositoryPipelineOptions{
+		Owner:    owner,
+		RepoSlug: repo,
+		Enabled:  false,
+	}
+
+	res, err = c.Repositories.Repository.UpdatePipelineConfig(opt)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if res == nil {
+		t.Error("Cannot update pipeline config")
+	}
+	if res.Enabled != false {
+		t.Error("Got wrong pipelines config data")
+	}
+}
+
 func TestGetRepositoryPipelineVariables(t *testing.T) {
 
 	user := os.Getenv("BITBUCKET_TEST_USERNAME")
