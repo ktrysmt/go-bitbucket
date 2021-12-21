@@ -372,11 +372,10 @@ func (c *Client) doRawRequest(req *http.Request, emptyResponse bool) (io.ReadClo
 
 func unexpectedHttpStatusCode(statusCode int) bool {
 	switch statusCode {
-	case http.StatusOK:
-		return false
-	case http.StatusCreated:
-		return false
-	case http.StatusNoContent:
+	case http.StatusOK,
+		http.StatusCreated,
+		http.StatusNoContent,
+		http.StatusAccepted:
 		return false
 	default:
 		return true
