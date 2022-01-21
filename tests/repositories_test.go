@@ -68,7 +68,9 @@ func TestListForTeam(t *testing.T) {
 
 	c := bitbucket.NewBasicAuth(user, pass)
 
+	//goland:noinspection GoDeprecation
 	repositories, err := c.Repositories.ListForTeam(&bitbucket.RepositoriesOptions{
+
 		Owner: owner,
 	})
 	if err != nil {
