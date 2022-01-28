@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -51,6 +52,15 @@ type auth struct {
 	user, password string
 	token          oauth2.Token
 	bearerToken    string
+}
+
+type Response struct {
+	Size     int           `json:"size"`
+	Page     int           `json:"page"`
+	Pagelen  int           `json:"pagelen"`
+	Next     string        `json:"next"`
+	Previous string        `json:"previous"`
+	Values   []interface{} `json:"values"`
 }
 
 // Uses the Client Credentials Grant oauth2 flow to authenticate to Bitbucket
@@ -229,44 +239,6 @@ func (c *Client) execute(method string, urlStr string, text string) (interface{}
 		return nil, err
 	}
 
-	//autopaginate.
-	resultMap, isMap := result.(map[string]interface{})
-	if isMap {
-		nextIn := resultMap["next"]
-		valuesIn := resultMap["values"]
-		if nextIn != nil && valuesIn != nil {
-			nextUrl := nextIn.(string)
-			if nextUrl != "" {
-				valuesSlice := valuesIn.([]interface{})
-				if valuesSlice != nil {
-					nextResult, err := c.execute(method, nextUrl, text)
-					if err != nil {
-						return nil, err
-					}
-					nextResultMap, isNextMap := nextResult.(map[string]interface{})
-					if !isNextMap {
-						return nil, fmt.Errorf("next page result is not map, it's %T", nextResult)
-					}
-					nextValuesIn := nextResultMap["values"]
-					if nextValuesIn == nil {
-						return nil, fmt.Errorf("next page result has no values")
-					}
-					nextValuesSlice, isSlice := nextValuesIn.([]interface{})
-					if !isSlice {
-						return nil, fmt.Errorf("next page result 'values' is not slice")
-					}
-					valuesSlice = append(valuesSlice, nextValuesSlice...)
-					resultMap["values"] = valuesSlice
-					delete(resultMap, "page")
-					delete(resultMap, "pagelen")
-					delete(resultMap, "max_depth")
-					delete(resultMap, "size")
-					result = resultMap
-				}
-			}
-		}
-	}
-
 	return result, nil
 }
 
@@ -338,12 +310,42 @@ func (c *Client) doRequest(req *http.Request, emptyResponse bool) (interface{}, 
 
 	defer resBody.Close()
 
-	var result interface{}
-	if err := json.NewDecoder(resBody).Decode(&result); err != nil {
-		log.Println("Could not unmarshal JSON payload, returning raw response")
+	responseBytes, err := ioutil.ReadAll(resBody)
+	if err != nil {
 		return resBody, err
 	}
 
+	responsePaginated := &Response{}
+	err = json.Unmarshal(responseBytes, responsePaginated)
+	if err == nil && len(responsePaginated.Values) > 0 {
+		var values []interface{}
+		for {
+			values = append(values, responsePaginated.Values...)
+			if len(responsePaginated.Next) == 0 {
+				break
+			}
+			newReq, err := http.NewRequest(req.Method, responsePaginated.Next, nil)
+			if err != nil {
+				return resBody, err
+			}
+			resp, err := c.doRawRequest(newReq, false)
+			if err != nil {
+				return resBody, err
+			}
+			json.NewDecoder(resp).Decode(responsePaginated)
+		}
+		responsePaginated.Values = values
+		responseBytes, err = json.Marshal(responsePaginated)
+		if err != nil {
+			return resBody, err
+		}
+	}
+
+	var result interface{}
+	if err := json.Unmarshal(responseBytes, &result); err != nil {
+		log.Println("Could not unmarshal JSON payload, returning raw response")
+		return resBody, err
+	}
 	return result, nil
 }
 
