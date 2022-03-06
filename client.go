@@ -361,7 +361,7 @@ func (c *Client) doRawRequest(req *http.Request, emptyResponse bool) (io.ReadClo
 
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
-			out.Body = []byte(err.Error())
+			out.Body = []byte(fmt.Sprintf("could not read the response body: %v", err))
 		} else {
 			out.Body = body
 		}
