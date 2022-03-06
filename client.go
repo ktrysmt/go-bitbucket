@@ -296,7 +296,6 @@ func (c *Client) authenticateRequest(req *http.Request) {
 	} else if c.Auth.token.Valid() {
 		c.Auth.token.SetAuthHeader(req)
 	}
-	return
 }
 
 func (c *Client) doRequest(req *http.Request, emptyResponse bool) (interface{}, error) {
@@ -356,8 +355,18 @@ func (c *Client) doRawRequest(req *http.Request, emptyResponse bool) (io.ReadClo
 	}
 
 	if unexpectedHttpStatusCode(resp.StatusCode) {
-		resp.Body.Close()
-		return nil, fmt.Errorf(resp.Status)
+		defer resp.Body.Close()
+
+		out := &UnexpectedResponseStatusError{Status: resp.Status}
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			out.Body = []byte(err.Error())
+		} else {
+			out.Body = body
+		}
+
+		return nil, out
 	}
 
 	if emptyResponse || resp.StatusCode == http.StatusNoContent {
