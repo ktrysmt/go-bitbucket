@@ -320,13 +320,14 @@ func (c *Client) doRequest(req *http.Request, emptyResponse bool) (interface{}, 
 		var values []interface{}
 		for {
 			values = append(values, responsePaginated.Values...)
-			if len(responsePaginated.Next) == 0 {
+			if responsePaginated.Size/responsePaginated.Pagelen <= responsePaginated.Page {
 				break
 			}
 			newReq, err := http.NewRequest(req.Method, responsePaginated.Next, nil)
 			if err != nil {
 				return resBody, err
 			}
+			c.authenticateRequest(newReq)
 			resp, err := c.doRawRequest(newReq, false)
 			if err != nil {
 				return resBody, err
