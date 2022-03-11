@@ -320,7 +320,7 @@ func (c *Client) doRequest(req *http.Request, emptyResponse bool) (interface{}, 
 		var values []interface{}
 		for {
 			values = append(values, responsePaginated.Values...)
-			if responsePaginated.Size/responsePaginated.Pagelen <= responsePaginated.Page {
+			if responsePaginated.Pagelen == 0 || responsePaginated.Size/responsePaginated.Pagelen <= responsePaginated.Page {
 				break
 			}
 			newReq, err := http.NewRequest(req.Method, responsePaginated.Next, nil)
