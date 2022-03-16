@@ -169,6 +169,10 @@ func injectClient(a *auth) *Client {
 	return c
 }
 
+func (c *Client) GetOAuthToken() oauth2.Token {
+	return c.Auth.token
+}
+
 func (c *Client) GetApiBaseURL() string {
 	return fmt.Sprintf("%s%s", c.GetApiHostnameURL(), c.apiBaseURL.Path)
 }
