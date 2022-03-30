@@ -1,8 +1,8 @@
 package bitbucket
 
 import (
-	"net/url"
 	"encoding/json"
+	"net/url"
 )
 
 type Commits struct {
@@ -50,7 +50,6 @@ func (cm *Commits) RemoveApprove(cmo *CommitsOptions) (interface{}, error) {
 	return cm.c.execute("DELETE", urlStr, "")
 }
 
-
 func (cm *Commits) CreateCommitStatus(cmo *CommitsOptions, cso *CommitStatusOptions) (interface{}, error) {
 	urlStr := cm.c.requestUrl("/repositories/%s/%s/commit/%s/statuses/build", cmo.Owner, cmo.RepoSlug, cmo.Revision)
 	data, err := json.Marshal(cso)
@@ -59,7 +58,6 @@ func (cm *Commits) CreateCommitStatus(cmo *CommitsOptions, cso *CommitStatusOpti
 	}
 	return cm.c.execute("POST", urlStr, string(data))
 }
-
 
 func (cm *Commits) buildCommitsQuery(include, exclude string) string {
 
