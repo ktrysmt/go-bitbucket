@@ -324,7 +324,7 @@ func (c *Client) doRequest(req *http.Request, emptyResponse bool) (interface{}, 
 		var values []interface{}
 		for {
 			values = append(values, responsePaginated.Values...)
-			if responsePaginated.Pagelen == 0 || responsePaginated.Size/responsePaginated.Pagelen <= responsePaginated.Page {
+			if len(responsePaginated.Next) == 0 {
 				break
 			}
 			newReq, err := http.NewRequest(req.Method, responsePaginated.Next, nil)
@@ -336,6 +336,8 @@ func (c *Client) doRequest(req *http.Request, emptyResponse bool) (interface{}, 
 			if err != nil {
 				return resBody, err
 			}
+
+			responsePaginated = &Response{}
 			json.NewDecoder(resp).Decode(responsePaginated)
 		}
 		responsePaginated.Values = values
