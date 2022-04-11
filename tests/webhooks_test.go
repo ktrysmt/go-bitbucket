@@ -1,6 +1,8 @@
 package tests
 
 import (
+	"errors"
+	"fmt"
 	"os"
 	"testing"
 
@@ -135,6 +137,66 @@ func TestWebhook(t *testing.T) {
 		_, err := c.Repositories.Webhooks.Delete(opt)
 		if err != nil {
 			t.Error(err)
+		}
+	})
+
+	t.Run("gets", func(t *testing.T) {
+		const expectedNumberOfWebhooks = 20
+		var webhookUUIDs []string
+		defer func() {
+			for _, uuid := range webhookUUIDs {
+				_, err := c.Repositories.Webhooks.Delete(&bitbucket.WebhooksOptions{
+					Owner:    owner,
+					RepoSlug: repo,
+					Uuid:     uuid,
+				})
+
+				if err != nil {
+					t.Errorf("Failed to delete webhook UUID %s: %v", uuid, err)
+				}
+			}
+		}()
+
+		for i := 0; i < expectedNumberOfWebhooks; i++ {
+			opt := &bitbucket.WebhooksOptions{
+				Owner:       owner,
+				RepoSlug:    repo,
+				Description: fmt.Sprintf("go-bb-test-%d", i),
+				Url:         fmt.Sprintf("https://example.com/%d", i),
+				Active:      false,
+				Events:      []string{"repo:push", "issue:created"},
+			}
+
+			webhook, err := c.Repositories.Webhooks.Create(opt)
+			if err != nil {
+				t.Errorf("Failed to create webhook %d: %v", i, err)
+			}
+
+			webhookUUIDs = append(webhookUUIDs, webhook.Uuid)
+		}
+
+		// Use a page length of 5 to ensure the auto paging is working
+		c.Pagelen = 5
+
+		response, err := c.Repositories.Webhooks.Gets(&bitbucket.WebhooksOptions{
+			Owner:    owner,
+			RepoSlug: repo,
+		})
+		if err != nil {
+			t.Errorf("Failed to list webhooks: %v", err)
+			return
+		}
+
+		responseMap, ok := response.(map[string]interface{})
+		if !ok {
+			t.Error(errors.New("response could not be decoded"))
+			return
+		}
+
+		values := responseMap["values"].([]interface{})
+		if len(values) != expectedNumberOfWebhooks {
+			t.Error(fmt.Errorf("Expected %d webhooks but got %d. Response: %v", expectedNumberOfWebhooks, len(values), response))
+			return
 		}
 	})
 }
