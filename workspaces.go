@@ -43,6 +43,13 @@ type ProjectsRes struct {
 	Items    []Project
 }
 
+type WorkspaceMembers struct {
+	Page    int
+	Pagelen int
+	Size    int
+	Members []User
+}
+
 func (t *Permission) GetUserPermissions(organization, member string) (*Permission, error) {
 	urlStr := t.c.requestUrl("/workspaces/%s/permissions?q=user.nickname=\"%s\"", organization, member)
 	response, err := t.c.execute("GET", urlStr, "")
@@ -83,9 +90,14 @@ func (t *Workspace) Get(workspace string) (*Workspace, error) {
 	return decodeWorkspace(response)
 }
 
-func (w *Workspace) Members(teamname string) (interface{}, error) {
+func (w *Workspace) Members(teamname string) (*WorkspaceMembers, error) {
 	urlStr := w.c.requestUrl("/workspaces/%s/members", teamname)
-	return w.c.execute("GET", urlStr, "")
+	response, err := w.c.execute("GET", urlStr, "")
+	if err != nil {
+		return nil, err
+	}
+
+	return decodeMembers(response)
 }
 
 func (w *Workspace) Projects(teamname string) (*ProjectsRes, error) {
@@ -216,4 +228,44 @@ func decodeProjects(projectResponse interface{}) (*ProjectsRes, error) {
 		Items:    projects,
 	}
 	return &res, nil
+}
+
+func decodeMembers(membersResponse interface{}) (*WorkspaceMembers, error) {
+	responseMap, ok := membersResponse.(map[string]interface{})
+	if !ok {
+		return nil, errors.New("not a valid format")
+	}
+
+	var members []User
+	userArray := responseMap["values"].([]interface{})
+	for _, userEntry := range userArray {
+		userEntryMap := userEntry.(map[string]interface{})
+
+		member, err := decodeUser(userEntryMap["user"])
+		if err != nil {
+			return nil, err
+		}
+		members = append(members, *member)
+	}
+
+	page, ok := responseMap["page"].(int)
+	if !ok {
+		page = 0
+	}
+	pagelen, ok := responseMap["pagelen"].(int)
+	if !ok {
+		pagelen = 0
+	}
+	size, ok := responseMap["size"].(int)
+	if !ok {
+		size = 0
+	}
+
+	workspaceMembers := WorkspaceMembers{
+		Page:    page,
+		Pagelen: pagelen,
+		Size:    size,
+		Members: members,
+	}
+	return &workspaceMembers, nil
 }
