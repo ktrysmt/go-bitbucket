@@ -92,7 +92,7 @@ func (t *Workspace) Get(workspace string) (*Workspace, error) {
 
 func (w *Workspace) Members(teamname string) (*WorkspaceMembers, error) {
 	urlStr := w.c.requestUrl("/workspaces/%s/members", teamname)
-	response, err := w.c.execute("GET", urlStr, "")
+	response, err := w.c.executePaginated("GET", urlStr, "")
 	if err != nil {
 		return nil, err
 	}
