@@ -28,6 +28,8 @@ type Repository struct {
 	Has_issues  bool
 	Mainbranch  RepositoryBranch
 	Type        string
+	CreatedOn   string `mapstructure:"created_on"`
+	UpdatedOn   string `mapstructure:"updated_on"`
 	Owner       map[string]interface{}
 	Links       map[string]interface{}
 	Parent      *Repository
