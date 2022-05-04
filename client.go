@@ -1,20 +1,18 @@
 package bitbucket
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
-
+	"io"
 	"io/ioutil"
+	"log"
+	"mime/multipart"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
-
-	"bytes"
-	"io"
-	"mime/multipart"
-	"os"
 
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
@@ -24,6 +22,16 @@ import (
 
 const DEFAULT_PAGE_LENGTH = 10
 const DEFAULT_MAX_DEPTH = 1
+const DEFAULT_BITBUCKET_API_BASE_URL = "https://api.bitbucket.org/2.0"
+
+func apiBaseUrl() (*url.URL, error) {
+	ev := os.Getenv("BITBUCKET_API_BASE_URL")
+	if ev == "" {
+		ev = DEFAULT_BITBUCKET_API_BASE_URL
+	}
+
+	return url.Parse(ev)
+}
 
 type Client struct {
 	Auth         *auth
@@ -31,9 +39,13 @@ type Client struct {
 	User         user
 	Teams        teams
 	Repositories *Repositories
-	Pagelen      uint64
-	MaxDepth     uint64
-	apiBaseURL   string
+	Workspaces   *Workspace
+	Pagelen      int
+	MaxDepth     int
+	// DisableAutoPaging allows you to disable the default behavior of automatically requesting
+	// all the pages for a paginated response.
+	DisableAutoPaging bool
+	apiBaseURL        *url.URL
 
 	HttpClient *http.Client
 }
@@ -43,6 +55,15 @@ type auth struct {
 	user, password string
 	token          oauth2.Token
 	bearerToken    string
+}
+
+type Response struct {
+	Size     int           `json:"size"`
+	Page     int           `json:"page"`
+	Pagelen  int           `json:"pagelen"`
+	Next     string        `json:"next"`
+	Previous string        `json:"previous"`
+	Values   []interface{} `json:"values"`
 }
 
 // Uses the Client Credentials Grant oauth2 flow to authenticate to Bitbucket
@@ -125,34 +146,50 @@ func NewBasicAuth(u, p string) *Client {
 }
 
 func injectClient(a *auth) *Client {
-	c := &Client{Auth: a, Pagelen: DEFAULT_PAGE_LENGTH, MaxDepth: DEFAULT_MAX_DEPTH, apiBaseURL: "https://api.bitbucket.org/2.0"}
+	bitbucketUrl, err := apiBaseUrl()
+	if err != nil {
+		log.Fatalf("invalid bitbucket url")
+	}
+	c := &Client{Auth: a, Pagelen: DEFAULT_PAGE_LENGTH, MaxDepth: DEFAULT_MAX_DEPTH, apiBaseURL: bitbucketUrl}
 	c.Repositories = &Repositories{
 		c:                  c,
 		PullRequests:       &PullRequests{c: c},
+		Pipelines:          &Pipelines{c: c},
 		Repository:         &Repository{c: c},
+		Issues:             &Issues{c: c},
 		Commits:            &Commits{c: c},
 		Refs:               &Ref{c: c},
 		Diff:               &Diff{c: c},
 		BranchRestrictions: &BranchRestrictions{c: c},
 		Webhooks:           &Webhooks{c: c},
 		Downloads:          &Downloads{c: c},
+		DeployKeys:         &DeployKeys{c: c},
 	}
 	c.Users = &Users{c: c}
 	c.User = &User{c: c}
 	c.Teams = &Teams{c: c}
+	c.Workspaces = &Workspace{c: c, Repositories: c.Repositories, Permissions: &Permission{c: c}}
 	c.HttpClient = new(http.Client)
 	return c
 }
 
+func (c *Client) GetOAuthToken() oauth2.Token {
+	return c.Auth.token
+}
+
 func (c *Client) GetApiBaseURL() string {
-	return c.apiBaseURL
+	return fmt.Sprintf("%s%s", c.GetApiHostnameURL(), c.apiBaseURL.Path)
 }
 
-func (c *Client) SetApiBaseURL(urlStr string) {
-	c.apiBaseURL = urlStr
+func (c *Client) GetApiHostnameURL() string {
+	return fmt.Sprintf("%s://%s", c.apiBaseURL.Scheme, c.apiBaseURL.Host)
 }
 
-func (c *Client) executeRaw(method string, urlStr string, text string) ([]byte, error) {
+func (c *Client) SetApiBaseURL(urlStr url.URL) {
+	c.apiBaseURL = &urlStr
+}
+
+func (c *Client) executeRaw(method string, urlStr string, text string) (io.ReadCloser, error) {
 	body := strings.NewReader(text)
 
 	req, err := http.NewRequest(method, urlStr, body)
@@ -168,34 +205,7 @@ func (c *Client) executeRaw(method string, urlStr string, text string) ([]byte, 
 }
 
 func (c *Client) execute(method string, urlStr string, text string) (interface{}, error) {
-	// Use pagination if changed from default value
-	const DEC_RADIX = 10
-	if strings.Contains(urlStr, "/repositories/") {
-		if c.Pagelen != DEFAULT_PAGE_LENGTH {
-			urlObj, err := url.Parse(urlStr)
-			if err != nil {
-				return nil, err
-			}
-			q := urlObj.Query()
-			q.Set("pagelen", strconv.FormatUint(c.Pagelen, DEC_RADIX))
-			urlObj.RawQuery = q.Encode()
-			urlStr = urlObj.String()
-		}
-
-		if c.MaxDepth != DEFAULT_MAX_DEPTH {
-			urlObj, err := url.Parse(urlStr)
-			if err != nil {
-				return nil, err
-			}
-			q := urlObj.Query()
-			q.Set("max_depth", strconv.FormatUint(c.MaxDepth, DEC_RADIX))
-			urlObj.RawQuery = q.Encode()
-			urlStr = urlObj.String()
-		}
-	}
-
 	body := strings.NewReader(text)
-
 	req, err := http.NewRequest(method, urlStr, body)
 	if err != nil {
 		return nil, err
@@ -210,48 +220,40 @@ func (c *Client) execute(method string, urlStr string, text string) (interface{}
 		return nil, err
 	}
 
-	//autopaginate.
-	resultMap, isMap := result.(map[string]interface{})
-	if isMap {
-		nextIn := resultMap["next"]
-		valuesIn := resultMap["values"]
-		if nextIn != nil && valuesIn != nil {
-			nextUrl := nextIn.(string)
-			if nextUrl != "" {
-				valuesSlice := valuesIn.([]interface{})
-				if valuesSlice != nil {
-					nextResult, err := c.execute(method, nextUrl, text)
-					if err != nil {
-						return nil, err
-					}
-					nextResultMap, isNextMap := nextResult.(map[string]interface{})
-					if !isNextMap {
-						return nil, fmt.Errorf("next page result is not map, it's %T", nextResult)
-					}
-					nextValuesIn := nextResultMap["values"]
-					if nextValuesIn == nil {
-						return nil, fmt.Errorf("next page result has no values")
-					}
-					nextValuesSlice, isSlice := nextValuesIn.([]interface{})
-					if !isSlice {
-						return nil, fmt.Errorf("next page result 'values' is not slice")
-					}
-					valuesSlice = append(valuesSlice, nextValuesSlice...)
-					resultMap["values"] = valuesSlice
-					delete(resultMap, "page")
-					delete(resultMap, "pagelen")
-					delete(resultMap, "max_depth")
-					delete(resultMap, "size")
-					result = resultMap
-				}
-			}
+	return result, nil
+}
+
+func (c *Client) executePaginated(method string, urlStr string, text string) (interface{}, error) {
+	if c.Pagelen != DEFAULT_PAGE_LENGTH {
+		urlObj, err := url.Parse(urlStr)
+		if err != nil {
+			return nil, err
 		}
+		q := urlObj.Query()
+		q.Set("pagelen", strconv.Itoa(c.Pagelen))
+		urlObj.RawQuery = q.Encode()
+		urlStr = urlObj.String()
+	}
+
+	body := strings.NewReader(text)
+	req, err := http.NewRequest(method, urlStr, body)
+	if err != nil {
+		return nil, err
+	}
+	if text != "" {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
+	c.authenticateRequest(req)
+	result, err := c.doPaginatedRequest(req, false)
+	if err != nil {
+		return nil, err
 	}
 
 	return result, nil
 }
 
-func (c *Client) executeFileUpload(method string, urlStr string, filePath string, fileName string) (interface{}, error) {
+func (c *Client) executeFileUpload(method string, urlStr string, filePath string, fileName string, fieldname string, params map[string]string) (interface{}, error) {
 	fileReader, err := os.Open(filePath)
 	if err != nil {
 		return nil, err
@@ -263,12 +265,19 @@ func (c *Client) executeFileUpload(method string, urlStr string, filePath string
 	w := multipart.NewWriter(&b)
 
 	var fw io.Writer
-	if fw, err = w.CreateFormFile("files", fileName); err != nil {
+	if fw, err = w.CreateFormFile(fieldname, fileName); err != nil {
 		return nil, err
 	}
 
 	if _, err = io.Copy(fw, fileReader); err != nil {
 		return nil, err
+	}
+
+	for key, value := range params {
+		err = w.WriteField(key, value)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Don't forget to close the multipart writer.
@@ -298,45 +307,108 @@ func (c *Client) authenticateRequest(req *http.Request) {
 	} else if c.Auth.token.Valid() {
 		c.Auth.token.SetAuthHeader(req)
 	}
-	return
 }
 
 func (c *Client) doRequest(req *http.Request, emptyResponse bool) (interface{}, error) {
-	resBodyBytes, err := c.doRawRequest(req, emptyResponse)
+	resBody, err := c.doRawRequest(req, emptyResponse)
 	if err != nil {
 		return nil, err
 	}
-
-	var result interface{}
-	if len(resBodyBytes) > 0 {
-		err = json.Unmarshal(resBodyBytes, &result)
-		if err != nil {
-			log.Println("Could not unmarshal JSON payload, returning raw response")
-			return resBodyBytes, err
-		}
+	if emptyResponse || resBody == nil {
+		return nil, nil
 	}
 
+	defer resBody.Close()
+
+	responseBytes, err := ioutil.ReadAll(resBody)
+	if err != nil {
+		return resBody, err
+	}
+
+	var result interface{}
+	if err := json.Unmarshal(responseBytes, &result); err != nil {
+		log.Println("Could not unmarshal JSON payload, returning raw response")
+		return resBody, err
+	}
 	return result, nil
 }
 
-func (c *Client) doRawRequest(req *http.Request, emptyResponse bool) ([]byte, error) {
+func (c *Client) doPaginatedRequest(req *http.Request, emptyResponse bool) (interface{}, error) {
+	resBody, err := c.doRawRequest(req, emptyResponse)
+	if err != nil {
+		return nil, err
+	}
+	if emptyResponse || resBody == nil {
+		return nil, nil
+	}
+
+	defer resBody.Close()
+
+	responseBytes, err := ioutil.ReadAll(resBody)
+	if err != nil {
+		return resBody, err
+	}
+
+	responsePaginated := &Response{}
+	err = json.Unmarshal(responseBytes, responsePaginated)
+	if err == nil && len(responsePaginated.Values) > 0 {
+		var values []interface{}
+		for {
+			values = append(values, responsePaginated.Values...)
+			if c.DisableAutoPaging || len(responsePaginated.Next) == 0 {
+				break
+			}
+			newReq, err := http.NewRequest(req.Method, responsePaginated.Next, nil)
+			if err != nil {
+				return resBody, err
+			}
+			c.authenticateRequest(newReq)
+			resp, err := c.doRawRequest(newReq, false)
+			if err != nil {
+				return resBody, err
+			}
+
+			responsePaginated = &Response{}
+			json.NewDecoder(resp).Decode(responsePaginated)
+		}
+		responsePaginated.Values = values
+		responseBytes, err = json.Marshal(responsePaginated)
+		if err != nil {
+			return resBody, err
+		}
+	}
+
+	var result interface{}
+	if err := json.Unmarshal(responseBytes, &result); err != nil {
+		log.Println("Could not unmarshal JSON payload, returning raw response")
+		return resBody, err
+	}
+	return result, nil
+}
+
+func (c *Client) doRawRequest(req *http.Request, emptyResponse bool) (io.ReadCloser, error) {
 	resp, err := c.HttpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
-	if resp.Body != nil {
+
+	if unexpectedHttpStatusCode(resp.StatusCode) {
 		defer resp.Body.Close()
-	}
 
-	if (resp.StatusCode != http.StatusOK) && (resp.StatusCode != http.StatusCreated) {
-		if (resp.StatusCode == http.StatusNoContent) {
-			result := make([]byte, 0)
-			return result, nil
+		out := &UnexpectedResponseStatusError{Status: resp.Status}
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			out.Body = []byte(fmt.Sprintf("could not read the response body: %v", err))
+		} else {
+			out.Body = body
 		}
-		return nil, fmt.Errorf(resp.Status)
+
+		return nil, out
 	}
 
-	if emptyResponse {
+	if emptyResponse || resp.StatusCode == http.StatusNoContent {
+		resp.Body.Close()
 		return nil, nil
 	}
 
@@ -344,13 +416,36 @@ func (c *Client) doRawRequest(req *http.Request, emptyResponse bool) ([]byte, er
 		return nil, fmt.Errorf("response body is nil")
 	}
 
-	return ioutil.ReadAll(resp.Body)
+	return resp.Body, nil
+}
+
+func unexpectedHttpStatusCode(statusCode int) bool {
+	switch statusCode {
+	case http.StatusOK,
+		http.StatusCreated,
+		http.StatusNoContent,
+		http.StatusAccepted:
+		return false
+	default:
+		return true
+	}
 }
 
 func (c *Client) requestUrl(template string, args ...interface{}) string {
 
 	if len(args) == 1 && args[0] == "" {
-		return c.apiBaseURL + template
+		return c.GetApiBaseURL() + template
 	}
-	return c.apiBaseURL + fmt.Sprintf(template, args...)
+	return c.GetApiBaseURL() + fmt.Sprintf(template, args...)
+}
+
+func (c *Client) addMaxDepthParam(params *url.Values, customMaxDepth *int) {
+	maxDepth := c.MaxDepth
+	if customMaxDepth != nil && *customMaxDepth > 0 {
+		maxDepth = *customMaxDepth
+	}
+
+	if maxDepth != DEFAULT_MAX_DEPTH {
+		params.Set("max_depth", strconv.Itoa(maxDepth))
+	}
 }

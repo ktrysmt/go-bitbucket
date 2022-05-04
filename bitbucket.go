@@ -7,14 +7,14 @@ type refs interface {
 }
 
 type users interface {
-	Get(username string) (interface{}, error)
+	Get(username string) (*User, error)
 	Followers(username string) (interface{}, error)
 	Following(username string) (interface{}, error)
 	Repositories(username string) (interface{}, error)
 }
 
 type user interface {
-	Profile() (interface{}, error)
+	Profile() (*User, error)
 	Emails() (interface{}, error)
 }
 
@@ -33,6 +33,32 @@ type pullrequests interface {
 	Decline(opt PullRequestsOptions) (interface{}, error)
 	Statuses(opt PullRequestsOptions) (interface{}, error)
 }
+type workspace interface {
+	GetProject(opt ProjectOptions) (*Project, error)
+	CreateProject(opt ProjectOptions) (*Project, error)
+}
+
+type issues interface {
+	Gets(io *IssuesOptions) (interface{}, error)
+	Get(io *IssuesOptions) (interface{}, error)
+	Delete(io *IssuesOptions) (interface{}, error)
+	Update(io *IssuesOptions) (interface{}, error)
+	Create(io *IssuesOptions) (interface{}, error)
+	GetVote(io *IssuesOptions) (bool, interface{}, error)
+	PutVote(io *IssuesOptions) error
+	DeleteVote(io *IssuesOptions) error
+	GetWatch(io *IssuesOptions) (bool, interface{}, error)
+	PutWatch(io *IssuesOptions) error
+	DeleteWatch(io *IssuesOptions) error
+	GetComments(ico *IssueCommentsOptions) (interface{}, error)
+	CreateComment(ico *IssueCommentsOptions) (interface{}, error)
+	GetComment(ico *IssueCommentsOptions) (interface{}, error)
+	UpdateComment(ico *IssueCommentsOptions) (interface{}, error)
+	DeleteComment(ico *IssueCommentsOptions) (interface{}, error)
+	GetChanges(ico *IssueChangesOptions) (interface{}, error)
+	CreateChange(ico *IssueChangesOptions) (interface{}, error)
+	GetChange(ico *IssueChangesOptions) (interface{}, error)
+}
 
 type repository interface {
 	Get(opt RepositoryOptions) (*Repository, error)
@@ -41,13 +67,28 @@ type repository interface {
 	Delete(opt RepositoryOptions) (interface{}, error)
 	ListWatchers(opt RepositoryOptions) (interface{}, error)
 	ListForks(opt RepositoryOptions) (interface{}, error)
+	ListDefaultReviewers(opt RepositoryOptions) (*DefaultReviewers, error)
+	GetDefaultReviewer(opt RepositoryDefaultReviewerOptions) (*DefaultReviewer, error)
+	AddDefaultReviewer(opt RepositoryDefaultReviewerOptions) (*DefaultReviewer, error)
+	DeleteDefaultReviewer(opt RepositoryDefaultReviewerOptions) (interface{}, error)
 	UpdatePipelineConfig(opt RepositoryPipelineOptions) (*Pipeline, error)
+	ListPipelineVariables(opt RepositoryPipelineVariablesOptions) (*PipelineVariables, error)
 	AddPipelineVariable(opt RepositoryPipelineVariableOptions) (*PipelineVariable, error)
+	DeletePipelineVariable(opt RepositoryPipelineVariableDeleteOptions) (interface{}, error)
 	AddPipelineKeyPair(opt RepositoryPipelineKeyPairOptions) (*PipelineKeyPair, error)
 	UpdatePipelineBuildNumber(opt RepositoryPipelineBuildNumberOptions) (*PipelineBuildNumber, error)
 	ListFiles(opt RepositoryFilesOptions) (*[]RepositoryFile, error)
 	GetFileBlob(opt RepositoryBlobOptions) (*RepositoryBlob, error)
 	ListBranches(opt RepositoryBranchOptions) (*RepositoryBranches, error)
+	BranchingModel(opt RepositoryBranchingModelOptions) (*BranchingModel, error)
+	ListEnvironments(opt RepositoryEnvironmentsOptions) (*Environments, error)
+	AddEnvironment(opt RepositoryEnvironmentOptions) (*Environment, error)
+	DeleteEnvironment(opt RepositoryEnvironmentDeleteOptions) (interface{}, error)
+	GetEnvironment(opt RepositoryEnvironmentOptions) (*Environment, error)
+	ListDeploymentVariables(opt RepositoryDeploymentVariablesOptions) (*DeploymentVariables, error)
+	AddDeploymentVariable(opt RepositoryDeploymentVariableOptions) (*DeploymentVariable, error)
+	DeleteDeploymentVariable(opt RepositoryDeploymentVariableDeleteOptions) (interface{}, error)
+	UpdateDeploymentVariable(opt RepositoryDeploymentVariableOptions) (*DeploymentVariable, error)
 }
 
 type repositories interface {
@@ -99,6 +140,14 @@ type teams interface {
 	Projects(teamname string) (interface{}, error)
 }
 
+type pipelines interface {
+	List(po *PipelinesOptions) (interface{}, error)
+	Get(po *PipelinesOptions) (interface{}, error)
+	ListSteps(po *PipelinesOptions) (interface{}, error)
+	GetStep(po *PipelinesOptions) (interface{}, error)
+	GetLog(po *PipelinesOptions) (string, error)
+}
+
 type RepositoriesOptions struct {
 	Owner string `json:"owner"`
 	Role  string `json:"role"` // role=[owner|admin|contributor|member]
@@ -112,10 +161,27 @@ type RefsOptions struct {
 }
 
 type RepositoryOptions struct {
+	Uuid     string `json:"uuid"`
 	Owner    string `json:"owner"`
 	RepoSlug string `json:"repo_slug"`
 	Scm      string `json:"scm"`
 	//	Name        string `json:"name"`
+	IsPrivate   string `json:"is_private"`
+	Description string `json:"description"`
+	ForkPolicy  string `json:"fork_policy"`
+	Language    string `json:"language"`
+	HasIssues   string `json:"has_issues"`
+	HasWiki     string `json:"has_wiki"`
+	Project     string `json:"project"`
+}
+
+type RepositoryForkOptions struct {
+	FromOwner string `json:"from_owner"`
+	FromSlug  string `json:"from_slug"`
+	Owner     string `json:"owner"`
+	// TODO: does the API supports specifying  slug on forks?
+	// see: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/forks#post
+	Name        string `json:"name"`
 	IsPrivate   string `json:"is_private"`
 	Description string `json:"description"`
 	ForkPolicy  string `json:"fork_policy"`
@@ -139,14 +205,60 @@ type RepositoryBlobOptions struct {
 	Path     string `json:"path"`
 }
 
-type RepositoryBranchOptions struct {
+// Based on https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/src#post
+type RepositoryBlobWriteOptions struct {
 	Owner    string `json:"owner"`
 	RepoSlug string `json:"repo_slug"`
-	Query    string `json:"q"`
-	Sort     string `json:"sort"`
-	PageNum  int    `json:"page"`
-	Pagelen  int    `json:"pagelen"`
-	MaxDepth int    `json:"max_depth"`
+	FilePath string `json:"filepath"`
+	FileName string `json:"filename"`
+	Author   string `json:"author"`
+	Message  string `json:"message"`
+	Branch   string `json:"branch"`
+}
+
+// RepositoryRefOptions represents the options for describing a repository's refs (i.e.
+// tags and branches). The field BranchFlg is a boolean that is indicates whether a specific
+// RepositoryRefOptions instance is meant for Branch specific set of api methods.
+type RepositoryRefOptions struct {
+	Owner     string `json:"owner"`
+	RepoSlug  string `json:"repo_slug"`
+	Query     string `json:"query"`
+	Sort      string `json:"sort"`
+	PageNum   int    `json:"page"`
+	Pagelen   int    `json:"pagelen"`
+	MaxDepth  int    `json:"max_depth"`
+	Name      string `json:"name"`
+	BranchFlg bool
+}
+
+type RepositoryBranchOptions struct {
+	Owner      string `json:"owner"`
+	RepoSlug   string `json:"repo_slug"`
+	Query      string `json:"query"`
+	Sort       string `json:"sort"`
+	PageNum    int    `json:"page"`
+	Pagelen    int    `json:"pagelen"`
+	MaxDepth   int    `json:"max_depth"`
+	BranchName string `json:"branch_name"`
+}
+
+type RepositoryBranchCreationOptions struct {
+	Owner    string                 `json:"owner"`
+	RepoSlug string                 `json:"repo_slug"`
+	Name     string                 `json:"name"`
+	Target   RepositoryBranchTarget `json:"target"`
+}
+
+type RepositoryBranchDeleteOptions struct {
+	Owner    string `json:"owner"`
+	RepoSlug string `json:"repo_slug"`
+	RepoUUID string `json:"uuid"`
+	RefName  string `json:"name"`
+	RefUUID  string `json:uuid`
+}
+
+type RepositoryBranchTarget struct {
+	Hash string `json:"hash"`
 }
 
 type RepositoryTagOptions struct {
@@ -157,6 +269,17 @@ type RepositoryTagOptions struct {
 	PageNum  int    `json:"page"`
 	Pagelen  int    `json:"pagelen"`
 	MaxDepth int    `json:"max_depth"`
+}
+
+type RepositoryTagCreationOptions struct {
+	Owner    string              `json:"owner"`
+	RepoSlug string              `json:"repo_slug"`
+	Name     string              `json:"name"`
+	Target   RepositoryTagTarget `json:"target"`
+}
+
+type RepositoryTagTarget struct {
+	Hash string `json:"hash"`
 }
 
 type PullRequestsOptions struct {
@@ -176,6 +299,52 @@ type PullRequestsOptions struct {
 	States            []string `json:"states"`
 	Query             string   `json:"query"`
 	Sort              string   `json:"sort"`
+}
+
+type PullRequestCommentOptions struct {
+	Owner         string `json:"owner"`
+	RepoSlug      string `json:"repo_slug"`
+	PullRequestID string `json:"id"`
+	Content       string `json:"content"`
+	CommentId     string `json:"-"`
+}
+
+type IssuesOptions struct {
+	ID        string   `json:"id"`
+	Owner     string   `json:"owner"`
+	RepoSlug  string   `json:"repo_slug"`
+	States    []string `json:"states"`
+	Query     string   `json:"query"`
+	Sort      string   `json:"sort"`
+	Title     string   `json:"title"`
+	Content   string   `json:"content"`
+	State     string   `json:"state"`
+	Kind      string   `json:"kind"`
+	Milestone string   `json:"milestone"`
+	Component string   `json:"component"`
+	Priority  string   `json:"priority"`
+	Version   string   `json:"version"`
+	Assignee  string   `json:"assignee"`
+}
+
+type IssueCommentsOptions struct {
+	IssuesOptions
+	Query          string `json:"query"`
+	Sort           string `json:"sort"`
+	CommentContent string `json:"comment_content"`
+	CommentID      string `json:"comment_id"`
+}
+
+type IssueChangesOptions struct {
+	IssuesOptions
+	Query    string `json:"query"`
+	Sort     string `json:"sort"`
+	Message  string `json:"message"`
+	ChangeID string `json:"change_id"`
+	Changes  []struct {
+		Type     string
+		NewValue string
+	} `json:"changes"`
 }
 
 type CommitsOptions struct {
@@ -218,6 +387,20 @@ type DiffOptions struct {
 	Spec     string `json:"spec"`
 }
 
+type DiffStatOptions struct {
+	Owner      string `json:"owner"`
+	RepoSlug   string `json:"repo_slug"`
+	Spec       string `json:"spec"`
+	Whitespace bool   `json:"ignore_whitespace"`
+	Merge      bool   `json:"merge"`
+	Path       string `json:"path"`
+	Renames    bool   `json:"renames"`
+	PageNum    int    `json:"page"`
+	Pagelen    int    `json:"pagelen"`
+	MaxDepth   int    `json:"max_depth"`
+	Fields     []string
+}
+
 type WebhooksOptions struct {
 	Owner       string   `json:"owner"`
 	RepoSlug    string   `json:"repo_slug"`
@@ -225,13 +408,29 @@ type WebhooksOptions struct {
 	Description string   `json:"description"`
 	Url         string   `json:"url"`
 	Active      bool     `json:"active"`
-	Events      []string `json:"events"` // EX) {'repo:push','issue:created',..} REF) https://goo.gl/VTj93b
+	Events      []string `json:"events"` // EX: {'repo:push','issue:created',..} REF: https://bit.ly/3FjRHHu
 }
 
 type RepositoryPipelineOptions struct {
 	Owner    string `json:"owner"`
 	RepoSlug string `json:"repo_slug"`
 	Enabled  bool   `json:"has_pipelines"`
+}
+
+type RepositoryDefaultReviewerOptions struct {
+	Owner    string `json:"owner"`
+	RepoSlug string `json:"repo_slug"`
+	Username string `json:"username"`
+}
+
+type RepositoryPipelineVariablesOptions struct {
+	Owner    string `json:"owner"`
+	RepoSlug string `json:"repo_slug"`
+	Query    string `json:"q"`
+	Sort     string `json:"sort"`
+	PageNum  int    `json:"page"`
+	Pagelen  int    `json:"pagelen"`
+	MaxDepth int    `json:"max_depth"`
 }
 
 type RepositoryPipelineVariableOptions struct {
@@ -241,6 +440,12 @@ type RepositoryPipelineVariableOptions struct {
 	Key      string `json:"key"`
 	Value    string `json:"value"`
 	Secured  bool   `json:"secured"`
+}
+
+type RepositoryPipelineVariableDeleteOptions struct {
+	Owner    string `json:"owner"`
+	RepoSlug string `json:"repo_slug"`
+	Uuid     string `json:"uuid"`
 }
 
 type RepositoryPipelineKeyPairOptions struct {
@@ -256,6 +461,11 @@ type RepositoryPipelineBuildNumberOptions struct {
 	Next     int    `json:"next"`
 }
 
+type RepositoryBranchingModelOptions struct {
+	Owner    string `json:"owner"`
+	RepoSlug string `json:"repo_slug"`
+}
+
 type DownloadsOptions struct {
 	Owner    string `json:"owner"`
 	RepoSlug string `json:"repo_slug"`
@@ -268,4 +478,82 @@ type PageRes struct {
 	PageLen  int32 `json:"pagelen"`
 	MaxDepth int32 `json:"max_depth"`
 	Size     int32 `json:"size"`
+}
+
+type PipelinesOptions struct {
+	Owner    string `json:"owner"`
+	Page     int    `json:"page"`
+	RepoSlug string `json:"repo_slug"`
+	Query    string `json:"query"`
+	Sort     string `json:"sort"`
+	IDOrUuid string `json:"ID"`
+	StepUuid string `json:"StepUUID"`
+}
+
+type RepositoryEnvironmentsOptions struct {
+	Owner    string `json:"owner"`
+	RepoSlug string `json:"repo_slug"`
+}
+
+type RepositoryEnvironmentTypeOption int
+
+const (
+	Test RepositoryEnvironmentTypeOption = iota
+	Staging
+	Production
+)
+
+func (e RepositoryEnvironmentTypeOption) String() string {
+	return [...]string{"Test", "Staging", "Production"}[e]
+}
+
+type RepositoryEnvironmentOptions struct {
+	Owner           string                          `json:"owner"`
+	RepoSlug        string                          `json:"repo_slug"`
+	Uuid            string                          `json:"uuid"`
+	Name            string                          `json:"name"`
+	EnvironmentType RepositoryEnvironmentTypeOption `json:"environment_type"`
+	Rank            int                             `json:"rank"`
+}
+
+type RepositoryEnvironmentDeleteOptions struct {
+	Owner    string `json:"owner"`
+	RepoSlug string `json:"repo_slug"`
+	Uuid     string `json:"uuid"`
+}
+
+type RepositoryDeploymentVariablesOptions struct {
+	Owner       string       `json:"owner"`
+	RepoSlug    string       `json:"repo_slug"`
+	Environment *Environment `json:"environment"`
+	Query       string       `json:"q"`
+	Sort        string       `json:"sort"`
+	PageNum     int          `json:"page"`
+	Pagelen     int          `json:"pagelen"`
+	MaxDepth    int          `json:"max_depth"`
+}
+
+type RepositoryDeploymentVariableOptions struct {
+	Owner       string       `json:"owner"`
+	RepoSlug    string       `json:"repo_slug"`
+	Environment *Environment `json:"environment"`
+	Uuid        string       `json:"uuid"`
+	Key         string       `json:"key"`
+	Value       string       `json:"value"`
+	Secured     bool         `json:"secured"`
+}
+
+type RepositoryDeploymentVariableDeleteOptions struct {
+	Owner       string       `json:"owner"`
+	RepoSlug    string       `json:"repo_slug"`
+	Environment *Environment `json:"environment"`
+	Uuid        string       `json:"uuid"`
+}
+
+type DeployKeyOptions struct {
+	Owner    string `json:"owner"`
+	RepoSlug string `json:"repo_slug"`
+	Id       int    `json:"id"`
+	Label    string `json:"label"`
+	Key      string `json:"key"`
 }
