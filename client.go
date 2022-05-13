@@ -362,7 +362,8 @@ func (c *Client) doPaginatedRequest(req *http.Request, emptyResponse bool) (inte
 		for {
 			curPage++
 			values = append(values, responsePaginated.Values...)
-			if c.DisableAutoPaging || len(responsePaginated.Next) == 0 || curPage >= c.LimitPages && c.LimitPages != 0 {
+			if c.DisableAutoPaging || len(responsePaginated.Next) == 0 ||
+				(curPage >= c.LimitPages && c.LimitPages != 0) {
 				break
 			}
 			newReq, err := http.NewRequest(req.Method, responsePaginated.Next, nil)
