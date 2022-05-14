@@ -21,6 +21,7 @@ import (
 )
 
 const DEFAULT_PAGE_LENGTH = 10
+const DEFAULT_LIMIT_PAGES = 0
 const DEFAULT_MAX_DEPTH = 1
 const DEFAULT_BITBUCKET_API_BASE_URL = "https://api.bitbucket.org/2.0"
 
@@ -42,6 +43,9 @@ type Client struct {
 	Workspaces   *Workspace
 	Pagelen      int
 	MaxDepth     int
+	// LimitPages limits the number of pages for a request
+	//	default value as 0 -- disable limits
+	LimitPages int
 	// DisableAutoPaging allows you to disable the default behavior of automatically requesting
 	// all the pages for a paginated response.
 	DisableAutoPaging bool
@@ -150,7 +154,8 @@ func injectClient(a *auth) *Client {
 	if err != nil {
 		log.Fatalf("invalid bitbucket url")
 	}
-	c := &Client{Auth: a, Pagelen: DEFAULT_PAGE_LENGTH, MaxDepth: DEFAULT_MAX_DEPTH, apiBaseURL: bitbucketUrl}
+	c := &Client{Auth: a, Pagelen: DEFAULT_PAGE_LENGTH, MaxDepth: DEFAULT_MAX_DEPTH,
+		apiBaseURL: bitbucketUrl, LimitPages: DEFAULT_LIMIT_PAGES}
 	c.Repositories = &Repositories{
 		c:                  c,
 		PullRequests:       &PullRequests{c: c},
@@ -349,12 +354,16 @@ func (c *Client) doPaginatedRequest(req *http.Request, emptyResponse bool) (inte
 	}
 
 	responsePaginated := &Response{}
+	var curPage int
+
 	err = json.Unmarshal(responseBytes, responsePaginated)
 	if err == nil && len(responsePaginated.Values) > 0 {
 		var values []interface{}
 		for {
+			curPage++
 			values = append(values, responsePaginated.Values...)
-			if c.DisableAutoPaging || len(responsePaginated.Next) == 0 {
+			if c.DisableAutoPaging || len(responsePaginated.Next) == 0 ||
+				(curPage >= c.LimitPages && c.LimitPages != 0) {
 				break
 			}
 			newReq, err := http.NewRequest(req.Method, responsePaginated.Next, nil)
