@@ -332,7 +332,7 @@ func (c *Client) doRequest(req *http.Request, emptyResponse bool) (interface{}, 
 	var result interface{}
 	if err := json.Unmarshal(responseBytes, &result); err != nil {
 		log.Println("Could not unmarshal JSON payload, returning raw response")
-		return resBody, err
+		return responseBytes, nil
 	}
 	return result, nil
 }
