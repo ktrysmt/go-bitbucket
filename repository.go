@@ -253,7 +253,7 @@ func (r *Repository) ListFiles(ro *RepositoryFilesOptions) ([]RepositoryFile, er
 	}
 
 	query := url.Query()
-	r.c.addMaxDepthParam(&query, nil)
+	r.c.addMaxDepthParam(&query, &ro.MaxDepth)
 	url.RawQuery = query.Encode()
 
 	urlStr = url.String()
