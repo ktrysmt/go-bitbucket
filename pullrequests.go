@@ -2,11 +2,56 @@ package bitbucket
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/url"
 )
 
 type PullRequests struct {
 	c *Client
+}
+
+// CreateSever implements BitBucket Server API
+func (p *PullRequests) CreateSever(po *PullRequestsOptions) (interface{}, error) {
+	// more details here https://developer.atlassian.com/server/bitbucket/rest/v803/api-group-projects/#api-projects-projectkey-repos-repositoryslug-pull-requests-post
+	body := map[string]interface{}{
+		"title":          po.Title,
+		"projectKey":     po.ProjectKey,
+		"repositorySlug": po.RepoSlug,
+		"fromRef": map[string]interface{}{
+			"id":   po.SourceBranch,
+			"type": "BRANCH",
+			"repository": map[string]interface{}{
+				"scmId": po.ScmID,
+				"slug":  po.RepoSlug,
+				"name":  po.FromRefName,
+				"project": map[string]interface{}{
+					"key": po.ProjectKey,
+				},
+			},
+		},
+		"toRef": map[string]interface{}{
+			"id":   po.DestinationBranch,
+			"type": "BRANCH",
+			"repository": map[string]interface{}{
+				"scmId": po.ScmID,
+				"slug":  po.RepoSlug,
+				"name":  po.ToRefName,
+				"project": map[string]interface{}{
+					"key": po.ProjectKey,
+				},
+			},
+		},
+		"type":        "BRANCH",
+		"description": po.Description,
+	}
+
+	data, err := json.Marshal(body)
+	if err != nil {
+		return "", err
+	}
+	urlStr := fmt.Sprintf("%s/rest/api/1.0/projects/%s/repos/%s/pull-requests", p.c.GetApiBaseURL(), po.ProjectKey, po.RepoSlug)
+
+	return p.c.execute("POST", urlStr, string(data))
 }
 
 func (p *PullRequests) Create(po *PullRequestsOptions) (interface{}, error) {
@@ -66,6 +111,18 @@ func (p *PullRequests) Gets(po *PullRequestsOptions) (interface{}, error) {
 	}
 
 	return p.c.executePaginated("GET", urlStr, "")
+}
+
+// GetServer implements Pull Request Get API for BitBucket server API 1.0
+func (p *PullRequests) GetServer(po *PullRequestsOptions) (interface{}, error) {
+	urlStr := fmt.Sprintf("%s/rest/api/1.0/projects/%s/repos/%s/pull-requests/?state=ALL", p.c.GetApiBaseURL(), po.ProjectKey, po.RepoSlug)
+	return p.c.execute("GET", urlStr, "")
+}
+
+// DeleteServer implements Pull Request Delete API for BitBucket server API 1.0
+func (p *PullRequests) DeleteServer(po *PullRequestsOptions) (interface{}, error) {
+	urlStr := fmt.Sprintf("%s/rest/api/1.0/projects/%s/repos/%s/pull-requests/%s", p.c.GetApiBaseURL(), po.ProjectKey, po.RepoSlug, po.ID)
+	return p.c.execute("DELETE", urlStr, "")
 }
 
 func (p *PullRequests) Get(po *PullRequestsOptions) (interface{}, error) {

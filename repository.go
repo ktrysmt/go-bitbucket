@@ -458,6 +458,46 @@ func (r *Repository) CreateBranch(rbo *RepositoryBranchCreationOptions) (*Reposi
 	return decodeRepositoryBranchCreated(bodyString)
 }
 
+func (r *Repository) CreateBranchServer(rbo *RepositoryBranchCreationOptions) (*RepositoryBranch, error) {
+	body := map[string]interface{}{
+		"name":  rbo.Name,
+		"title": rbo.Title,
+		"fromRef": map[string]interface{}{
+			"id": rbo.FromRefId,
+			"repository": map[string]interface{}{
+				"slug": rbo.RepoSlug,
+				"name": nil,
+				"project": map[string]interface{}{
+					"key": rbo.ProjectKey,
+				},
+			},
+		},
+		"target": map[string]string{
+			"hash": rbo.Target.Hash,
+		},
+		"startPoint": rbo.StartPoint,
+	}
+
+	urlStr := fmt.Sprintf("%s/repositories/%s/%s/refs/branches", r.c.GetApiBaseURL(), rbo.Owner, rbo.RepoSlug)
+	data, err := r.buildJsonBody(body)
+	if err != nil {
+		return nil, err
+	}
+
+	response, err := r.c.executeRaw("POST", urlStr, data)
+	if err != nil {
+		return nil, err
+	}
+
+	bodyBytes, err := ioutil.ReadAll(response)
+	if err != nil {
+		return nil, err
+	}
+
+	bodyString := string(bodyBytes)
+	return decodeRepositoryBranchCreated(bodyString)
+}
+
 func (r *Repository) ListTags(rbo *RepositoryTagOptions) (*RepositoryTags, error) {
 
 	params := url.Values{}

@@ -227,10 +227,17 @@ type RepositoryBranchOptions struct {
 }
 
 type RepositoryBranchCreationOptions struct {
-	Owner    string                 `json:"owner"`
-	RepoSlug string                 `json:"repo_slug"`
-	Name     string                 `json:"name"`
-	Target   RepositoryBranchTarget `json:"target"`
+	ProjectKey  string                 `json:"projectKey"`
+	Owner       string                 `json:"owner"`
+	RepoSlug    string                 `json:"repositorySlug"`
+	Name        string                 `json:"name"`
+	Target      RepositoryBranchTarget `json:"target"`
+	Message     string                 `json:"message"`
+	Title       string                 `json:"title"`
+	StartPoint  string                 `json:"startPoint"`
+	Description string                 `json:"description"`
+	// FromRefId is a source branch name, like "master"
+	FromRefId string `json:"id"`
 }
 
 type RepositoryBranchDeleteOptions struct {
@@ -270,11 +277,11 @@ type PullRequestsOptions struct {
 	ID                string   `json:"id"`
 	CommentID         string   `json:"comment_id"`
 	Owner             string   `json:"owner"`
-	RepoSlug          string   `json:"repo_slug"`
+	RepoSlug          string   `json:"repositorySlug"`
 	Title             string   `json:"title"`
 	Description       string   `json:"description"`
 	CloseSourceBranch bool     `json:"close_source_branch"`
-	SourceBranch      string   `json:"source_branch"`
+	SourceBranch      string   `json:"id"`
 	SourceRepository  string   `json:"source_repository"`
 	DestinationBranch string   `json:"destination_branch"`
 	DestinationCommit string   `json:"destination_repository"`
@@ -283,6 +290,11 @@ type PullRequestsOptions struct {
 	States            []string `json:"states"`
 	Query             string   `json:"query"`
 	Sort              string   `json:"sort"`
+	ProjectKey        string   `json:"key"`
+	// ScmID can be "git"
+	ScmID       string `json:"scmId"`
+	FromRefName string `json:"name"`
+	ToRefName   string `json:"name"`
 }
 
 type PullRequestCommentOptions struct {
