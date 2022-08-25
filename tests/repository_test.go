@@ -441,3 +441,299 @@ func TestGetRepositoryRefs(t *testing.T) {
 		t.Error("Could not list refs/branch that was created in test setup")
 	}
 }
+
+func TestListRepositoryGroupPermissions(t *testing.T) {
+
+	user := os.Getenv("BITBUCKET_TEST_USERNAME")
+	pass := os.Getenv("BITBUCKET_TEST_PASSWORD")
+	owner := os.Getenv("BITBUCKET_TEST_OWNER")
+	repo := os.Getenv("BITBUCKET_TEST_REPOSLUG")
+
+	if user == "" {
+		t.Error("BITBUCKET_TEST_USERNAME is empty.")
+	}
+	if pass == "" {
+		t.Error("BITBUCKET_TEST_PASSWORD is empty.")
+	}
+	if owner == "" {
+		t.Error("BITBUCKET_TEST_OWNER is empty.")
+	}
+	if repo == "" {
+		t.Error("BITBUCKET_TEST_REPOSLUG is empty.")
+	}
+
+	c := bitbucket.NewBasicAuth(user, pass)
+
+	opt := &bitbucket.RepositoryOptions{
+		Owner:    owner,
+		RepoSlug: repo,
+	}
+
+	res, err := c.Repositories.Repository.ListGroupPermissions(opt)
+
+	if err != nil {
+		t.Error(err)
+	}
+	if res == nil {
+		t.Error("Cannot list repository group permissions")
+	}
+
+}
+
+func TestSetRepositoryGroupPermissions(t *testing.T) {
+
+	user := os.Getenv("BITBUCKET_TEST_USERNAME")
+	pass := os.Getenv("BITBUCKET_TEST_PASSWORD")
+	owner := os.Getenv("BITBUCKET_TEST_OWNER")
+	repo := os.Getenv("BITBUCKET_TEST_REPOSLUG")
+
+	if user == "" {
+		t.Error("BITBUCKET_TEST_USERNAME is empty.")
+	}
+	if pass == "" {
+		t.Error("BITBUCKET_TEST_PASSWORD is empty.")
+	}
+	if owner == "" {
+		t.Error("BITBUCKET_TEST_OWNER is empty.")
+	}
+	if repo == "" {
+		t.Error("BITBUCKET_TEST_REPOSLUG is empty.")
+	}
+
+	c := bitbucket.NewBasicAuth(user, pass)
+
+	opt := &bitbucket.RepositoryGroupPermissionsOptions{
+		Owner:      owner,
+		RepoSlug:   repo,
+		Group:      "developers",
+		Permission: "read",
+	}
+
+	res, err := c.Repositories.Repository.SetGroupPermissions(opt)
+	if err != nil {
+		t.Error(err)
+	}
+	if res == nil {
+		t.Error("Cannot set repository group permissions")
+	}
+
+}
+
+func TestDeleteRepositoryGroupPermissions(t *testing.T) {
+
+	user := os.Getenv("BITBUCKET_TEST_USERNAME")
+	pass := os.Getenv("BITBUCKET_TEST_PASSWORD")
+	owner := os.Getenv("BITBUCKET_TEST_OWNER")
+	repo := os.Getenv("BITBUCKET_TEST_REPOSLUG")
+
+	if user == "" {
+		t.Error("BITBUCKET_TEST_USERNAME is empty.")
+	}
+	if pass == "" {
+		t.Error("BITBUCKET_TEST_PASSWORD is empty.")
+	}
+	if owner == "" {
+		t.Error("BITBUCKET_TEST_OWNER is empty.")
+	}
+	if repo == "" {
+		t.Error("BITBUCKET_TEST_REPOSLUG is empty.")
+	}
+
+	c := bitbucket.NewBasicAuth(user, pass)
+
+	opt := &bitbucket.RepositoryGroupPermissionsOptions{
+		Owner:    owner,
+		RepoSlug: repo,
+		Group:    "developers",
+	}
+
+	_, err := c.Repositories.Repository.DeleteGroupPermissions(opt)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestGetRepositoryGroupPermissions(t *testing.T) {
+
+	user := os.Getenv("BITBUCKET_TEST_USERNAME")
+	pass := os.Getenv("BITBUCKET_TEST_PASSWORD")
+	owner := os.Getenv("BITBUCKET_TEST_OWNER")
+	repo := os.Getenv("BITBUCKET_TEST_REPOSLUG")
+
+	if user == "" {
+		t.Error("BITBUCKET_TEST_USERNAME is empty.")
+	}
+	if pass == "" {
+		t.Error("BITBUCKET_TEST_PASSWORD is empty.")
+	}
+	if owner == "" {
+		t.Error("BITBUCKET_TEST_OWNER is empty.")
+	}
+	if repo == "" {
+		t.Error("BITBUCKET_TEST_REPOSLUG is empty.")
+	}
+
+	c := bitbucket.NewBasicAuth(user, pass)
+
+	opt := &bitbucket.RepositoryGroupPermissionsOptions{
+		Owner:    owner,
+		RepoSlug: repo,
+		Group:    "developers",
+	}
+
+	res, err := c.Repositories.Repository.GetGroupPermissions(opt)
+	if err != nil {
+		t.Error(err)
+	}
+	if res == nil {
+		t.Error("Cannot get repository group permissions")
+	}
+}
+
+func TestListRepositoryUserPermissions(t *testing.T) {
+
+	user := os.Getenv("BITBUCKET_TEST_USERNAME")
+	pass := os.Getenv("BITBUCKET_TEST_PASSWORD")
+	owner := os.Getenv("BITBUCKET_TEST_OWNER")
+	repo := os.Getenv("BITBUCKET_TEST_REPOSLUG")
+
+	if user == "" {
+		t.Error("BITBUCKET_TEST_USERNAME is empty.")
+	}
+	if pass == "" {
+		t.Error("BITBUCKET_TEST_PASSWORD is empty.")
+	}
+	if owner == "" {
+		t.Error("BITBUCKET_TEST_OWNER is empty.")
+	}
+	if repo == "" {
+		t.Error("BITBUCKET_TEST_REPOSLUG is empty.")
+	}
+
+	c := bitbucket.NewBasicAuth(user, pass)
+
+	opt := &bitbucket.RepositoryOptions{
+		Owner:    owner,
+		RepoSlug: repo,
+	}
+
+	res, err := c.Repositories.Repository.ListUserPermissions(opt)
+
+	if err != nil {
+		t.Error(err)
+	}
+	if res == nil {
+		t.Error("Cannot list repository user permissions")
+	}
+
+}
+func TestGetRepositoryUserPermissions(t *testing.T) {
+
+	user := os.Getenv("BITBUCKET_TEST_USERNAME")
+	pass := os.Getenv("BITBUCKET_TEST_PASSWORD")
+	owner := os.Getenv("BITBUCKET_TEST_OWNER")
+	repo := os.Getenv("BITBUCKET_TEST_REPOSLUG")
+
+	if user == "" {
+		t.Error("BITBUCKET_TEST_USERNAME is empty.")
+	}
+	if pass == "" {
+		t.Error("BITBUCKET_TEST_PASSWORD is empty.")
+	}
+	if owner == "" {
+		t.Error("BITBUCKET_TEST_OWNER is empty.")
+	}
+	if repo == "" {
+		t.Error("BITBUCKET_TEST_REPOSLUG is empty.")
+	}
+
+	c := bitbucket.NewBasicAuth(user, pass)
+
+	opt := &bitbucket.RepositoryUserPermissionsOptions{
+		Owner:    owner,
+		RepoSlug: repo,
+		User:     "5db9ab0fa766000da47cd9e4",
+	}
+
+	res, err := c.Repositories.Repository.GetUserPermissions(opt)
+	if err != nil {
+		t.Error(err)
+	}
+	t.Log(res)
+	if res == nil {
+		t.Error("Cannot get repository user permissions")
+	}
+}
+
+func TestDeleteRepositoryUserPermissions(t *testing.T) {
+
+	user := os.Getenv("BITBUCKET_TEST_USERNAME")
+	pass := os.Getenv("BITBUCKET_TEST_PASSWORD")
+	owner := os.Getenv("BITBUCKET_TEST_OWNER")
+	repo := os.Getenv("BITBUCKET_TEST_REPOSLUG")
+
+	if user == "" {
+		t.Error("BITBUCKET_TEST_USERNAME is empty.")
+	}
+	if pass == "" {
+		t.Error("BITBUCKET_TEST_PASSWORD is empty.")
+	}
+	if owner == "" {
+		t.Error("BITBUCKET_TEST_OWNER is empty.")
+	}
+	if repo == "" {
+		t.Error("BITBUCKET_TEST_REPOSLUG is empty.")
+	}
+
+	c := bitbucket.NewBasicAuth(user, pass)
+
+	opt := &bitbucket.RepositoryUserPermissionsOptions{
+		Owner:    owner,
+		RepoSlug: repo,
+		User:     "5db9ab0fa766000da47cd9e4",
+	}
+
+	_, err := c.Repositories.Repository.DeleteUserPermissions(opt)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestSetRepositoryUserPermissions(t *testing.T) {
+
+	user := os.Getenv("BITBUCKET_TEST_USERNAME")
+	pass := os.Getenv("BITBUCKET_TEST_PASSWORD")
+	owner := os.Getenv("BITBUCKET_TEST_OWNER")
+	repo := os.Getenv("BITBUCKET_TEST_REPOSLUG")
+
+	if user == "" {
+		t.Error("BITBUCKET_TEST_USERNAME is empty.")
+	}
+	if pass == "" {
+		t.Error("BITBUCKET_TEST_PASSWORD is empty.")
+	}
+	if owner == "" {
+		t.Error("BITBUCKET_TEST_OWNER is empty.")
+	}
+	if repo == "" {
+		t.Error("BITBUCKET_TEST_REPOSLUG is empty.")
+	}
+
+	c := bitbucket.NewBasicAuth(user, pass)
+
+	opt := &bitbucket.RepositoryUserPermissionsOptions{
+		Owner:      owner,
+		RepoSlug:   repo,
+		User:       "5e78617ce6f50f0c3a00e583",
+		Permission: "admin",
+	}
+
+	res, err := c.Repositories.Repository.SetUserPermissions(opt)
+	if err != nil {
+		t.Error(err)
+	}
+	if res == nil {
+		t.Error("Cannot set repository user permissions")
+	}
+
+}
