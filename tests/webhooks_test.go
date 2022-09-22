@@ -39,7 +39,7 @@ func TestWebhook(t *testing.T) {
 			Description: "go-bb-test",
 			Url:         "https://example.com",
 			Active:      false,
-			Events:      []string{"repo:push", "issue:created"},
+			Events:      []string{bitbucket.RepoPushEvent, bitbucket.IssueCreatedEvent},
 		}
 
 		webhook, err := c.Repositories.Webhooks.Create(opt)
@@ -103,7 +103,7 @@ func TestWebhook(t *testing.T) {
 			Uuid:        webhookResourceUuid,
 			Description: "go-bb-test-new",
 			Url:         "https://new-example.com",
-			Events:      []string{"repo:push", "issue:created", "repo:fork"},
+			Events:      []string{bitbucket.RepoPushEvent, bitbucket.IssueCreatedEvent, bitbucket.RepoForkEvent},
 		}
 		webhook, err := c.Repositories.Webhooks.Update(opt)
 		if err != nil {
@@ -164,7 +164,7 @@ func TestWebhook(t *testing.T) {
 				Description: fmt.Sprintf("go-bb-test-%d", i),
 				Url:         fmt.Sprintf("https://example.com/%d", i),
 				Active:      false,
-				Events:      []string{"repo:push", "issue:created"},
+				Events:      []string{bitbucket.RepoPushEvent, bitbucket.IssueCreatedEvent},
 			}
 
 			webhook, err := c.Repositories.Webhooks.Create(opt)
