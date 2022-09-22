@@ -26,6 +26,7 @@ type Repository struct {
 	Language    string
 	Is_private  bool
 	Has_issues  bool
+	Has_wiki    bool
 	Mainbranch  RepositoryBranch
 	Type        string
 	CreatedOn   string `mapstructure:"created_on"`
