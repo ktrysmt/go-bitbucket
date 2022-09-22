@@ -120,9 +120,7 @@ type PipelineVariable struct {
 
 type PipelineKeyPair struct {
 	Type       string
-	Uuid       string
-	PublicKey  string
-	PrivateKey string
+	Public_key string
 }
 
 type PipelineBuildNumber struct {
@@ -726,6 +724,17 @@ func (r *Repository) UpdatePipelineVariable(opt *RepositoryPipelineVariableOptio
 	return decodePipelineVariableRepository(response)
 }
 
+func (r *Repository) GetPipelineKeyPair(rpkpo *RepositoryPipelineKeyPairOptions) (*PipelineKeyPair, error) {
+	urlStr := r.c.requestUrl("/repositories/%s/%s/pipelines_config/ssh/key_pair", rpkpo.Owner, rpkpo.RepoSlug)
+
+	response, err := r.c.execute("GET", urlStr, "")
+	if err != nil {
+		return nil, err
+	}
+
+	return decodePipelineKeyPairRepository(response)
+}
+
 func (r *Repository) AddPipelineKeyPair(rpkpo *RepositoryPipelineKeyPairOptions) (*PipelineKeyPair, error) {
 	data, err := r.buildPipelineKeyPairBody(rpkpo)
 	if err != nil {
@@ -739,6 +748,11 @@ func (r *Repository) AddPipelineKeyPair(rpkpo *RepositoryPipelineKeyPairOptions)
 	}
 
 	return decodePipelineKeyPairRepository(response)
+}
+
+func (r *Repository) DeletePipelineKeyPair(rpkpo *RepositoryPipelineKeyPairOptions) (interface{}, error) {
+	urlStr := r.c.requestUrl("/repositories/%s/%s/pipelines_config/ssh/key_pair", rpkpo.Owner, rpkpo.RepoSlug)
+	return r.c.execute("DELETE", urlStr, "")
 }
 
 func (r *Repository) UpdatePipelineBuildNumber(rpbno *RepositoryPipelineBuildNumberOptions) (*PipelineBuildNumber, error) {
