@@ -1550,7 +1550,7 @@ func decodeEnvironments(response string) (*Environments, error) {
 			if errs == nil {
 				errs = err
 			} else {
-				errs = fmt.Errorf("%w; environment %d: %w", errs, idx, err)
+				errs = fmt.Errorf("%w; environment %d: %v", errs, idx, err)
 			}
 		} else {
 			environmentsArray = append(environmentsArray, environment)
@@ -1627,7 +1627,7 @@ func decodeDeploymentVariables(response string) (*DeploymentVariables, error) {
 			if errs == nil {
 				errs = err
 			} else {
-				errs = fmt.Errorf("%w; deployment variable %d: %w", errs, idx, err)
+				errs = fmt.Errorf("%w; deployment variable %d: %v", errs, idx, err)
 			}
 		} else {
 			variablesArray = append(variablesArray, variable)
