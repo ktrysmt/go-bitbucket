@@ -1,4 +1,4 @@
-module github.com/ktrysmt/go-bitbucket
+module github.com/raphaeldevs/go-bitbucket
 
 go 1.14
 

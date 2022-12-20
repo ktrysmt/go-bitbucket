@@ -7,7 +7,7 @@ import (
 
 	_ "github.com/k0kubun/pp"
 
-	"github.com/ktrysmt/go-bitbucket"
+	"github.com/raphaeldevs/go-bitbucket"
 )
 
 func TestDeployKey(t *testing.T) {

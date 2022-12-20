@@ -51,7 +51,8 @@ type Client struct {
 	DisableAutoPaging bool
 	apiBaseURL        *url.URL
 
-	HttpClient *http.Client
+	HttpClient         *http.Client
+	IsCustomHttpClient bool
 }
 
 type auth struct {
@@ -85,7 +86,7 @@ func NewOAuthClientCredentials(i, s string) *Client {
 		log.Fatal(err)
 	}
 	a.token = *tok
-	return injectClient(a)
+	return injectClient(a, nil)
 
 }
 
@@ -117,7 +118,7 @@ func NewOAuth(i, s string) *Client {
 		log.Fatal(err)
 	}
 	a.token = *tok
-	return injectClient(a)
+	return injectClient(a, nil)
 }
 
 // NewOAuthWithCode finishes the OAuth handshake with a given code
@@ -136,7 +137,7 @@ func NewOAuthWithCode(i, s, c string) (*Client, string) {
 		log.Fatal(err)
 	}
 	a.token = *tok
-	return injectClient(a), tok.AccessToken
+	return injectClient(a, nil), tok.AccessToken
 }
 
 // NewOAuthWithRefreshToken obtains a new access token with a given refresh token
@@ -158,20 +159,26 @@ func NewOAuthWithRefreshToken(i, s, rt string) (*Client, string) {
 		log.Fatal(err)
 	}
 	a.token = *tok
-	return injectClient(a), tok.AccessToken
+	return injectClient(a, nil), tok.AccessToken
 }
 
 func NewOAuthbearerToken(t string) *Client {
 	a := &auth{bearerToken: t}
-	return injectClient(a)
+	return injectClient(a, nil)
 }
 
 func NewBasicAuth(u, p string) *Client {
 	a := &auth{user: u, password: p}
-	return injectClient(a)
+	return injectClient(a, nil)
 }
 
-func injectClient(a *auth) *Client {
+func NewWithCustomHttpClient(client *http.Client) *Client {
+	a := &auth{}
+
+	return injectClient(a, client)
+}
+
+func injectClient(a *auth, customHttpClient *http.Client) *Client {
 	bitbucketUrl, err := apiBaseUrl()
 	if err != nil {
 		log.Fatalf("invalid bitbucket url")
@@ -195,7 +202,13 @@ func injectClient(a *auth) *Client {
 	c.User = &User{c: c}
 	c.Teams = &Teams{c: c}
 	c.Workspaces = &Workspace{c: c, Repositories: c.Repositories, Permissions: &Permission{c: c}}
-	c.HttpClient = new(http.Client)
+
+	if customHttpClient != nil {
+		c.HttpClient = customHttpClient
+	} else {
+		c.HttpClient = new(http.Client)
+	}
+
 	return c
 }
 
@@ -324,6 +337,10 @@ func (c *Client) executeFileUpload(method string, urlStr string, filePath string
 }
 
 func (c *Client) authenticateRequest(req *http.Request) {
+	if c.IsCustomHttpClient {
+		return
+	}
+
 	if c.Auth.bearerToken != "" {
 		req.Header.Set("Authorization", "Bearer "+c.Auth.bearerToken)
 	}

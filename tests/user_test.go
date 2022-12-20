@@ -1,11 +1,12 @@
 package tests
 
 import (
-	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
 
-	"github.com/ktrysmt/go-bitbucket"
+	"github.com/stretchr/testify/assert"
+
+	"github.com/raphaeldevs/go-bitbucket"
 )
 
 func TestProfile(t *testing.T) {
