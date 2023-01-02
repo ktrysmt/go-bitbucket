@@ -15,7 +15,7 @@ type Repositories struct {
 	Issues             *Issues
 	Pipelines          *Pipelines
 	Repository         *Repository
-	Commits            *Commits
+	Commits            *Addons
 	Diff               *Diff
 	BranchRestrictions *BranchRestrictions
 	Webhooks           *Webhooks
