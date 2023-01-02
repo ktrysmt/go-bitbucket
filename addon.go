@@ -6,7 +6,7 @@ type Addons struct {
 
 func (addons *Addons) Delete() error {
 	urlStr := addons.c.requestUrl("/addon")
-	_, err := addons.c.executePaginated("GET", urlStr, "")
+	_, err := addons.c.executePaginated("DELETE", urlStr, "")
 
 	return err
 }
