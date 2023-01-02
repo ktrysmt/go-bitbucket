@@ -191,7 +191,7 @@ func injectClient(a *auth, customHttpClient *http.Client) *Client {
 		Pipelines:          &Pipelines{c: c},
 		Repository:         &Repository{c: c},
 		Issues:             &Issues{c: c},
-		Commits:            &Commits{c: c},
+		Commits:            &Addons{c: c},
 		Diff:               &Diff{c: c},
 		BranchRestrictions: &BranchRestrictions{c: c},
 		Webhooks:           &Webhooks{c: c},
