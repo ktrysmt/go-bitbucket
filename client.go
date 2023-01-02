@@ -41,6 +41,7 @@ type Client struct {
 	Teams        teams
 	Repositories *Repositories
 	Workspaces   *Workspace
+	Addons       *Addons
 	Pagelen      int
 	MaxDepth     int
 	// LimitPages limits the number of pages for a request
@@ -202,6 +203,7 @@ func injectClient(a *auth, customHttpClient *http.Client) *Client {
 	c.User = &User{c: c}
 	c.Teams = &Teams{c: c}
 	c.Workspaces = &Workspace{c: c, Repositories: c.Repositories, Permissions: &Permission{c: c}}
+	c.Addons = &Addons{c: c}
 
 	if customHttpClient != nil {
 		c.HttpClient = customHttpClient
