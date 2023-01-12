@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/raphaeldevs/go-bitbucket"
+	"github.com/elvenworks/go-bitbucket"
 )
 
 func TestProfile(t *testing.T) {

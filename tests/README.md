@@ -1,6 +1,6 @@
 # Tests
 
-As per @ktrysmt's comment [here](https://github.com/raphaeldevs/go-bitbucket/pull/122#issuecomment-758373984) tests are being changed so they can be run against both:
+As per @ktrysmt's comment [here](https://github.com/elvenworks/go-bitbucket/pull/122#issuecomment-758373984) tests are being changed so they can be run against both:
 
 1. The actual Bitbucket API
 1. The Swagger documentation from Bitbucket ([https://bitbucket.org/api/swagger.json](https://bitbucket.org/api/swagger.json)), using [Stoplight's Prism](https://stoplight.io/open-source/prism)

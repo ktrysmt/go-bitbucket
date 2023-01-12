@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/raphaeldevs/go-bitbucket"
+	"github.com/elvenworks/go-bitbucket"
 )
 
 var (

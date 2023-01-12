@@ -1,7 +1,7 @@
 # go-bitbucket
 
-<a class="repo-badge" href="https://godoc.org/github.com/raphaeldevs/go-bitbucket"><img src="https://godoc.org/github.com/raphaeldevs/go-bitbucket?status.svg" alt="go-bitbucket?status"></a>
-<a href="https://goreportcard.com/report/github.com/raphaeldevs/go-bitbucket"><img class="badge" tag="github.com/raphaeldevs/go-bitbucket" src="https://goreportcard.com/badge/github.com/raphaeldevs/go-bitbucket"></a>
+<a class="repo-badge" href="https://godoc.org/github.com/elvenworks/go-bitbucket"><img src="https://godoc.org/github.com/elvenworks/go-bitbucket?status.svg" alt="go-bitbucket?status"></a>
+<a href="https://goreportcard.com/report/github.com/elvenworks/go-bitbucket"><img class="badge" tag="github.com/elvenworks/go-bitbucket" src="https://goreportcard.com/badge/github.com/elvenworks/go-bitbucket"></a>
 
 > Bitbucket-API library for golang.
 
@@ -15,7 +15,7 @@ And the response type is json format defined Bitbucket API.
 ## Install
 
 ```sh
-go get github.com/raphaeldevs/go-bitbucket
+go get github.com/elvenworks/go-bitbucket
 ```
 
 ## Usage
@@ -28,7 +28,7 @@ package main
 import (
         "fmt"
 
-        "github.com/raphaeldevs/go-bitbucket"
+        "github.com/elvenworks/go-bitbucket"
 )
 
 func main() {
@@ -60,7 +60,7 @@ package main
 import (
         "fmt"
 
-        "github.com/raphaeldevs/go-bitbucket"
+        "github.com/elvenworks/go-bitbucket"
 )
 
 func main() {

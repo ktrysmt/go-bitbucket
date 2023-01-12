@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/raphaeldevs/go-bitbucket"
+	"github.com/elvenworks/go-bitbucket"
 )
 
 func getBitbucketClient(t *testing.T) *bitbucket.Client {

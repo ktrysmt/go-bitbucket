@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/raphaeldevs/go-bitbucket"
+	"github.com/elvenworks/go-bitbucket"
 )
 
 func TestList(t *testing.T) {

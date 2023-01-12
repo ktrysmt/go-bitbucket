@@ -6,7 +6,7 @@ import (
 
 	_ "github.com/k0kubun/pp"
 
-	"github.com/raphaeldevs/go-bitbucket"
+	"github.com/elvenworks/go-bitbucket"
 )
 
 func TestGetRepositoryRepositories(t *testing.T) {

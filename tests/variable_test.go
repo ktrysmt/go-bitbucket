@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/elvenworks/go-bitbucket"
 	_ "github.com/k0kubun/pp"
-	"github.com/raphaeldevs/go-bitbucket"
 )
 
 func TestEndToEndDeploymentVariables(t *testing.T) {
