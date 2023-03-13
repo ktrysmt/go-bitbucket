@@ -68,9 +68,7 @@ func decodeRepositories(reposResponse interface{}) (*RepositoriesRes, error) {
 	repoArray := reposResponseMap["values"].([]interface{})
 	var repos []Repository
 	for _, repoEntry := range repoArray {
-		// var repo Repository
 		repo, err := decodeRepository(repoEntry)
-		// err := mapstructure.Decode(repoEntry, &repo)
 		if err == nil {
 			repos = append(repos, *repo)
 		}
