@@ -12,7 +12,7 @@ type Commits struct {
 func (cm *Commits) GetCommits(cmo *CommitsOptions) (interface{}, error) {
 	urlStr := cm.c.requestUrl("/repositories/%s/%s/commits/%s", cmo.Owner, cmo.RepoSlug, cmo.Branchortag)
 	urlStr += cm.buildCommitsQuery(cmo.Include, cmo.Exclude)
-	return cm.c.executePaginated("GET", urlStr, "", nil)
+	return cm.c.executePaginated("GET", urlStr, "", cmo.Page)
 }
 
 func (cm *Commits) GetCommit(cmo *CommitsOptions) (interface{}, error) {

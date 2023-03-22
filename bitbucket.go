@@ -341,6 +341,7 @@ type CommitsOptions struct {
 	Include     string `json:"include"`
 	Exclude     string `json:"exclude"`
 	CommentID   string `json:"comment_id"`
+	Page        *int   `json:"page"`
 }
 
 type CommitStatusOptions struct {
