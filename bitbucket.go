@@ -139,8 +139,10 @@ type pipelines interface {
 }
 
 type RepositoriesOptions struct {
-	Owner string `json:"owner"`
-	Role  string `json:"role"` // role=[owner|admin|contributor|member]
+	Owner   string  `json:"owner"`
+	Role    string  `json:"role"` // role=[owner|admin|contributor|member]
+	Page    *int    `json:"page"`
+	Keyword *string `json:"keyword"`
 }
 
 type RepositoryOptions struct {

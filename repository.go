@@ -324,7 +324,7 @@ func (r *Repository) ListFiles(ro *RepositoryFilesOptions) ([]RepositoryFile, er
 		return nil, err
 	}
 
-	response, err := r.c.executePaginated("GET", urlStr, "")
+	response, err := r.c.executePaginated("GET", urlStr, "", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -522,7 +522,7 @@ func (r *Repository) ListTags(rbo *RepositoryTagOptions) (*RepositoryTags, error
 	}
 
 	urlStr := r.c.requestUrl("/repositories/%s/%s/refs/tags?%s", rbo.Owner, rbo.RepoSlug, params.Encode())
-	response, err := r.c.executePaginated("GET", urlStr, "")
+	response, err := r.c.executePaginated("GET", urlStr, "", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -578,18 +578,18 @@ func (r *Repository) Delete(ro *RepositoryOptions) (interface{}, error) {
 
 func (r *Repository) ListWatchers(ro *RepositoryOptions) (interface{}, error) {
 	urlStr := r.c.requestUrl("/repositories/%s/%s/watchers", ro.Owner, ro.RepoSlug)
-	return r.c.executePaginated("GET", urlStr, "")
+	return r.c.executePaginated("GET", urlStr, "", nil)
 }
 
 func (r *Repository) ListForks(ro *RepositoryOptions) (interface{}, error) {
 	urlStr := r.c.requestUrl("/repositories/%s/%s/forks", ro.Owner, ro.RepoSlug)
-	return r.c.executePaginated("GET", urlStr, "")
+	return r.c.executePaginated("GET", urlStr, "", nil)
 }
 
 func (r *Repository) ListDefaultReviewers(ro *RepositoryOptions) (*DefaultReviewers, error) {
 	urlStr := r.c.requestUrl("/repositories/%s/%s/default-reviewers?pagelen=1", ro.Owner, ro.RepoSlug)
 
-	res, err := r.c.executePaginated("GET", urlStr, "")
+	res, err := r.c.executePaginated("GET", urlStr, "", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -893,7 +893,7 @@ func (r *Repository) UpdateDeploymentVariable(opt *RepositoryDeploymentVariableO
 func (r *Repository) ListGroupPermissions(ro *RepositoryOptions) (*GroupPermissions, error) {
 	urlStr := r.c.requestUrl("/repositories/%s/%s/permissions-config/groups?pagelen=1", ro.Owner, ro.RepoSlug)
 
-	res, err := r.c.executePaginated("GET", urlStr, "")
+	res, err := r.c.executePaginated("GET", urlStr, "", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -924,7 +924,7 @@ func (r *Repository) DeleteGroupPermissions(rgo *RepositoryGroupPermissionsOptio
 func (r *Repository) GetGroupPermissions(rgo *RepositoryGroupPermissionsOptions) (*GroupPermission, error) {
 	urlStr := r.c.requestUrl("/repositories/%s/%s/permissions-config/groups/%s", rgo.Owner, rgo.RepoSlug, rgo.Group)
 
-	res, err := r.c.executePaginated("GET", urlStr, "")
+	res, err := r.c.executePaginated("GET", urlStr, "", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -934,7 +934,7 @@ func (r *Repository) GetGroupPermissions(rgo *RepositoryGroupPermissionsOptions)
 func (r *Repository) ListUserPermissions(ro *RepositoryOptions) (*UserPermissions, error) {
 	urlStr := r.c.requestUrl("/repositories/%s/%s/permissions-config/users?pagelen=1", ro.Owner, ro.RepoSlug)
 
-	res, err := r.c.executePaginated("GET", urlStr, "")
+	res, err := r.c.executePaginated("GET", urlStr, "", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -965,7 +965,7 @@ func (r *Repository) DeleteUserPermissions(rgo *RepositoryUserPermissionsOptions
 func (r *Repository) GetUserPermissions(rgo *RepositoryUserPermissionsOptions) (*UserPermission, error) {
 	urlStr := r.c.requestUrl("/repositories/%s/%s/permissions-config/users/%s", rgo.Owner, rgo.RepoSlug, rgo.User)
 
-	res, err := r.c.executePaginated("GET", urlStr, "")
+	res, err := r.c.executePaginated("GET", urlStr, "", nil)
 	if err != nil {
 		return nil, err
 	}
