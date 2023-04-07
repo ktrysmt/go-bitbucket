@@ -30,15 +30,22 @@ type RepositoriesRes struct {
 }
 
 func (r *Repositories) ListForAccount(ro *RepositoriesOptions) (*RepositoriesRes, error) {
-	url := "/repositories"
+	urlPath := "/repositories"
 	if ro.Owner != "" {
-		url += fmt.Sprintf("/%s", ro.Owner)
+		urlPath += fmt.Sprintf("/%s", ro.Owner)
 	}
-	urlStr := r.c.requestUrl(url)
+	urlStr := r.c.requestUrl(urlPath)
 	if ro.Role != "" {
 		urlStr += "?role=" + ro.Role
 	}
-	repos, err := r.c.executePaginated("GET", urlStr, "")
+	if ro.Keyword != nil && *ro.Keyword != "" {
+		if ro.Role == "" {
+			urlStr += "?"
+		}
+		// https://developer.atlassian.com/cloud/bitbucket/rest/intro/#operators
+		urlStr += fmt.Sprintf("q=full_name ~ \"%s\"", *ro.Keyword)
+	}
+	repos, err := r.c.executePaginated("GET", urlStr, "", ro.Page)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +59,7 @@ func (r *Repositories) ListForTeam(ro *RepositoriesOptions) (*RepositoriesRes, e
 
 func (r *Repositories) ListPublic() (*RepositoriesRes, error) {
 	urlStr := r.c.requestUrl("/repositories/")
-	repos, err := r.c.executePaginated("GET", urlStr, "")
+	repos, err := r.c.executePaginated("GET", urlStr, "", nil)
 	if err != nil {
 		return nil, err
 	}
