@@ -3,8 +3,6 @@ package bitbucket
 import (
 	"errors"
 	"fmt"
-
-	"github.com/mitchellh/mapstructure"
 )
 
 //"github.com/k0kubun/pp"
@@ -70,10 +68,9 @@ func decodeRepositories(reposResponse interface{}) (*RepositoriesRes, error) {
 	repoArray := reposResponseMap["values"].([]interface{})
 	var repos []Repository
 	for _, repoEntry := range repoArray {
-		var repo Repository
-		err := mapstructure.Decode(repoEntry, &repo)
+		repo, err := decodeRepository(repoEntry)
 		if err == nil {
-			repos = append(repos, repo)
+			repos = append(repos, *repo)
 		}
 	}
 

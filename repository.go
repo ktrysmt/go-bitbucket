@@ -9,6 +9,7 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/mitchellh/mapstructure"
 )
@@ -29,11 +30,15 @@ type Repository struct {
 	Has_wiki    bool
 	Mainbranch  RepositoryBranch
 	Type        string
-	CreatedOn   string `mapstructure:"created_on"`
-	UpdatedOn   string `mapstructure:"updated_on"`
-	Owner       map[string]interface{}
-	Links       map[string]interface{}
-	Parent      *Repository
+	// Deprecated: CreatedOn is deprecated use CreatedOnTime
+	CreatedOn string `mapstructure:"created_on"`
+	// Deprecated: UpdatedOn is deprecated use UpdatedOnTime
+	UpdatedOn     string `mapstructure:"updated_on"`
+	Owner         map[string]interface{}
+	Links         map[string]interface{}
+	Parent        *Repository
+	CreatedOnTime *time.Time `mapstructure:"created_on"`
+	UpdatedOnTime *time.Time `mapstructure:"updated_on"`
 }
 
 type RepositoryFile struct {
@@ -248,6 +253,8 @@ type UserPermissions struct {
 	Next            string
 	UserPermissions []UserPermission
 }
+
+var stringToTimeHookFunc = mapstructure.StringToTimeHookFunc("2006-01-02T15:04:05.000000+00:00")
 
 func (r *Repository) Create(ro *RepositoryOptions) (*Repository, error) {
 	data, err := r.buildRepositoryBody(ro)
@@ -1190,7 +1197,15 @@ func decodeRepository(repoResponse interface{}) (*Repository, error) {
 	}
 
 	var repository = new(Repository)
-	err := mapstructure.Decode(repoMap, repository)
+	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+		Metadata:   nil,
+		Result:     repository,
+		DecodeHook: stringToTimeHookFunc,
+	})
+	if err != nil {
+		return nil, err
+	}
+	err = decoder.Decode(repoMap)
 	if err != nil {
 		return nil, err
 	}
