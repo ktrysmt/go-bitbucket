@@ -9,6 +9,6 @@ require (
 	github.com/mattn/go-isatty v0.0.3 // indirect
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/stretchr/testify v1.8.2
-	golang.org/x/net v0.9.0
+	golang.org/x/net v0.10.0
 	golang.org/x/oauth2 v0.7.0
 )
