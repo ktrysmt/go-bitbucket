@@ -45,6 +45,29 @@ func (r *Repositories) ListForAccount(ro *RepositoriesOptions) (*RepositoriesRes
 		// https://developer.atlassian.com/cloud/bitbucket/rest/intro/#operators
 		urlStr += fmt.Sprintf("q=full_name ~ \"%s\"", *ro.Keyword)
 	}
+
+	repos, err := r.c.executePaginated("GET", urlStr, "", ro.Page)
+	if err != nil {
+		return nil, err
+	}
+	return decodeRepositories(repos)
+}
+
+func (r *Repositories) ListForProject(ro *RepositoriesOptions) (*RepositoriesRes, error) {
+	urlPath := "/repositories"
+	if ro.Owner != "" {
+		urlPath += fmt.Sprintf("/%s", ro.Owner)
+	}
+	urlStr := r.c.requestUrl(urlPath)
+
+	if ro.Project != "" {
+		if ro.Role == "" {
+			urlStr += "?"
+		}
+		// https://developer.atlassian.com/cloud/bitbucket/rest/intro/#operators
+		urlStr += fmt.Sprintf("q=project.name=\"%s\"", ro.Project)
+	}
+
 	repos, err := r.c.executePaginated("GET", urlStr, "", ro.Page)
 	if err != nil {
 		return nil, err
