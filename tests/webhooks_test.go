@@ -36,6 +36,7 @@ func TestWebhook(t *testing.T) {
 		opt := &bitbucket.WebhooksOptions{
 			Owner:       owner,
 			RepoSlug:    repo,
+			Secret:      "unsecureSecret",
 			Description: "go-bb-test",
 			Url:         "https://example.com",
 			Active:      false,
@@ -62,6 +63,9 @@ func TestWebhook(t *testing.T) {
 		}
 		if len(webhook.Events) != 2 {
 			t.Error("The webhook `events` attribute does not match the expected value.")
+		}
+		if webhook.Secret != "unsecureSecret" {
+			t.Error("The webhook `secret` attribute does not match the expected value.")
 		}
 
 		webhookResourceUuid = webhook.Uuid
@@ -94,6 +98,9 @@ func TestWebhook(t *testing.T) {
 		if len(webhook.Events) != 2 {
 			t.Error("The webhook `events` attribute does not match the expected value.")
 		}
+		if webhook.Secret != "unsecureSecret" {
+			t.Error("The webhook `secret` attribute does not match the expected value.")
+		}
 	})
 
 	t.Run("update", func(t *testing.T) {
@@ -101,6 +108,7 @@ func TestWebhook(t *testing.T) {
 			Owner:       owner,
 			RepoSlug:    repo,
 			Uuid:        webhookResourceUuid,
+			Secret:      "newUnsecureSecret",
 			Description: "go-bb-test-new",
 			Url:         "https://new-example.com",
 			Events:      []string{bitbucket.RepoPushEvent, bitbucket.IssueCreatedEvent, bitbucket.RepoForkEvent},
@@ -125,6 +133,9 @@ func TestWebhook(t *testing.T) {
 		}
 		if len(webhook.Events) != 3 {
 			t.Error("The webhook `events` attribute does not match the expected value.")
+		}
+		if webhook.Secret != "newUnsecureSecret" {
+			t.Error("The webhook `secret` attribute does not match the expected value.")
 		}
 	})
 
@@ -161,6 +172,7 @@ func TestWebhook(t *testing.T) {
 			opt := &bitbucket.WebhooksOptions{
 				Owner:       owner,
 				RepoSlug:    repo,
+				Secret:      "unsecureSecret",
 				Description: fmt.Sprintf("go-bb-test-%d", i),
 				Url:         fmt.Sprintf("https://example.com/%d", i),
 				Active:      false,
