@@ -8,6 +8,6 @@ require (
 	github.com/mattn/go-colorable v0.0.9 // indirect
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/stretchr/testify v1.8.4
-	golang.org/x/net v0.19.0
-	golang.org/x/oauth2 v0.15.0
+	golang.org/x/net v0.20.0
+	golang.org/x/oauth2 v0.16.0
 )
