@@ -299,7 +299,7 @@ type PullRequestCommentOptions struct {
 	PullRequestID string `json:"id"`
 	Content       string `json:"content"`
 	CommentId     string `json:"-"`
-	Parent        *int    `json:"parent"`
+	Parent        *int   `json:"parent"`
 }
 
 type IssuesOptions struct {
