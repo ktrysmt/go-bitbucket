@@ -566,3 +566,9 @@ type DeployKeyOptions struct {
 	Label    string `json:"label"`
 	Key      string `json:"key"`
 }
+
+type SSHKeyCreationOptions struct {
+	User  string `json:"user"`
+	Label string `json:"label"`
+	Key   string `json:"key"`
+}
