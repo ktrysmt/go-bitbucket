@@ -85,6 +85,7 @@ type repository interface {
 type repositories interface {
 	ListForAccount(opt RepositoriesOptions) (interface{}, error)
 	ListForTeam(opt RepositoriesOptions) (interface{}, error)
+	ListProject(opt RepositoriesOptions) (interface{}, error)
 	ListPublic() (interface{}, error)
 }
 
