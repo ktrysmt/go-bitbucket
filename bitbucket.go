@@ -85,6 +85,7 @@ type repository interface {
 type repositories interface {
 	ListForAccount(opt RepositoriesOptions) (interface{}, error)
 	ListForTeam(opt RepositoriesOptions) (interface{}, error)
+	ListProject(opt RepositoriesOptions) (interface{}, error)
 	ListPublic() (interface{}, error)
 }
 
@@ -140,6 +141,7 @@ type pipelines interface {
 
 type RepositoriesOptions struct {
 	Owner   string  `json:"owner"`
+	Project string  `json:"project"`
 	Role    string  `json:"role"` // role=[owner|admin|contributor|member]
 	Page    *int    `json:"page"`
 	Keyword *string `json:"keyword"`
