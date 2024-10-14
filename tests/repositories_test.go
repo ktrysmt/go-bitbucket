@@ -47,6 +47,69 @@ func TestListForAccount(t *testing.T) {
 	}
 }
 
+func TestListForAccountWithKeyword(t *testing.T) {
+	user := os.Getenv("BITBUCKET_TEST_USERNAME")
+	pass := os.Getenv("BITBUCKET_TEST_PASSWORD")
+	owner := os.Getenv("BITBUCKET_TEST_OWNER")
+	repo := os.Getenv("BITBUCKET_TEST_REPOSLUG")
+
+	if user == "" {
+		t.Error("BITBUCKET_TEST_USERNAME is empty.")
+	}
+	if pass == "" {
+		t.Error("BITBUCKET_TEST_PASSWORD is empty.")
+	}
+	if owner == "" {
+		t.Error("BITBUCKET_TEST_OWNER is empty.")
+	}
+	if repo == "" {
+		t.Error("BITBUCKET_TEST_REPOSLUG is empty.")
+	}
+
+	c := bitbucket.NewBasicAuth(user, pass)
+	t.Run("only keyword", func(t *testing.T) {
+		repositories, err := c.Repositories.ListForAccount(&bitbucket.RepositoriesOptions{
+			Owner:   owner,
+			Keyword: &repo,
+		})
+		if err != nil {
+			t.Error("Unable to fetch repositories")
+		}
+
+		found := false
+		for _, r := range repositories.Items {
+			if r.Slug == repo {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Error("Did not find repository in list")
+		}
+	})
+	t.Run("keyword and role", func(t *testing.T) {
+		repositories, err := c.Repositories.ListForAccount(&bitbucket.RepositoriesOptions{
+			Owner:   owner,
+			Keyword: &repo,
+			Role:    "member",
+		})
+		if err != nil {
+			t.Error("Unable to fetch repositories")
+		}
+
+		found := false
+		for _, r := range repositories.Items {
+			if r.Slug == repo {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Error("Did not find repository in list")
+		}
+	})
+}
+
 func TestListForTeam(t *testing.T) {
 	user := os.Getenv("BITBUCKET_TEST_USERNAME")
 	pass := os.Getenv("BITBUCKET_TEST_PASSWORD")
