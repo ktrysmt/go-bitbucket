@@ -663,3 +663,10 @@ func (dk *DeployKeyOptions) WithContext(ctx context.Context) *DeployKeyOptions {
 	dk.ctx = ctx
 	return dk
 }
+
+type SSHKeyOptions struct {
+	Owner    string `json:"owner"`
+	Uuid     string `json:"uuid"`
+	Label    string `json:"label"`
+	Key      string `json:"key"`
+}
