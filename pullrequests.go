@@ -27,6 +27,11 @@ func (p *PullRequests) Update(po *PullRequestsOptions) (interface{}, error) {
 	return p.c.execute("PUT", urlStr, data)
 }
 
+func (p *PullRequests) GetCommit(po *PullRequestsOptions) (interface{}, error) {
+	urlStr := p.c.GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/commit/" + po.Commit + "/pullrequests/"
+	return p.c.executePaginated("GET", urlStr, "", nil)
+}
+
 func (p *PullRequests) Gets(po *PullRequestsOptions) (interface{}, error) {
 	urlStr := p.c.GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/"
 
