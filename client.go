@@ -62,7 +62,7 @@ type auth struct {
 }
 
 type Response struct {
-	*http.Response
+	*http.Response `json:"-"`
 	Size     int           `json:"size"`
 	Page     int           `json:"page"`
 	Pagelen  int           `json:"pagelen"`
