@@ -193,7 +193,7 @@ func injectClient(a *auth) *Client {
 		DeployKeys:         &DeployKeys{c: c},
 	}
 	c.Users = &Users{
-		c:       c,
+	c:       c,
 		SSHKeys: &SSHKeys{c: c},
 	}
 	c.User = &User{c: c}
