@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/url"
 	"path"
@@ -443,8 +444,11 @@ func (r *Repository) ListRefs(rbo *RepositoryRefOptions) (*RepositoryRefs, error
 func (r *Repository) ListBranches(rbo *RepositoryBranchOptions) (*RepositoryBranches, error) {
 
 	params := url.Values{}
+
 	if rbo.Query != "" {
-		params.Add("q", rbo.Query)
+		// https://developer.atlassian.com/cloud/bitbucket/rest/intro/#operators
+		query := fmt.Sprintf("name ~ \"%s\"", rbo.Query)
+		params.Set("q", query)
 	}
 
 	if rbo.Sort != "" {
@@ -468,7 +472,7 @@ func (r *Repository) ListBranches(rbo *RepositoryBranchOptions) (*RepositoryBran
 	if err != nil {
 		return nil, err
 	}
-	bodyBytes, err := ioutil.ReadAll(response)
+	bodyBytes, err := io.ReadAll(response)
 	if err != nil {
 		return nil, err
 	}
