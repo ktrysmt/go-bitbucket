@@ -442,7 +442,6 @@ func (r *Repository) ListRefs(rbo *RepositoryRefOptions) (*RepositoryRefs, error
 }
 
 func (r *Repository) ListBranches(rbo *RepositoryBranchOptions) (*RepositoryBranches, error) {
-
 	params := url.Values{}
 
 	if rbo.Query != "" {
@@ -476,8 +475,8 @@ func (r *Repository) ListBranches(rbo *RepositoryBranchOptions) (*RepositoryBran
 	if err != nil {
 		return nil, err
 	}
-	bodyString := string(bodyBytes)
-	return decodeRepositoryBranches(bodyString)
+
+	return decodeRepositoryBranches(string(bodyBytes))
 }
 
 func (r *Repository) GetBranch(rbo *RepositoryBranchOptions) (*RepositoryBranch, error) {
