@@ -737,3 +737,22 @@ func TestSetRepositoryUserPermissions(t *testing.T) {
 	}
 
 }
+
+func TestListBranches(t *testing.T) {
+	client := setup(t)
+
+	opts := &bitbucket.RepositoryBranchOptions{
+		Owner:    owner,
+		RepoSlug: repo,
+		Pagelen:  10,
+		Query:    "develop",
+	}
+
+	response, err := client.Repositories.Repository.ListBranches(opts)
+	if err != nil {
+		t.Error(err)
+	}
+	if response == nil {
+		t.Error("Cannot get list branches")
+	}
+}
