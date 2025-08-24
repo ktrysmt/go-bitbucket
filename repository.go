@@ -441,6 +441,10 @@ func (r *Repository) ListRefs(rbo *RepositoryRefOptions) (*RepositoryRefs, error
 	return decodeRepositoryRefs(bodyString)
 }
 
+// ListBranches gets all branches in the Bitbucket repository and returns them as a RepositoryBranches.
+// You can pass query parameter to filter branches by name.
+//
+// Bitbucket API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-refs/#api-repositories-workspace-repo-slug-refs-get
 func (r *Repository) ListBranches(rbo *RepositoryBranchOptions) (*RepositoryBranches, error) {
 	params := url.Values{}
 
