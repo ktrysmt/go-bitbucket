@@ -750,9 +750,12 @@ func TestListBranches(t *testing.T) {
 
 	response, err := client.Repositories.Repository.ListBranches(opts)
 	if err != nil {
-		t.Error(err)
+		t.Fatalf("ListBranches() returned an error: %v", err)
 	}
 	if response == nil {
-		t.Error("Cannot get list branches")
+		t.Fatal("Cannot get list branches")
+	}
+	if response.Size == 0 {
+		t.Fatalf("Expected to find at least one branch for query '%s', but found none", opts.Query)
 	}
 }
