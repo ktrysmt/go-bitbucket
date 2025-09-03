@@ -737,3 +737,25 @@ func TestSetRepositoryUserPermissions(t *testing.T) {
 	}
 
 }
+
+func TestListBranches(t *testing.T) {
+	client := setup(t)
+
+	opts := &bitbucket.RepositoryBranchOptions{
+		Owner:    owner,
+		RepoSlug: repo,
+		Pagelen:  10,
+		Query:    "develop",
+	}
+
+	response, err := client.Repositories.Repository.ListBranches(opts)
+	if err != nil {
+		t.Fatalf("ListBranches() returned an error: %v", err)
+	}
+	if response == nil {
+		t.Fatal("Cannot get list branches")
+	}
+	if response.Size == 0 {
+		t.Fatalf("Expected to find at least one branch for query '%s', but found none", opts.Query)
+	}
+}
