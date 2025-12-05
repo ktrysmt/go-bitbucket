@@ -14,7 +14,10 @@ func TestList(t *testing.T) {
 	pass := os.Getenv("BITBUCKET_TEST_PASSWORD")
 	owner := os.Getenv("BITBUCKET_TEST_OWNER")
 
-	c := bitbucket.NewBasicAuth(user, pass)
+	c, err := bitbucket.NewBasicAuth(user, pass)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	opt := &bitbucket.RepositoriesOptions{
 		Owner: owner,

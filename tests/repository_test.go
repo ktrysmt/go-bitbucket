@@ -29,7 +29,10 @@ func TestGetRepositoryRepositories(t *testing.T) {
 		t.Error("BITBUCKET_TEST_REPOSLUG is empty.")
 	}
 
-	c := bitbucket.NewBasicAuth(user, pass)
+	c, err := bitbucket.NewBasicAuth(user, pass)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	opt := &bitbucket.RepositoryOptions{
 		Owner:    owner,
@@ -61,7 +64,10 @@ func TestCreateRepositoryRepositories(t *testing.T) {
 		t.Error("BITBUCKET_TEST_OWNER is empty.")
 	}
 
-	c := bitbucket.NewBasicAuth(user, pass)
+	c, err := bitbucket.NewBasicAuth(user, pass)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// Create project - needed prior to creating repo
 	projOpt := &bitbucket.ProjectOptions{
@@ -128,7 +134,10 @@ func TestRepositoryUpdateForkPolicy(t *testing.T) {
 		t.Error("BITBUCKET_TEST_REPOSLUG is empty.")
 	}
 
-	c := bitbucket.NewBasicAuth(user, pass)
+	c, err := bitbucket.NewBasicAuth(user, pass)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	opt := &bitbucket.RepositoryOptions{
 		Owner:    owner,
@@ -208,7 +217,10 @@ func TestGetRepositoryPipelineConfig(t *testing.T) {
 		t.Error("BITBUCKET_TEST_REPOSLUG is empty.")
 	}
 
-	c := bitbucket.NewBasicAuth(user, pass)
+	c, err := bitbucket.NewBasicAuth(user, pass)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	opt := &bitbucket.RepositoryPipelineOptions{
 		Owner:    owner,
@@ -247,7 +259,10 @@ func TestUpdateRepositoryPipelineConfig(t *testing.T) {
 		t.Error("BITBUCKET_TEST_REPOSLUG is empty.")
 	}
 
-	c := bitbucket.NewBasicAuth(user, pass)
+	c, err := bitbucket.NewBasicAuth(user, pass)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	opt := &bitbucket.RepositoryPipelineOptions{
 		Owner:    owner,
@@ -306,7 +321,10 @@ func TestGetRepositoryPipelineVariables(t *testing.T) {
 		t.Error("BITBUCKET_TEST_REPOSLUG is empty.")
 	}
 
-	c := bitbucket.NewBasicAuth(user, pass)
+	c, err := bitbucket.NewBasicAuth(user, pass)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	opt := &bitbucket.RepositoryPipelineVariablesOptions{
 		Owner:    owner,
@@ -343,7 +361,10 @@ func TestDeleteRepositoryPipelineVariables(t *testing.T) {
 		t.Error("BITBUCKET_TEST_REPOSLUG is empty.")
 	}
 
-	c := bitbucket.NewBasicAuth(user, pass)
+	c, err := bitbucket.NewBasicAuth(user, pass)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	variable := &bitbucket.RepositoryPipelineVariableOptions{
 		Owner:    owner,
@@ -391,7 +412,10 @@ func TestGetRepositoryRefs(t *testing.T) {
 		t.Error("BITBUCKET_TEST_REPOSLUG is empty.")
 	}
 
-	c := bitbucket.NewBasicAuth(user, pass)
+	c, err := bitbucket.NewBasicAuth(user, pass)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	opt := &bitbucket.RepositoryBranchCreationOptions{
 		Owner:    owner,
@@ -400,7 +424,7 @@ func TestGetRepositoryRefs(t *testing.T) {
 		Target:   bitbucket.RepositoryBranchTarget{Hash: "master"},
 	}
 
-	_, err := c.Repositories.Repository.CreateBranch(opt)
+	_, err = c.Repositories.Repository.CreateBranch(opt)
 	if err != nil {
 		t.Error("Could not create new branch", err)
 	}
@@ -462,7 +486,10 @@ func TestListRepositoryGroupPermissions(t *testing.T) {
 		t.Error("BITBUCKET_TEST_REPOSLUG is empty.")
 	}
 
-	c := bitbucket.NewBasicAuth(user, pass)
+	c, err := bitbucket.NewBasicAuth(user, pass)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	opt := &bitbucket.RepositoryOptions{
 		Owner:    owner,
@@ -500,7 +527,10 @@ func TestSetRepositoryGroupPermissions(t *testing.T) {
 		t.Error("BITBUCKET_TEST_REPOSLUG is empty.")
 	}
 
-	c := bitbucket.NewBasicAuth(user, pass)
+	c, err := bitbucket.NewBasicAuth(user, pass)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	opt := &bitbucket.RepositoryGroupPermissionsOptions{
 		Owner:      owner,
@@ -539,7 +569,10 @@ func TestDeleteRepositoryGroupPermissions(t *testing.T) {
 		t.Error("BITBUCKET_TEST_REPOSLUG is empty.")
 	}
 
-	c := bitbucket.NewBasicAuth(user, pass)
+	c, err := bitbucket.NewBasicAuth(user, pass)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	opt := &bitbucket.RepositoryGroupPermissionsOptions{
 		Owner:    owner,
@@ -547,7 +580,7 @@ func TestDeleteRepositoryGroupPermissions(t *testing.T) {
 		Group:    "developers",
 	}
 
-	_, err := c.Repositories.Repository.DeleteGroupPermissions(opt)
+	_, err = c.Repositories.Repository.DeleteGroupPermissions(opt)
 	if err != nil {
 		t.Error(err)
 	}
@@ -573,7 +606,10 @@ func TestGetRepositoryGroupPermissions(t *testing.T) {
 		t.Error("BITBUCKET_TEST_REPOSLUG is empty.")
 	}
 
-	c := bitbucket.NewBasicAuth(user, pass)
+	c, err := bitbucket.NewBasicAuth(user, pass)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	opt := &bitbucket.RepositoryGroupPermissionsOptions{
 		Owner:    owner,
@@ -610,7 +646,10 @@ func TestListRepositoryUserPermissions(t *testing.T) {
 		t.Error("BITBUCKET_TEST_REPOSLUG is empty.")
 	}
 
-	c := bitbucket.NewBasicAuth(user, pass)
+	c, err := bitbucket.NewBasicAuth(user, pass)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	opt := &bitbucket.RepositoryOptions{
 		Owner:    owner,
@@ -647,7 +686,10 @@ func TestGetRepositoryUserPermissions(t *testing.T) {
 		t.Error("BITBUCKET_TEST_REPOSLUG is empty.")
 	}
 
-	c := bitbucket.NewBasicAuth(user, pass)
+	c, err := bitbucket.NewBasicAuth(user, pass)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	opt := &bitbucket.RepositoryUserPermissionsOptions{
 		Owner:    owner,
@@ -685,7 +727,10 @@ func TestDeleteRepositoryUserPermissions(t *testing.T) {
 		t.Error("BITBUCKET_TEST_REPOSLUG is empty.")
 	}
 
-	c := bitbucket.NewBasicAuth(user, pass)
+	c, err := bitbucket.NewBasicAuth(user, pass)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	opt := &bitbucket.RepositoryUserPermissionsOptions{
 		Owner:    owner,
@@ -693,7 +738,7 @@ func TestDeleteRepositoryUserPermissions(t *testing.T) {
 		User:     "5db9ab0fa766000da47cd9e4",
 	}
 
-	_, err := c.Repositories.Repository.DeleteUserPermissions(opt)
+	_, err = c.Repositories.Repository.DeleteUserPermissions(opt)
 	if err != nil {
 		t.Error(err)
 	}
@@ -719,7 +764,10 @@ func TestSetRepositoryUserPermissions(t *testing.T) {
 		t.Error("BITBUCKET_TEST_REPOSLUG is empty.")
 	}
 
-	c := bitbucket.NewBasicAuth(user, pass)
+	c, err := bitbucket.NewBasicAuth(user, pass)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	opt := &bitbucket.RepositoryUserPermissionsOptions{
 		Owner:      owner,

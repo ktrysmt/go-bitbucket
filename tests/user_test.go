@@ -13,7 +13,10 @@ func TestProfile(t *testing.T) {
 	user := getUsername()
 	pass := getPassword()
 
-	c := bitbucket.NewBasicAuth(user, pass)
+	c, err := bitbucket.NewBasicAuth(user, pass)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	res, err := c.User.Profile()
 

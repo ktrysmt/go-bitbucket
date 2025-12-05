@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"mime/multipart"
 	"net/http"
 	"net/url"
@@ -63,16 +62,16 @@ type auth struct {
 
 type Response struct {
 	*http.Response `json:"-"`
-	Size     int           `json:"size"`
-	Page     int           `json:"page"`
-	Pagelen  int           `json:"pagelen"`
-	Next     string        `json:"next"`
-	Previous string        `json:"previous"`
-	Values   []interface{} `json:"values"`
+	Size           int           `json:"size"`
+	Page           int           `json:"page"`
+	Pagelen        int           `json:"pagelen"`
+	Next           string        `json:"next"`
+	Previous       string        `json:"previous"`
+	Values         []interface{} `json:"values"`
 }
 
 // Uses the Client Credentials Grant oauth2 flow to authenticate to Bitbucket
-func NewOAuthClientCredentials(i, s string) *Client {
+func NewOAuthClientCredentials(i, s string) (*Client, error) {
 	a := &auth{appID: i, secret: s}
 	ctx := context.Background()
 	conf := &clientcredentials.Config{
@@ -83,14 +82,14 @@ func NewOAuthClientCredentials(i, s string) *Client {
 
 	tok, err := conf.Token(ctx)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("failed to obtain token: %w", err)
 	}
 	a.token = *tok
 	return injectClient(a)
 
 }
 
-func NewOAuth(i, s string) *Client {
+func NewOAuth(i, s string) (*Client, error) {
 	a := &auth{appID: i, secret: s}
 	ctx := context.Background()
 	conf := &oauth2.Config{
@@ -111,11 +110,11 @@ func NewOAuth(i, s string) *Client {
 	var code string
 	fmt.Printf("Enter the code in the return URL: ")
 	if _, err := fmt.Scan(&code); err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("failed to read authorization code: %w", err)
 	}
 	tok, err := conf.Exchange(ctx, code)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("failed to exchange authorization code: %w", err)
 	}
 	a.token = *tok
 	return injectClient(a)
@@ -123,7 +122,7 @@ func NewOAuth(i, s string) *Client {
 
 // NewOAuthWithCode finishes the OAuth handshake with a given code
 // and returns a *Client
-func NewOAuthWithCode(i, s, c string) (*Client, string) {
+func NewOAuthWithCode(i, s, c string) (*Client, string, error) {
 	a := &auth{appID: i, secret: s}
 	ctx := context.Background()
 	conf := &oauth2.Config{
@@ -134,15 +133,19 @@ func NewOAuthWithCode(i, s, c string) (*Client, string) {
 
 	tok, err := conf.Exchange(ctx, c)
 	if err != nil {
-		log.Fatal(err)
+		return nil, "", fmt.Errorf("failed to exchange authorization code: %w", err)
 	}
 	a.token = *tok
-	return injectClient(a), tok.AccessToken
+	client, err := injectClient(a)
+	if err != nil {
+		return nil, "", err
+	}
+	return client, tok.AccessToken, nil
 }
 
 // NewOAuthWithRefreshToken obtains a new access token with a given refresh token
 // and returns a *Client
-func NewOAuthWithRefreshToken(i, s, rt string) (*Client, string) {
+func NewOAuthWithRefreshToken(i, s, rt string) (*Client, string, error) {
 	a := &auth{appID: i, secret: s}
 	ctx := context.Background()
 	conf := &oauth2.Config{
@@ -156,26 +159,30 @@ func NewOAuthWithRefreshToken(i, s, rt string) (*Client, string) {
 	})
 	tok, err := tokenSource.Token()
 	if err != nil {
-		log.Fatal(err)
+		return nil, "", fmt.Errorf("failed to refresh token: %w", err)
 	}
 	a.token = *tok
-	return injectClient(a), tok.AccessToken
+	client, err := injectClient(a)
+	if err != nil {
+		return nil, "", err
+	}
+	return client, tok.AccessToken, nil
 }
 
-func NewOAuthbearerToken(t string) *Client {
+func NewOAuthbearerToken(t string) (*Client, error) {
 	a := &auth{bearerToken: t}
 	return injectClient(a)
 }
 
-func NewBasicAuth(u, p string) *Client {
+func NewBasicAuth(u, p string) (*Client, error) {
 	a := &auth{user: u, password: p}
 	return injectClient(a)
 }
 
-func injectClient(a *auth) *Client {
+func injectClient(a *auth) (*Client, error) {
 	bitbucketUrl, err := apiBaseUrl()
 	if err != nil {
-		log.Fatalf("invalid bitbucket url")
+		return nil, fmt.Errorf("invalid bitbucket url: %w", err)
 	}
 	c := &Client{Auth: a, Pagelen: DEFAULT_PAGE_LENGTH, MaxDepth: DEFAULT_MAX_DEPTH,
 		apiBaseURL: bitbucketUrl, LimitPages: DEFAULT_LIMIT_PAGES}
@@ -193,14 +200,14 @@ func injectClient(a *auth) *Client {
 		DeployKeys:         &DeployKeys{c: c},
 	}
 	c.Users = &Users{
-		c: c,
+		c:       c,
 		SSHKeys: &SSHKeys{c: c},
 	}
 	c.User = &User{c: c}
 	c.Teams = &Teams{c: c}
 	c.Workspaces = &Workspace{c: c, Repositories: c.Repositories, Permissions: &Permission{c: c}}
 	c.HttpClient = new(http.Client)
-	return c
+	return c, nil
 }
 
 func (c *Client) GetOAuthToken() oauth2.Token {

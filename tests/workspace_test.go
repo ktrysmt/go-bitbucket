@@ -18,7 +18,11 @@ func getBitbucketClient(t *testing.T) *bitbucket.Client {
 		t.Error("BITBUCKET_TEST_PASSWORD is empty.")
 	}
 
-	return bitbucket.NewBasicAuth(user, pass)
+	c, err := bitbucket.NewBasicAuth(user, pass)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return c
 }
 
 func getWorkspace(t *testing.T) string {

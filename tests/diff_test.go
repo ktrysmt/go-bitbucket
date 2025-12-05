@@ -23,7 +23,10 @@ func TestDiff(t *testing.T) {
 		t.Error("BITBUCKET_TEST_PASSWORD is empty.")
 	}
 
-	c := bitbucket.NewBasicAuth(user, pass)
+	c, err := bitbucket.NewBasicAuth(user, pass)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	spec := "master..develop"
 
@@ -59,7 +62,10 @@ func TestGetDiffStat(t *testing.T) {
 		t.Error("BITBUCKET_TEST_PASSWORD is empty.")
 	}
 
-	c := bitbucket.NewBasicAuth(user, pass)
+	c, err := bitbucket.NewBasicAuth(user, pass)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	spec := "master..develop"
 
@@ -95,7 +101,10 @@ func TestGetDiffStatWithFields(t *testing.T) {
 		t.Error("BITBUCKET_TEST_PASSWORD is empty.")
 	}
 
-	c := bitbucket.NewBasicAuth(user, pass)
+	c, err := bitbucket.NewBasicAuth(user, pass)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	spec := "master..develop"
 

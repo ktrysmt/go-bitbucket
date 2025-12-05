@@ -8,7 +8,10 @@ import (
 
 func TestClientNewBasicAuth(t *testing.T) {
 
-	c := bitbucket.NewBasicAuth("example", "password")
+	c, err := bitbucket.NewBasicAuth("example", "password")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	r := reflect.ValueOf(c)
 
