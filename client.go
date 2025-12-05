@@ -89,6 +89,12 @@ func NewOAuthClientCredentials(i, s string) (*Client, error) {
 
 }
 
+// NewOAuth performs an interactive OAuth flow using stdin/stdout.
+//
+// Deprecated: This function uses stdin/stdout directly, making it unsuitable for
+// non-interactive environments (e.g., web servers, background jobs). Instead, use
+// NewOAuthWithCode after obtaining the authorization code through your own UI/CLI.
+// You can generate the authorization URL using oauth2.Config.AuthCodeURL() directly.
 func NewOAuth(i, s string) (*Client, error) {
 	a := &auth{appID: i, secret: s}
 	ctx := context.Background()
