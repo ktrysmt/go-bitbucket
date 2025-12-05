@@ -138,7 +138,7 @@ func NewOAuthWithCode(i, s, c string) (*Client, string, error) {
 	a.token = *tok
 	client, err := injectClient(a)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("failed to create client: %w", err)
 	}
 	return client, tok.AccessToken, nil
 }
@@ -164,7 +164,7 @@ func NewOAuthWithRefreshToken(i, s, rt string) (*Client, string, error) {
 	a.token = *tok
 	client, err := injectClient(a)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("failed to create client: %w", err)
 	}
 	return client, tok.AccessToken, nil
 }
