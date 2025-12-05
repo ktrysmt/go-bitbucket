@@ -32,7 +32,10 @@ func setup(t *testing.T) *bitbucket.Client {
 		t.Error("BITBUCKET_TEST_REPOSLUG is empty.")
 	}
 
-	c := bitbucket.NewBasicAuth(user, pass)
+	c, err := bitbucket.NewBasicAuth(user, pass)
+	if err != nil {
+		t.Fatal(err)
+	}
 	return c
 }
 

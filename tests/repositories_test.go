@@ -26,7 +26,10 @@ func TestListForAccount(t *testing.T) {
 		t.Error("BITBUCKET_TEST_REPOSLUG is empty.")
 	}
 
-	c := bitbucket.NewBasicAuth(user, pass)
+	c, err := bitbucket.NewBasicAuth(user, pass)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	repositories, err := c.Repositories.ListForAccount(&bitbucket.RepositoriesOptions{
 		Owner: owner,
@@ -66,7 +69,10 @@ func TestListForAccountWithKeyword(t *testing.T) {
 		t.Error("BITBUCKET_TEST_REPOSLUG is empty.")
 	}
 
-	c := bitbucket.NewBasicAuth(user, pass)
+	c, err := bitbucket.NewBasicAuth(user, pass)
+	if err != nil {
+		t.Fatal(err)
+	}
 	t.Run("only keyword", func(t *testing.T) {
 		repositories, err := c.Repositories.ListForAccount(&bitbucket.RepositoriesOptions{
 			Owner:   owner,
@@ -129,7 +135,10 @@ func TestListForTeam(t *testing.T) {
 		t.Error("BITBUCKET_TEST_REPOSLUG is empty.")
 	}
 
-	c := bitbucket.NewBasicAuth(user, pass)
+	c, err := bitbucket.NewBasicAuth(user, pass)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	//goland:noinspection GoDeprecation
 	repositories, err := c.Repositories.ListForTeam(&bitbucket.RepositoriesOptions{

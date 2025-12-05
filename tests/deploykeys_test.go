@@ -29,7 +29,10 @@ func TestDeployKey(t *testing.T) {
 		t.Error("BITBUCKET_TEST_REPOSLUG is empty.")
 	}
 
-	c := bitbucket.NewBasicAuth(user, pass)
+	c, err := bitbucket.NewBasicAuth(user, pass)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	var deployKeyResourceId int
 
@@ -121,7 +124,10 @@ func TestDeployKeyWithComment(t *testing.T) {
 		t.Error("BITBUCKET_TEST_REPOSLUG is empty.")
 	}
 
-	c := bitbucket.NewBasicAuth(user, pass)
+	c, err := bitbucket.NewBasicAuth(user, pass)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	var deployKeyResourceId int
 
@@ -220,7 +226,10 @@ func TestListDeployKeys(t *testing.T) {
 		t.Error("BITBUCKET_TEST_REPOSLUG is empty.")
 	}
 
-	c := bitbucket.NewBasicAuth(user, pass)
+	c, err := bitbucket.NewBasicAuth(user, pass)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	var deployKeyResourceId1 int
 	var deployKeyResourceId2 int

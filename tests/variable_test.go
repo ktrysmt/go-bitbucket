@@ -1,8 +1,8 @@
 package tests
 
 import (
-	"os"
 	"fmt"
+	"os"
 	"testing"
 	"time"
 
@@ -30,7 +30,10 @@ func TestEndToEndDeploymentVariables(t *testing.T) {
 		t.Error("BITBUCKET_TEST_REPOSLUG is empty.")
 	}
 
-	c := bitbucket.NewBasicAuth(user, pass)
+	c, err := bitbucket.NewBasicAuth(user, pass)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	environmentOpt := &bitbucket.RepositoryEnvironmentsOptions{
 		Owner:    owner,
