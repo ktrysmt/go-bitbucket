@@ -81,6 +81,42 @@ func main() {
 }
 ```
 
+### write file content to a repository
+
+```go
+package main
+
+import (
+        "fmt"
+
+        "github.com/ktrysmt/go-bitbucket"
+)
+
+func main() {
+        c := bitbucket.NewBasicAuth("username", "password")
+
+        opt := &bitbucket.RepositoryRawFileWriteOptions{
+                Owner:    "your-team",
+                RepoSlug: "awesome-project",
+                Branch:   "main",
+                Message:  "Add new file",
+                Files: []bitbucket.RepositoryRawFileContent{
+                        {
+                                Path:    "path/to/file.txt",
+                                Content: "Hello, World!",
+                        },
+                },
+        }
+
+        err := c.Repositories.Repository.WriteFileRaw(opt)
+        if err != nil {
+                panic(err)
+        }
+
+        fmt.Println("File written successfully")
+}
+```
+
 ## FAQ
 
 ### Support Bitbucket API v1.0 ?

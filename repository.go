@@ -372,6 +372,36 @@ func (r *Repository) GetFileBlob(ro *RepositoryBlobOptions) (*RepositoryBlob, er
 	return &blob, nil
 }
 
+// WriteFileBlob writes files to a repository using multipart file upload.
+// This method reads actual files from disk and uploads them to the repository.
+// For writing raw content without files on disk, use WriteFileRaw instead.
+//
+// Example usage:
+//
+//	opt := &bitbucket.RepositoryBlobWriteOptions{
+//		Owner:    "workspace",
+//		RepoSlug: "repo",
+//		FileName: "/path/to/local/file.txt",
+//		Message:  "Add new file",
+//		Author:   "User Name <user@example.com>",
+//		Branch:   "main",
+//	}
+//	err := client.Repositories.Repository.WriteFileBlob(opt)
+//
+// For multiple files:
+//
+//	opt := &bitbucket.RepositoryBlobWriteOptions{
+//		Owner:    "workspace",
+//		RepoSlug: "repo",
+//		Files: []bitbucket.File{
+//			{Path: "/path/to/local/file1.txt", Name: "file1.txt"},
+//			{Path: "/path/to/local/file2.txt", Name: "file2.txt"},
+//		},
+//		Message: "Add multiple files",
+//		Branch:  "main",
+//	}
+//	err := client.Repositories.Repository.WriteFileBlob(opt)
+
 func (r *Repository) WriteFileBlob(ro *RepositoryBlobWriteOptions) error {
 	m := make(map[string]string)
 
@@ -400,6 +430,53 @@ func (r *Repository) WriteFileBlob(ro *RepositoryBlobWriteOptions) error {
 	urlStr := r.c.requestUrl("/repositories/%s/%s/src", ro.Owner, ro.RepoSlug)
 
 	_, err := r.c.executeFileUpload("POST", urlStr, ro.Files, ro.FilesToDelete, m, ro.ctx)
+	return err
+}
+
+// WriteFileRaw writes raw file content to a repository using URL-encoded format.
+// Unlike WriteFileBlob which requires actual files on disk, this method accepts
+// raw content directly, making it useful when you have content in memory.
+//
+// The Bitbucket API accepts file content in URL-encoded format where the file path
+// is the key and the content is the value.
+//
+// Example usage:
+//
+//	opt := &bitbucket.RepositoryRawFileWriteOptions{
+//		Owner:    "workspace",
+//		RepoSlug: "repo",
+//		Files: []bitbucket.RepositoryRawFileContent{
+//			{Path: "/path/to/file.txt", Content: "Hello, World!"},
+//		},
+//		Message: "Add new file",
+//		Author:  "User Name <user@example.com>",
+//		Branch:  "main",
+//	}
+//	err := client.Repositories.Repository.WriteFileRaw(opt)
+func (r *Repository) WriteFileRaw(ro *RepositoryRawFileWriteOptions) error {
+	params := make(map[string]string)
+
+	if ro.Author != "" {
+		params["author"] = ro.Author
+	}
+
+	if ro.Message != "" {
+		params["message"] = ro.Message
+	}
+
+	if ro.Branch != "" {
+		params["branch"] = ro.Branch
+	}
+
+	// Convert file content to map[path]content
+	files := make(map[string]string)
+	for _, file := range ro.Files {
+		files[file.Path] = file.Content
+	}
+
+	urlStr := r.c.requestUrl("/repositories/%s/%s/src", ro.Owner, ro.RepoSlug)
+
+	_, err := r.c.executeFormURLEncoded("POST", urlStr, files, ro.FilesToDelete, params, ro.ctx)
 	return err
 }
 
