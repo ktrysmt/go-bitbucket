@@ -2,6 +2,8 @@ package bitbucket
 
 import (
 	"bytes"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -58,6 +60,7 @@ type auth struct {
 	user, password string
 	token          oauth2.Token
 	bearerToken    string
+	caCert         []byte
 }
 
 type Response struct {
@@ -180,8 +183,18 @@ func NewOAuthbearerToken(t string) (*Client, error) {
 	return injectClient(a)
 }
 
+func NewOAuthbearerTokenWithCaCert(t string, c []byte) (*Client, error) {
+	a := &auth{bearerToken: t, caCert: c}
+	return injectClient(a)
+}
+
 func NewBasicAuth(u, p string) (*Client, error) {
 	a := &auth{user: u, password: p}
+	return injectClient(a)
+}
+
+func NewBasicAuthWithCaCert(u, p string, c []byte) (*Client, error) {
+	a := &auth{user: u, password: p, caCert: c}
 	return injectClient(a)
 }
 
@@ -212,7 +225,20 @@ func injectClient(a *auth) (*Client, error) {
 	c.User = &User{c: c}
 	c.Teams = &Teams{c: c}
 	c.Workspaces = &Workspace{c: c, Repositories: c.Repositories, Permissions: &Permission{c: c}}
-	c.HttpClient = new(http.Client)
+	if a.caCert != nil {
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(a.caCert)
+		client := &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					RootCAs: caCertPool,
+				},
+			},
+		}
+		c.HttpClient = client
+	} else {
+		c.HttpClient = new(http.Client)
+	}
 	return c, nil
 }
 
