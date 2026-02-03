@@ -42,35 +42,7 @@ func TestAddGetandDeletePipelineVariableAccess(t *testing.T) {
 		Secured:  false,
 	}
 
-	res, err := c.Repositories.Repository.AddPipelineVariable(variable)
-	if err != nil {
-		t.Error(err)
-	}
-
-	opt := &bitbucket.RepositoryPipelineVariableOptions{
-		Owner:    workspace,
-		RepoSlug: repo,
-		Uuid:     res.Uuid,
-	}
-
-	optd := &bitbucket.RepositoryPipelineVariableDeleteOptions{
-		Owner:    workspace,
-		RepoSlug: repo,
-		Uuid:     res.Uuid,
-	}
-
-	res, err = c.Repositories.Repository.GetPipelineVariable(opt)
-	if err != nil {
-		t.Error(err)
-	}
-	assert.Equal(t, opt.Uuid, res.Uuid)
-
-	// On success the delete API doesn't return any content (HTTP status 204)
-	_, err = c.Repositories.Repository.DeletePipelineVariable(optd)
-	if err != nil {
-		t.Error(err)
-	}
-
+	testApiCalls(t, c, variable, workspace, repo)
 }
 
 func TestAddGetandDeletePipelineVariableAccessTokenCaCert(t *testing.T) {
@@ -106,7 +78,11 @@ func TestAddGetandDeletePipelineVariableAccessTokenCaCert(t *testing.T) {
 		Secured:  false,
 	}
 
-	res, err := c.Repositories.Repository.AddPipelineVariable(variable)
+	testApiCalls(t, c, variable, workspace, repo)
+}
+
+func testApiCalls(t *testing.T, c *bitbucket.Client, v *bitbucket.RepositoryPipelineVariableOptions, workspace, repo string) {
+	res, err := c.Repositories.Repository.AddPipelineVariable(v)
 	if err != nil {
 		t.Error(err)
 	}
@@ -134,5 +110,4 @@ func TestAddGetandDeletePipelineVariableAccessTokenCaCert(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-
 }
