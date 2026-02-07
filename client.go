@@ -2,6 +2,8 @@ package bitbucket
 
 import (
 	"bytes"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -58,6 +60,7 @@ type auth struct {
 	user, password string
 	token          oauth2.Token
 	bearerToken    string
+	caCert         []byte
 }
 
 type Response struct {
@@ -180,8 +183,18 @@ func NewOAuthbearerToken(t string) (*Client, error) {
 	return injectClient(a)
 }
 
+func NewOAuthbearerTokenWithCaCert(t string, c []byte) (*Client, error) {
+	a := &auth{bearerToken: t, caCert: c}
+	return injectClient(a)
+}
+
 func NewBasicAuth(u, p string) (*Client, error) {
 	a := &auth{user: u, password: p}
+	return injectClient(a)
+}
+
+func NewBasicAuthWithCaCert(u, p string, c []byte) (*Client, error) {
+	a := &auth{user: u, password: p, caCert: c}
 	return injectClient(a)
 }
 
@@ -212,7 +225,30 @@ func injectClient(a *auth) (*Client, error) {
 	c.User = &User{c: c}
 	c.Teams = &Teams{c: c}
 	c.Workspaces = &Workspace{c: c, Repositories: c.Repositories, Permissions: &Permission{c: c}}
-	c.HttpClient = new(http.Client)
+	if a.caCert != nil {
+		// 1. If the system standard cert pool exists, create a copy that can be modified/
+		caCertPool, err := x509.SystemCertPool()
+		if err != nil {
+			// The system standard cert pool does not exist so create a new empty one.
+			caCertPool = x509.NewCertPool()
+		}
+		// 2. Append the custom CA cert to the pool
+		if success := caCertPool.AppendCertsFromPEM(a.caCert); !success {
+			return nil, fmt.Errorf("unable to append CA Certs to cert pool: %w", err)
+		}
+		// 3. Create a new http.Transport
+		newTransport := &http.Transport{
+			TLSClientConfig: &tls.Config{
+				RootCAs: caCertPool,
+			},
+		}
+		// 4. Assign the new transport the http.DefaultTransport
+		http.DefaultTransport = newTransport
+		// 5. Create a new http client with the modified default transport
+		c.HttpClient = &http.Client{Transport: http.DefaultTransport}
+	} else {
+		c.HttpClient = new(http.Client)
+	}
 	return c, nil
 }
 
