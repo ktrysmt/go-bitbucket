@@ -149,6 +149,10 @@ func TestRepositoryUpdateForkPolicy(t *testing.T) {
 		t.Error("The repository is not found.", err)
 	}
 
+	if res.Is_private != true {
+		t.Errorf("The repository: %s is public. This test case can only run against private repositories ones.", res.Full_name)
+	}
+
 	forkPolicy := "allow_forks"
 	opt = &bitbucket.RepositoryOptions{
 		Uuid:       res.Uuid,
@@ -424,6 +428,34 @@ func TestGetRepositoryRefs(t *testing.T) {
 		Target:   bitbucket.RepositoryBranchTarget{Hash: "master"},
 	}
 
+	getOps := &bitbucket.RepositoryBranchOptions{
+		Owner:      opt.Owner,
+		RepoSlug:   opt.RepoSlug,
+		BranchName: opt.Name,
+	}
+
+	delOps := &bitbucket.RepositoryBranchDeleteOptions{
+		Owner:    opt.Owner,
+		RepoSlug: opt.RepoSlug,
+		RefName:  opt.Name,
+	}
+
+	branchList, err := c.Repositories.Repository.ListBranches(getOps)
+	if err != nil {
+		t.Error(err)
+	}
+
+	// If the branch being created already exists, delete it.
+	branches := branchList.Branches
+	for _, branch := range branches {
+		if branch.Name == opt.Name {
+			err = c.Repositories.Repository.DeleteBranch(delOps)
+			if err != nil {
+				t.Errorf("Cannot delete branch %s: %s", opt.Name, err.Error())
+			}
+		}
+	}
+
 	_, err = c.Repositories.Repository.CreateBranch(opt)
 	if err != nil {
 		t.Error("Could not create new branch", err)
@@ -463,6 +495,12 @@ func TestGetRepositoryRefs(t *testing.T) {
 
 	if !(expected.n == "TestGetRepoRefsBranch" && expected.t == "branch") {
 		t.Error("Could not list refs/branch that was created in test setup")
+	}
+
+	// Cleanup
+	err = c.Repositories.Repository.DeleteBranch(delOps)
+	if err != nil {
+		t.Errorf("Cannot delete branch %s: %s", opt.Name, err.Error())
 	}
 }
 

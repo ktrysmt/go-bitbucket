@@ -35,6 +35,30 @@ func apiBaseUrl() (*url.URL, error) {
 	return url.Parse(ev)
 }
 
+func appendCaCerts(caCerts []byte) (*http.Client, error) {
+	// 1. If the system standard cert pool exists, create a copy that can be modified.
+	caCertPool, err := x509.SystemCertPool()
+	// The system cert pool does not exist, so we are going to create a new one.
+	if err != nil {
+		// The system standard cert pool does not exist so create a new empty one.
+		caCertPool = x509.NewCertPool()
+	}
+	// 2. Append the custom CA certs to the pool.
+	if success := caCertPool.AppendCertsFromPEM(caCerts); !success {
+		return nil, fmt.Errorf("unable to append CA Certs to cert pool: %w", err)
+	}
+	// 3. Create a new http.Transport
+	newTransport := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			RootCAs: caCertPool,
+		},
+	}
+	// 4. Assign the new transport the http.DefaultTransport
+	http.DefaultTransport = newTransport
+	// 5. Create a new http client with the modified default transport
+	return &http.Client{Transport: http.DefaultTransport}, nil
+}
+
 type Client struct {
 	Auth         *auth
 	Users        *Users
@@ -60,7 +84,7 @@ type auth struct {
 	user, password string
 	token          oauth2.Token
 	bearerToken    string
-	caCert         []byte
+	caCerts        []byte
 }
 
 type Response struct {
@@ -184,7 +208,7 @@ func NewOAuthbearerToken(t string) (*Client, error) {
 }
 
 func NewOAuthbearerTokenWithCaCert(t string, c []byte) (*Client, error) {
-	a := &auth{bearerToken: t, caCert: c}
+	a := &auth{bearerToken: t, caCerts: c}
 	return injectClient(a)
 }
 
@@ -194,7 +218,7 @@ func NewBasicAuth(u, p string) (*Client, error) {
 }
 
 func NewBasicAuthWithCaCert(u, p string, c []byte) (*Client, error) {
-	a := &auth{user: u, password: p, caCert: c}
+	a := &auth{user: u, password: p, caCerts: c}
 	return injectClient(a)
 }
 
@@ -225,27 +249,11 @@ func injectClient(a *auth) (*Client, error) {
 	c.User = &User{c: c}
 	c.Teams = &Teams{c: c}
 	c.Workspaces = &Workspace{c: c, Repositories: c.Repositories, Permissions: &Permission{c: c}}
-	if a.caCert != nil {
-		// 1. If the system standard cert pool exists, create a copy that can be modified/
-		caCertPool, err := x509.SystemCertPool()
+	if a.caCerts != nil {
+		c.HttpClient, err = appendCaCerts(a.caCerts)
 		if err != nil {
-			// The system standard cert pool does not exist so create a new empty one.
-			caCertPool = x509.NewCertPool()
+			return nil, err
 		}
-		// 2. Append the custom CA cert to the pool
-		if success := caCertPool.AppendCertsFromPEM(a.caCert); !success {
-			return nil, fmt.Errorf("unable to append CA Certs to cert pool: %w", err)
-		}
-		// 3. Create a new http.Transport
-		newTransport := &http.Transport{
-			TLSClientConfig: &tls.Config{
-				RootCAs: caCertPool,
-			},
-		}
-		// 4. Assign the new transport the http.DefaultTransport
-		http.DefaultTransport = newTransport
-		// 5. Create a new http client with the modified default transport
-		c.HttpClient = &http.Client{Transport: http.DefaultTransport}
 	} else {
 		c.HttpClient = new(http.Client)
 	}

@@ -61,11 +61,11 @@ func TestAddGetandDeletePipelineVariableAccessTokenCaCert(t *testing.T) {
 		t.Errorf("BITBUCKET_TEST_REPOSLUG is unset")
 	}
 
-	caCert, err := fetchCACerts("api.bitbucket.org", "443")
+	caCerts, err := FetchCACerts("api.bitbucket.org", "443")
 	if err != nil {
 		t.Error(err)
 	}
-	c, err := bitbucket.NewOAuthbearerTokenWithCaCert(accessToken, caCert)
+	c, err := bitbucket.NewOAuthbearerTokenWithCaCert(accessToken, caCerts)
 	if err != nil {
 		t.Error(err)
 	}

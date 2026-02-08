@@ -9,7 +9,7 @@ import (
 )
 
 // fetchCACerts connects to the given host:port and returns the CA certs in PEM format
-func fetchCACerts(host string, port string) ([]byte, error) {
+func FetchCACerts(host string, port string) ([]byte, error) {
 	// Prepare TLS configuration (skip verification so we can inspect all certs)
 	tlsConfig := &tls.Config{
 		InsecureSkipVerify: true, // We only want to fetch certs, not verify

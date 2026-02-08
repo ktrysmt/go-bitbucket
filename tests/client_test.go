@@ -7,8 +7,6 @@ import (
 	"github.com/ktrysmt/go-bitbucket"
 )
 
-const DUMMY_CA_CERT = "-----BEGIN CERTIFICATE-----IxMDM1MV0ZDJkZjM...-----END CERTIFICATE-----"
-
 func TestClientNewBasicAuth(t *testing.T) {
 
 	c, err := bitbucket.NewBasicAuth("example", "password")
@@ -25,7 +23,12 @@ func TestClientNewBasicAuth(t *testing.T) {
 
 func TestClientNewBasicAuthWithCaCert(t *testing.T) {
 
-	c, err := bitbucket.NewBasicAuthWithCaCert("example", "password", []byte(DUMMY_CA_CERT))
+	caCerts, err := FetchCACerts("api.bitbucket.org", "443")
+	if err != nil {
+		t.Error(err)
+	}
+
+	c, err := bitbucket.NewBasicAuthWithCaCert("example", "password", caCerts)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -52,7 +55,12 @@ func TestClientWithBearerToken(t *testing.T) {
 
 func TestClientWithBearerTokenWithCaCert(t *testing.T) {
 
-	c, err := bitbucket.NewOAuthbearerTokenWithCaCert("token", []byte(DUMMY_CA_CERT))
+	caCerts, err := FetchCACerts("api.bitbucket.org", "443")
+	if err != nil {
+		t.Error(err)
+	}
+
+	c, err := bitbucket.NewOAuthbearerTokenWithCaCert("token", caCerts)
 	if err != nil {
 		t.Fatal(err)
 	}
