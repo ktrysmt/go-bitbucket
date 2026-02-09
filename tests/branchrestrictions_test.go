@@ -20,7 +20,6 @@ func TestBranchRestrictionsKindPush(t *testing.T) {
 			Pattern:  "develop",
 			RepoSlug: repo,
 			Kind:     "push",
-			Users:    []string{user},
 		}
 		res, err := c.Repositories.BranchRestrictions.Create(opt)
 		if err != nil {
@@ -108,7 +107,6 @@ func TestBranchRestrictionsGets(t *testing.T) {
 				Pattern:  fmt.Sprintf("branch-restrictions-gets-%d", i),
 				RepoSlug: repo,
 				Kind:     "push",
-				Users:    []string{user},
 			}
 			res, err := c.Repositories.BranchRestrictions.Create(opt)
 			if err != nil {

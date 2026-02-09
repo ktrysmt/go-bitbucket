@@ -26,6 +26,10 @@ func TestUserSSHKey(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	userProfile, err := c.User.Profile()
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	var sshKeyResourceUuid string
 
@@ -35,7 +39,7 @@ func TestUserSSHKey(t *testing.T) {
 		keyOptions := &bitbucket.SSHKeyOptions{
 			Label: label,
 			Key:   key,
-			Owner: user,
+			Owner: userProfile.Uuid,
 		}
 		sshUserKey, err := c.Users.SSHKeys.Create(keyOptions)
 		if err != nil {
@@ -48,7 +52,7 @@ func TestUserSSHKey(t *testing.T) {
 	})
 	t.Run("get", func(t *testing.T) {
 		keyOptions := &bitbucket.SSHKeyOptions{
-			Owner: user,
+			Owner: userProfile.Uuid,
 			Uuid:  sshKeyResourceUuid,
 		}
 		sshKey, err := c.Users.SSHKeys.Get(keyOptions)
@@ -71,7 +75,7 @@ func TestUserSSHKey(t *testing.T) {
 
 	t.Run("delete", func(t *testing.T) {
 		keyOptions := &bitbucket.SSHKeyOptions{
-			Owner: user,
+			Owner: userProfile.Uuid,
 			Uuid:  sshKeyResourceUuid,
 		}
 		_, err := c.Users.SSHKeys.Delete(keyOptions)
