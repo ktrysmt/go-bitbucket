@@ -53,17 +53,17 @@ func TestMockPullRequests_List_Error(t *testing.T) {
 	mockPullRequestInst := mockgen.NewMockpullrequests(ctrl)
 	expectedMockError := errors.New("Not Found")
 
-	inPullRequestOps := go_bitbucket.PullRequestsOptions{
+inPullRequestOpts := go_bitbucket.PullRequestsOptions{
 		Owner:    "test-workspace",
 		RepoSlug: "test-repo",
 	}
 
 	mockPullRequestInst.EXPECT().
-		List(inPullRequestOps).
+		List(inPullRequestOpts).
 		Times(1).
 		Return(nil, expectedMockError)
 
-	actualPullRequestList, actualErr := mockPullRequestInst.List(inPullRequestOps)
+	actualPullRequestList, actualErr := mockPullRequestInst.List(inPullRequestOpts)
 
 	assert.NotNil(t, actualErr)
 	assert.Nil(t, actualPullRequestList, "The returned list of pull requests should be nil, but got: %v", actualPullRequestList)
