@@ -28,7 +28,7 @@ func TestUserSSHKey(t *testing.T) {
 	}
 	userProfile, err := c.User.Profile()
 	if err != nil {
-		t.Fatal(err)
+		t.Error(err)
 	}
 
 	var sshKeyResourceUuid string
