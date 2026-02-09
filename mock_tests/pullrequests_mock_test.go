@@ -45,7 +45,7 @@ func TestMockPullRequests_List_Success(t *testing.T) {
 	assert.Equal(t, expectedPullRequestList, actualPullRequestList, "Actual and Expected pull request lists should be equal.")
 }
 
-func TestMockPullRequests_Gets_Error(t *testing.T) {
+func TestMockPullRequests_List_Error(t *testing.T) {
 	t.Parallel()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
