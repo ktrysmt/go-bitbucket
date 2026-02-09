@@ -113,7 +113,7 @@ export BITBUCKET_TEST_REPOSLUG=<your_repo_name>
 And just run;
 
 ```sh
-make test
+make test/e2e
 ```
 
 If you want to test individually;
@@ -122,6 +122,15 @@ If you want to test individually;
 go test -v ./tests/diff_test.go
 ```
 
+Mock tests;
+
+```sh
+make test/mock
+```
+Individually;
+```sh
+go test ./mock_tests/repository_mock_test.go
+```
 
 ## License
 

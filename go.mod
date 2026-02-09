@@ -2,10 +2,13 @@ module github.com/ktrysmt/go-bitbucket
 
 go 1.24.0
 
+replace github.com/ktrysmt/go-bitbucket => ./
+
 require (
 	github.com/k0kubun/pp v3.0.1+incompatible
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/stretchr/testify v1.11.1
+	go.uber.org/mock v0.6.0
 	golang.org/x/net v0.49.0
 	golang.org/x/oauth2 v0.34.0
 )
