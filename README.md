@@ -132,6 +132,10 @@ Individually;
 go test ./mock_tests/repository_mock_test.go
 ```
 
+For documented workflow of the go:qmock test structure in ```/mock_tests/repository_mock_test.go``` refer to;
+- TestMockRepositoryPipelineVariables_List_Success
+- TestMockRepositoryPipelineVariables_List_Error
+
 ## License
 
 [Apache License 2.0](./LICENSE)

@@ -151,21 +151,7 @@ func TestMockRepositoryPipelineVariable_Update_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockRepositoryGetInst := mockgen.NewMockrepository(ctrl)
-	mockRepositoryUpdateInst := mockgen.NewMockrepository(ctrl)
-
-	inPipelineVarGetOpts := go_bitbucket.RepositoryPipelineVariableOptions{
-		Owner:    "testworkspace",
-		RepoSlug: "testrepo",
-		Uuid:     "6b98a093-21e3-4e15-ad48-f06aad1d2399",
-	}
-
-	expectedOrigPipelineGetVar := &go_bitbucket.PipelineVariable{
-		Type:  "pipeline_variable",
-		Uuid:  "6b98a093-21e3-4e15-ad48-f06aad1d2399",
-		Key:   "test-key",
-		Value: "test-value-orig",
-	}
+	mockRepositoryInst := mockgen.NewMockrepository(ctrl)
 
 	inPipelineVarUpdateOpts := go_bitbucket.RepositoryPipelineVariableOptions{
 		Owner:    "testworkspace",
@@ -180,22 +166,12 @@ func TestMockRepositoryPipelineVariable_Update_Success(t *testing.T) {
 		Value: "test-value-new",
 	}
 
-	mockRepositoryGetInst.EXPECT().
-		GetPipelineVariable(inPipelineVarGetOpts).
-		Return(expectedOrigPipelineGetVar, nil).
-		Times(1)
-
-	actualPipelineGetVar, actualGetErr := mockRepositoryGetInst.GetPipelineVariable(inPipelineVarGetOpts)
-
-	assert.Nil(t, actualGetErr, "No error should have been thrown, but got: %v", actualGetErr)
-	assert.Equal(t, expectedOrigPipelineGetVar, actualPipelineGetVar)
-
-	mockRepositoryUpdateInst.EXPECT().
+	mockRepositoryInst.EXPECT().
 		UpdatePipelineVariable(inPipelineVarUpdateOpts).
 		Return(expectedNewPipelineUpdateVar, nil).
 		Times(1)
 
-	actualPipelineUpdateVar, actualUpdateErr := mockRepositoryUpdateInst.UpdatePipelineVariable(inPipelineVarUpdateOpts)
+	actualPipelineUpdateVar, actualUpdateErr := mockRepositoryInst.UpdatePipelineVariable(inPipelineVarUpdateOpts)
 
 	assert.Nil(t, actualUpdateErr, "No error should have been thrown, but got: %v", actualUpdateErr)
 	assert.Equal(t, expectedNewPipelineUpdateVar, actualPipelineUpdateVar)
@@ -206,22 +182,8 @@ func TestMockRepositoryPipelineVariable_Update_Error(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockRepositoryGetInst := mockgen.NewMockrepository(ctrl)
-	mockRepositoryUpdateInst := mockgen.NewMockrepository(ctrl)
+	mockRepositoryInst := mockgen.NewMockrepository(ctrl)
 	expectedMockUpdateError := errors.New("Not Found")
-
-	inPipelineVarGetOpts := go_bitbucket.RepositoryPipelineVariableOptions{
-		Owner:    "testworkspace",
-		RepoSlug: "testrepo",
-		Uuid:     "6b98a093-21e3-4e15-ad48-f06aad1d2399",
-	}
-
-	expectedOrigPipelineGetVar := &go_bitbucket.PipelineVariable{
-		Type:  "pipeline_variable",
-		Uuid:  "6b98a093-21e3-4e15-ad48-f06aad1d2399",
-		Key:   "test-key",
-		Value: "test-value-orig",
-	}
 
 	inPipelineVarUpdateOpts := go_bitbucket.RepositoryPipelineVariableOptions{
 		Owner:    "testworkspace",
@@ -229,22 +191,12 @@ func TestMockRepositoryPipelineVariable_Update_Error(t *testing.T) {
 		Uuid:     "6b98a093-21e3-4e15-ad48-f06aad1d2399",
 	}
 
-	mockRepositoryGetInst.EXPECT().
-		GetPipelineVariable(inPipelineVarGetOpts).
-		Return(expectedOrigPipelineGetVar, nil).
-		Times(1)
-
-	actualPipelineGetVar, actualGetErr := mockRepositoryGetInst.GetPipelineVariable(inPipelineVarGetOpts)
-
-	assert.Nil(t, actualGetErr, "No error should have been thrown, but got: %v", actualGetErr)
-	assert.Equal(t, expectedOrigPipelineGetVar, actualPipelineGetVar)
-
-	mockRepositoryUpdateInst.EXPECT().
+	mockRepositoryInst.EXPECT().
 		UpdatePipelineVariable(inPipelineVarUpdateOpts).
 		Return(nil, expectedMockUpdateError).
 		Times(1)
 
-	actualPipelineUpdateVar, actualUpdateErr := mockRepositoryUpdateInst.UpdatePipelineVariable(inPipelineVarUpdateOpts)
+	actualPipelineUpdateVar, actualUpdateErr := mockRepositoryInst.UpdatePipelineVariable(inPipelineVarUpdateOpts)
 
 	assert.NotNil(t, actualUpdateErr, "An error should been thrown")
 	assert.Nil(t, actualPipelineUpdateVar, "An error should have been thrown, but got: %v", actualPipelineUpdateVar)

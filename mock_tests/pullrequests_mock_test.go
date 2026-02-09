@@ -53,8 +53,8 @@ func TestMockPullRequests_List_Error(t *testing.T) {
 	mockPullRequestInst := mockgen.NewMockpullrequests(ctrl)
 	expectedMockError := errors.New("Not Found")
 
-inPullRequestOpts := go_bitbucket.PullRequestsOptions{
-		Owner:    "test-workspace",
+	inPullRequestOpts := go_bitbucket.PullRequestsOptions{
+		Owner:    "test?::=workspace",
 		RepoSlug: "test-repo",
 	}
 

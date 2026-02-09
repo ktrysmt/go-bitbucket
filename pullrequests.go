@@ -38,7 +38,7 @@ func (p *PullRequests) GetCommits(po *PullRequestsOptions) (interface{}, error) 
 }
 
 func (p *PullRequests) List(po *PullRequestsOptions) (interface{}, error) {
-	urlStr := p.c.GetApiBaseURL() + "/repositories/" + po.Owner + "/" + po.RepoSlug + "/pullrequests/"
+	urlStr := p.c.GetApiBaseURL() + "/repositories/" + url.PathEscape(po.Owner) + "/" + url.PathEscape(po.RepoSlug) + "/pullrequests/"
 
 	if po.States != nil && len(po.States) != 0 {
 		parsed, err := url.Parse(urlStr)
