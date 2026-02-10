@@ -40,16 +40,33 @@ func TestEndToEndDeploymentVariables(t *testing.T) {
 		RepoSlug: repo,
 	}
 
+	// Make sure that the Test environment actually exists
+	expectedEnvName := "Test"
 	environments, err := c.Repositories.Repository.ListEnvironments(environmentOpt)
 	if err != nil {
 		t.Error(err)
 	}
 
-	if environments == nil {
-		t.Error("list didn't return any environments")
+	if found, _ := findEnvironmentByName(expectedEnvName, environments); found == nil {
+
+		envOptAdd := &bitbucket.RepositoryEnvironmentOptions{
+			Owner:           owner,
+			RepoSlug:        repo,
+			Name:            expectedEnvName,
+			EnvironmentType: bitbucket.Test,
+		}
+
+		_, err := c.Repositories.Repository.AddEnvironment(envOptAdd)
+		if err != nil {
+			t.Error(err)
+		}
+		environments, err = c.Repositories.Repository.ListEnvironments(environmentOpt)
+		if err != nil {
+			t.Error(err)
+		}
 	}
 
-	environment, err := findEnvironmentByName("Test", environments)
+	environment, err := findEnvironmentByName(expectedEnvName, environments)
 	if err != nil {
 		t.Error(err)
 	}
@@ -106,6 +123,14 @@ func TestEndToEndDeploymentVariables(t *testing.T) {
 	if err == nil {
 		t.Error("updated variable was not deleted")
 	}
+
+	envDelOpts := &bitbucket.RepositoryEnvironmentDeleteOptions{
+		Owner:    owner,
+		RepoSlug: repo,
+		Uuid:     environment.Uuid,
+	}
+
+	_, err = c.Repositories.Repository.DeleteEnvironment(envDelOpts)
 }
 
 func findEnvironmentByName(name string, e *bitbucket.Environments) (*bitbucket.Environment, error) {

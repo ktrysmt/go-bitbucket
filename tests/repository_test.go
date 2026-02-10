@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	_ "github.com/k0kubun/pp"
-
 	"github.com/ktrysmt/go-bitbucket"
 )
 
@@ -147,6 +146,10 @@ func TestRepositoryUpdateForkPolicy(t *testing.T) {
 	res, err := c.Repositories.Repository.Get(opt)
 	if err != nil {
 		t.Error("The repository is not found.", err)
+	}
+
+	if res.Is_private != true {
+		t.Errorf("The repository: %s is public. This test case can only run against private repositories ones.", res.Full_name)
 	}
 
 	forkPolicy := "allow_forks"
@@ -424,6 +427,34 @@ func TestGetRepositoryRefs(t *testing.T) {
 		Target:   bitbucket.RepositoryBranchTarget{Hash: "master"},
 	}
 
+	getOps := &bitbucket.RepositoryBranchOptions{
+		Owner:      opt.Owner,
+		RepoSlug:   opt.RepoSlug,
+		BranchName: opt.Name,
+	}
+
+	delOps := &bitbucket.RepositoryBranchDeleteOptions{
+		Owner:    opt.Owner,
+		RepoSlug: opt.RepoSlug,
+		RefName:  opt.Name,
+	}
+
+	branchList, err := c.Repositories.Repository.ListBranches(getOps)
+	if err != nil {
+		t.Error(err)
+	}
+
+	// If the branch being created already exists, delete it.
+	branches := branchList.Branches
+	for _, branch := range branches {
+		if branch.Name == opt.Name {
+			err = c.Repositories.Repository.DeleteBranch(delOps)
+			if err != nil {
+				t.Errorf("Cannot delete branch %s: %s", opt.Name, err.Error())
+			}
+		}
+	}
+
 	_, err = c.Repositories.Repository.CreateBranch(opt)
 	if err != nil {
 		t.Error("Could not create new branch", err)
@@ -463,6 +494,12 @@ func TestGetRepositoryRefs(t *testing.T) {
 
 	if !(expected.n == "TestGetRepoRefsBranch" && expected.t == "branch") {
 		t.Error("Could not list refs/branch that was created in test setup")
+	}
+
+	// Cleanup
+	err = c.Repositories.Repository.DeleteBranch(delOps)
+	if err != nil {
+		t.Errorf("Cannot delete branch %s: %s", opt.Name, err.Error())
 	}
 }
 
@@ -798,12 +835,12 @@ func TestListBranches(t *testing.T) {
 
 	response, err := client.Repositories.Repository.ListBranches(opts)
 	if err != nil {
-		t.Fatalf("ListBranches() returned an error: %v", err)
+		t.Errorf("ListBranches() returned an error: %v", err)
 	}
 	if response == nil {
-		t.Fatal("Cannot get list branches")
+		t.Error("Cannot get list branches")
 	}
 	if response.Size == 0 {
-		t.Fatalf("Expected to find at least one branch for query '%s', but found none", opts.Query)
+		t.Errorf("Expected to find at least one branch for query '%s', but found none", opts.Query)
 	}
 }

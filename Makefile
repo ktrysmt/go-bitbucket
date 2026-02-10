@@ -13,6 +13,9 @@ endif
 ifndef BITBUCKET_TEST_REPOSLUG
 	$(error `BITBUCKET_TEST_REPOSLUG` is not set)
 endif
+ifndef BITBUCKET_TEST_ACCESS_TOKEN
+	$(error `BITBUCKET_TEST_ACCESS_TOKEN` is not set)
+endif
 
 test/e2e: env ## run go test all
 	go test -v ./tests
