@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	_ "github.com/k0kubun/pp"
-
 	"github.com/ktrysmt/go-bitbucket"
 )
 
@@ -842,6 +841,6 @@ func TestListBranches(t *testing.T) {
 		t.Error("Cannot get list branches")
 	}
 	if response.Size == 0 {
-		t.Error("Expected to find at least one branch for query '%s', but found none", opts.Query)
+		t.Errorf("Expected to find at least one branch for query '%s', but found none", opts.Query)
 	}
 }
