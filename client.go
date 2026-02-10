@@ -401,6 +401,40 @@ func (c *Client) executeFileUpload(method string, urlStr string, files []File, f
 
 }
 
+// executeFormURLEncoded executes an HTTP request with URL-encoded form data.
+// This is used for writing raw file content to a repository without needing actual files on disk.
+// The Bitbucket API accepts file content in the format: path=content (URL-encoded).
+func (c *Client) executeFormURLEncoded(method string, urlStr string, files map[string]string, filesToDelete []string, params map[string]string, ctx context.Context) (interface{}, error) {
+	data := url.Values{}
+
+	// Add file content (path=content format)
+	for path, content := range files {
+		data.Set(path, content)
+	}
+
+	// Add other parameters
+	for key, value := range params {
+		data.Set(key, value)
+	}
+
+	// Add files to delete
+	for _, filename := range filesToDelete {
+		data.Add("files", filename)
+	}
+
+	req, err := http.NewRequest(method, urlStr, strings.NewReader(data.Encode()))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	if ctx != nil {
+		req = req.WithContext(ctx)
+	}
+	c.authenticateRequest(req)
+	return c.doRequest(req, true)
+}
+
 func (c *Client) authenticateRequest(req *http.Request) {
 	if c.Auth.bearerToken != "" {
 		req.Header.Set("Authorization", "Bearer "+c.Auth.bearerToken)
