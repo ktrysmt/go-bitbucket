@@ -52,7 +52,7 @@ func TestMockRepositoryPipelineVariables_List_Success(t *testing.T) {
 
 	actualPipelineVars, actualErr := mockRepositoryInst.ListPipelineVariables(listPipelineVarsOpts)
 
-	assert.Nil(t, actualErr, "No errors should be thrown, but got: %v", actualErr)
+	assert.Nilf(t, actualErr, "No errors should be thrown, but got: %v", actualErr)
 	assert.GreaterOrEqual(t, actualPipelineVars.Size, 1)
 	assert.GreaterOrEqual(t, len(actualPipelineVars.Variables), 1)
 	assert.Equal(t, outPipelineVar, actualPipelineVars.Variables[0])
@@ -85,7 +85,7 @@ func TestMockRepositoryPipelineVariables_List_Error(t *testing.T) {
 
 	actualPipelineVars, actualErr := mockRepositoryInst.ListPipelineVariables(listPipelineVarsOpts)
 
-	assert.Nil(t, actualPipelineVars, "actualPipelineVars should have been nil, but got: %v", actualPipelineVars)
+	assert.Nilf(t, actualPipelineVars, "actualPipelineVars should have been nil, but got: %v", actualPipelineVars)
 	assert.NotNil(t, actualErr)
 	assert.Equal(t, expectedMockError.Error(), actualErr.Error())
 }
@@ -117,7 +117,7 @@ func TestMockRepositoryPipelineVariable_Get_Success(t *testing.T) {
 
 	actualPipelineVar, actualErr := mockRepositoryInst.GetPipelineVariable(inGetPipelineVarOpts)
 
-	assert.Nil(t, actualErr, "results should have been nil: %v", actualPipelineVar)
+	assert.Nilf(t, actualErr, "results should have been nil: %v", actualPipelineVar)
 	assert.Equal(t, expectedPipelineVar, actualPipelineVar)
 }
 
@@ -142,7 +142,7 @@ func TestMockRepositoryPipelineVariable_Get_Error(t *testing.T) {
 
 	actualPipelineVar, actualErr := mockRepositoryInst.GetPipelineVariable(inGetPipelineVarOpts)
 
-	assert.Nil(t, actualPipelineVar, "results should have been nil: %v", actualPipelineVar)
+	assert.Nilf(t, actualPipelineVar, "results should have been nil: %v", actualPipelineVar)
 	assert.NotNil(t, actualErr)
 }
 
@@ -173,7 +173,7 @@ func TestMockRepositoryPipelineVariable_Update_Success(t *testing.T) {
 
 	actualPipelineUpdateVar, actualUpdateErr := mockRepositoryInst.UpdatePipelineVariable(inPipelineVarUpdateOpts)
 
-	assert.Nil(t, actualUpdateErr, "No error should have been thrown, but got: %v", actualUpdateErr)
+	assert.Nilf(t, actualUpdateErr, "No error should have been thrown, but got: %v", actualUpdateErr)
 	assert.Equal(t, expectedNewPipelineUpdateVar, actualPipelineUpdateVar)
 }
 
@@ -199,5 +199,5 @@ func TestMockRepositoryPipelineVariable_Update_Error(t *testing.T) {
 	actualPipelineUpdateVar, actualUpdateErr := mockRepositoryInst.UpdatePipelineVariable(inPipelineVarUpdateOpts)
 
 	assert.NotNil(t, actualUpdateErr, "An error should been thrown")
-	assert.Nil(t, actualPipelineUpdateVar, "An error should have been thrown, but got: %v", actualPipelineUpdateVar)
+	assert.Nilf(t, actualPipelineUpdateVar, "An error should have been thrown, but got: %v", actualPipelineUpdateVar)
 }
