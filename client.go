@@ -47,14 +47,14 @@ func appendCaCerts(caCerts []byte) (*http.Client, error) {
 	if success := caCertPool.AppendCertsFromPEM(caCerts); !success {
 		return nil, fmt.Errorf("unable to append CA Certs to cert pool: %w", err)
 	}
-	// 3. Create a new http.Transport
-	newTransport := &http.Transport{
-		TLSClientConfig: &tls.Config{
-			RootCAs:    caCertPool,
-			MinVersion: tls.VersionTLS12,
-		},
+	// 3. Create a new http.Transport copying http.DefaultTransport
+	newTransport := http.DefaultTransport.(*http.Transport).Clone()
+	// 4. Append the custom CA certs to the new transport.
+	newTransport.TLSClientConfig = &tls.Config{
+		RootCAs:    caCertPool,
+		MinVersion: tls.VersionTLS12,
 	}
-	// 4. Create a new http client with the modified default transport
+	// 5. Create a new http client
 	return &http.Client{Transport: newTransport}, nil
 }
 
