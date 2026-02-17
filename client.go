@@ -266,15 +266,14 @@ func injectClient(a *auth) (*Client, error) {
 	} else {
 		bitbucketUrl, err := apiBaseUrlEnv()
 		if err != nil {
-			return nil, fmt.Errorf("unable to parse Bitbucket base Url from environment with "+
-				"`apiBaseUrlEnv`: %w", err)
+			return nil, fmt.Errorf("unable to parse Bitbucket base Url from environment: %w", err)
 		}
 		c.apiBaseURL = bitbucketUrl
 	}
 	if a.caCerts != nil {
 		httpClient, err := appendCaCerts(a.caCerts)
 		if err != nil {
-			return nil, fmt.Errorf("unable to create http client with passed in URL string and got: %w", err)
+			return nil, fmt.Errorf("unable to create http client with passed in CA certificates: %w", err)
 		}
 		c.HttpClient = httpClient
 	} else {

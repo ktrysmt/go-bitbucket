@@ -35,7 +35,7 @@ func checkOwnerRepoSet(t *testing.T) error {
 func checkAccessTokenSet(t *testing.T) error {
 	if accessTokenEnv == "" {
 		err := errors.New("BITBUCKET_TEST_ACCESS_TOKEN is empty.")
-		t.Error(err)
+		t.Fatal(err)
 		return err
 	}
 	return nil
@@ -44,8 +44,8 @@ func checkAccessTokenSet(t *testing.T) error {
 func checkBaseUrlStrSet(t *testing.T, baseUrlStr string) (string, error) {
 	if baseUrlStr == "" {
 		if baseUrlStrEnv == "" {
-			err := errors.New("BITBUCKET_TEST_BASE_URL is empty.")
-			t.Error(err)
+			err := errors.New("Bitbucket apiBaseUrl is not set and env: BITBUCKET_TEST_BASE_URL is empty.")
+			t.Fatal(err)
 			return "", err
 		}
 		baseUrlStr = baseUrlStrEnv
@@ -132,7 +132,7 @@ func SetupBearerTokenWithBaseUrlStrCaCert(t *testing.T, baseUrlStr string, caCer
 	if caCerts == nil {
 		parsedUrl, err := url.Parse(baseUrlStr)
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 			return nil, err
 		}
 		parsedPort := parsedUrl.Port()
@@ -142,7 +142,7 @@ func SetupBearerTokenWithBaseUrlStrCaCert(t *testing.T, baseUrlStr string, caCer
 		}
 		extractedCaCerts, err := FetchCACerts(parsedUrl.Hostname(), parsedPort)
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 			return nil, err
 		}
 		caCerts = extractedCaCerts

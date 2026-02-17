@@ -33,19 +33,20 @@ func TestAddGetandDeletePipelineVariableAccess(t *testing.T) {
 
 func TestAddGetandDeletePipelineVariableAccessWithTokenBaseUrlCaCert(t *testing.T) {
 
-	client0, err := SetupBearerTokenWithBaseUrlStrCaCert(t, "", nil)
+	client0, err := SetupBearerTokenWithBaseUrlStr(t, "")
 	if err != nil {
 		t.Error(err)
-		assert.Nil(t, err)
+		assert.Nilf(t, err, "expected no error returned, but got %v", err)
 	}
 
 	expectedBaseUrlStr := "https://api.bitbucket.org/2.0"
 	client1, err := SetupBearerTokenWithBaseUrlStrCaCert(t, expectedBaseUrlStr, nil)
 	if err != nil {
 		t.Error(err)
-		assert.Nil(t, err)
+		assert.Nilf(t, err, "expected no error returned, but got %v", err)
 	}
-	assert.Equal(t, client0.Auth, client1.Auth)
+	assert.Equal(t, client0.GetApiBaseURL(), expectedBaseUrlStr)
+	assert.Equal(t, client1.GetApiBaseURL(), expectedBaseUrlStr)
 
 	variable := &bitbucket.RepositoryPipelineVariableOptions{
 		Owner:    ownerEnv,
