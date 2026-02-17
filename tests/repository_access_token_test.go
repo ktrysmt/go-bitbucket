@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"os"
 	"testing"
 
 	"github.com/ktrysmt/go-bitbucket"
@@ -15,87 +14,65 @@ go test tests/repository_access_token_test.go tests/test_utils.go
 
 func TestAddGetandDeletePipelineVariableAccess(t *testing.T) {
 
-	accessToken := os.Getenv("BITBUCKET_TEST_ACCESS_TOKEN")
-	workspace := os.Getenv("BITBUCKET_TEST_OWNER")
-	repo := os.Getenv("BITBUCKET_TEST_REPOSLUG")
-
-	if accessToken == "" {
-		t.Errorf("BITBUCKET_TEST_ACCESS_TOKEN is unset")
-	}
-	if workspace == "" {
-		t.Errorf("BITBUCKET_TEST_OWNER is unset")
-	}
-	if repo == "" {
-		t.Errorf("BITBUCKET_TEST_REPOSLUG is unset")
-	}
-
-	c, err := bitbucket.NewOAuthbearerToken(accessToken)
+	client, err := SetupBearerToken(t)
 	if err != nil {
 		t.Error(err)
+		return
 	}
 
 	variable := &bitbucket.RepositoryPipelineVariableOptions{
-		Owner:    workspace,
-		RepoSlug: repo,
+		Owner:    ownerEnv,
+		RepoSlug: repoEnv,
 		Key:      "test_key_to_delete",
 		Value:    "Some value to delete",
 		Secured:  false,
 	}
 
-	testApiCalls(t, c, variable, workspace, repo)
+	testApiCalls(t, client, variable)
 }
 
-func TestAddGetandDeletePipelineVariableAccessTokenCaCert(t *testing.T) {
+func TestAddGetandDeletePipelineVariableAccessWithTokenBaseUrlCaCert(t *testing.T) {
 
-	accessToken := os.Getenv("BITBUCKET_TEST_ACCESS_TOKEN")
-	workspace := os.Getenv("BITBUCKET_TEST_OWNER")
-	repo := os.Getenv("BITBUCKET_TEST_REPOSLUG")
-
-	if accessToken == "" {
-		t.Errorf("BITBUCKET_TEST_ACCESS_TOKEN is unset")
-	}
-	if workspace == "" {
-		t.Errorf("BITBUCKET_TEST_OWNER is unset")
-	}
-	if repo == "" {
-		t.Errorf("BITBUCKET_TEST_REPOSLUG is unset")
-	}
-
-	caCerts, err := FetchCACerts("api.bitbucket.org", "443")
+	client0, err := SetupBearerTokenWithBaseUrlStrCaCert(t, "", nil)
 	if err != nil {
 		t.Error(err)
+		assert.Nil(t, err)
 	}
-	c, err := bitbucket.NewOAuthbearerTokenWithCaCert(accessToken, caCerts)
+
+	expectedBaseUrlStr := "https://api.bitbucket.org/2.0"
+	client1, err := SetupBearerTokenWithBaseUrlStrCaCert(t, expectedBaseUrlStr, nil)
 	if err != nil {
 		t.Error(err)
+		assert.Nil(t, err)
 	}
+	assert.Equal(t, client0.Auth, client1.Auth)
 
 	variable := &bitbucket.RepositoryPipelineVariableOptions{
-		Owner:    workspace,
-		RepoSlug: repo,
+		Owner:    ownerEnv,
+		RepoSlug: repoEnv,
 		Key:      "test_key_to_delete",
 		Value:    "Some value to delete",
 		Secured:  false,
 	}
 
-	testApiCalls(t, c, variable, workspace, repo)
+	testApiCalls(t, client0, variable)
 }
 
-func testApiCalls(t *testing.T, c *bitbucket.Client, v *bitbucket.RepositoryPipelineVariableOptions, workspace, repo string) {
+func testApiCalls(t *testing.T, c *bitbucket.Client, v *bitbucket.RepositoryPipelineVariableOptions) {
 	res, err := c.Repositories.Repository.AddPipelineVariable(v)
 	if err != nil {
 		t.Error(err)
 	}
 
 	opt := &bitbucket.RepositoryPipelineVariableOptions{
-		Owner:    workspace,
-		RepoSlug: repo,
+		Owner:    v.Owner,
+		RepoSlug: v.RepoSlug,
 		Uuid:     res.Uuid,
 	}
 
 	optd := &bitbucket.RepositoryPipelineVariableDeleteOptions{
-		Owner:    workspace,
-		RepoSlug: repo,
+		Owner:    v.Owner,
+		RepoSlug: v.RepoSlug,
 		Uuid:     res.Uuid,
 	}
 
@@ -109,5 +86,6 @@ func testApiCalls(t *testing.T, c *bitbucket.Client, v *bitbucket.RepositoryPipe
 	_, err = c.Repositories.Repository.DeletePipelineVariable(optd)
 	if err != nil {
 		t.Error(err)
+		assert.Nilf(t, err, "expected no error returned, but got %v", err)
 	}
 }
