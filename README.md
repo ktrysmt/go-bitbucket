@@ -114,13 +114,22 @@ export BITBUCKET_TEST_ACCESS_TOKEN=<your_repo_access_token>
 And just run;
 
 ```sh
-make test/e2e
+make test
 ```
 
 If you want to test individually;
 
 ```sh
 go test -v ./tests/diff_test.go
+```
+E2E Integration tests;
+```sh
+make test/e2e
+```
+
+Unit tests;
+```sh
+make test/unit
 ```
 
 Mock tests;
