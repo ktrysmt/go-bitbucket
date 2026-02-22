@@ -6,6 +6,7 @@ import (
 
 	_ "github.com/k0kubun/pp"
 	"github.com/ktrysmt/go-bitbucket"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetRepositoryRepositories(t *testing.T) {
@@ -493,7 +494,7 @@ func TestGetRepositoryRefs(t *testing.T) {
 	}
 
 	if !(expected.n == "TestGetRepoRefsBranch" && expected.t == "branch") {
-		t.Error("Could not list refs/branch that was created in test setup")
+		t.Error("Could not list refs/branch that was created in test setupBasicAuthTest")
 	}
 
 	// Cleanup
@@ -824,11 +825,14 @@ func TestSetRepositoryUserPermissions(t *testing.T) {
 }
 
 func TestListBranches(t *testing.T) {
-	client := setup(t)
+	client, err := setupBasicAuthTest(t)
+	if err != nil {
+		assert.Nilf(t, err, "failed to setup basic auth test: %w", err)
+	}
 
 	opts := &bitbucket.RepositoryBranchOptions{
-		Owner:    owner,
-		RepoSlug: repo,
+		Owner:    ownerEnv,
+		RepoSlug: repoEnv,
 		Pagelen:  10,
 		Query:    "develop",
 	}

@@ -26,7 +26,7 @@ const DEFAULT_LIMIT_PAGES = 0
 const DEFAULT_MAX_DEPTH = 1
 const DEFAULT_BITBUCKET_API_BASE_URL = "https://api.bitbucket.org/2.0"
 
-func apiBaseUrl() (*url.URL, error) {
+func apiBaseUrlEnv() (*url.URL, error) {
 	ev := os.Getenv("BITBUCKET_API_BASE_URL")
 	if ev == "" {
 		ev = DEFAULT_BITBUCKET_API_BASE_URL
@@ -47,16 +47,15 @@ func appendCaCerts(caCerts []byte) (*http.Client, error) {
 	if success := caCertPool.AppendCertsFromPEM(caCerts); !success {
 		return nil, fmt.Errorf("unable to append CA Certs to cert pool: %w", err)
 	}
-	// 3. Create a new http.Transport
-	newTransport := &http.Transport{
-		TLSClientConfig: &tls.Config{
-			RootCAs: caCertPool,
-		},
+	// 3. Create a new http.Transport copying http.DefaultTransport
+	newTransport := http.DefaultTransport.(*http.Transport).Clone()
+	// 4. Append the custom CA certs to the new transport.
+	newTransport.TLSClientConfig = &tls.Config{
+		RootCAs:    caCertPool,
+		MinVersion: tls.VersionTLS12,
 	}
-	// 4. Assign the new transport the http.DefaultTransport
-	http.DefaultTransport = newTransport
-	// 5. Create a new http client with the modified default transport
-	return &http.Client{Transport: http.DefaultTransport}, nil
+	// 5. Create a new http client
+	return &http.Client{Transport: newTransport}, nil
 }
 
 type Client struct {
@@ -85,6 +84,7 @@ type auth struct {
 	token          oauth2.Token
 	bearerToken    string
 	caCerts        []byte
+	apiBaseUrl     *url.URL
 }
 
 type Response struct {
@@ -207,8 +207,26 @@ func NewOAuthbearerToken(t string) (*Client, error) {
 	return injectClient(a)
 }
 
+func NewOAuthbearerTokenWithBaseUrlStr(t, u string) (*Client, error) {
+	apiBaseURL, err := url.Parse(u)
+	if err != nil {
+		return nil, err
+	}
+	a := &auth{bearerToken: t, apiBaseUrl: apiBaseURL}
+	return injectClient(a)
+}
+
 func NewOAuthbearerTokenWithCaCert(t string, c []byte) (*Client, error) {
 	a := &auth{bearerToken: t, caCerts: c}
+	return injectClient(a)
+}
+
+func NewOAuthbearerTokenWithBaseUrlStrCaCert(t, u string, c []byte) (*Client, error) {
+	apiBaseURL, err := url.Parse(u)
+	if err != nil {
+		return nil, err
+	}
+	a := &auth{bearerToken: t, caCerts: c, apiBaseUrl: apiBaseURL}
 	return injectClient(a)
 }
 
@@ -217,18 +235,50 @@ func NewBasicAuth(u, p string) (*Client, error) {
 	return injectClient(a)
 }
 
+func NewBasicAuthWithBaseUrlStr(u, p, urlStr string) (*Client, error) {
+	apiBaseURL, err := url.Parse(urlStr)
+	if err != nil {
+		return nil, err
+	}
+	a := &auth{user: u, password: p, apiBaseUrl: apiBaseURL}
+	return injectClient(a)
+}
+
 func NewBasicAuthWithCaCert(u, p string, c []byte) (*Client, error) {
 	a := &auth{user: u, password: p, caCerts: c}
 	return injectClient(a)
 }
 
-func injectClient(a *auth) (*Client, error) {
-	bitbucketUrl, err := apiBaseUrl()
+func NewBasicAuthWithBaseUrlStrCaCert(u, p, urlStr string, c []byte) (*Client, error) {
+	apiBaseURL, err := url.Parse(urlStr)
 	if err != nil {
-		return nil, fmt.Errorf("invalid bitbucket url: %w", err)
+		return nil, err
 	}
+	a := &auth{user: u, password: p, apiBaseUrl: apiBaseURL, caCerts: c}
+	return injectClient(a)
+}
+
+func injectClient(a *auth) (*Client, error) {
 	c := &Client{Auth: a, Pagelen: DEFAULT_PAGE_LENGTH, MaxDepth: DEFAULT_MAX_DEPTH,
-		apiBaseURL: bitbucketUrl, LimitPages: DEFAULT_LIMIT_PAGES}
+		LimitPages: DEFAULT_LIMIT_PAGES}
+	if a.apiBaseUrl != nil {
+		c.apiBaseURL = a.apiBaseUrl
+	} else {
+		bitbucketUrl, err := apiBaseUrlEnv()
+		if err != nil {
+			return nil, fmt.Errorf("unable to parse Bitbucket base Url from environment: %w", err)
+		}
+		c.apiBaseURL = bitbucketUrl
+	}
+	if a.caCerts != nil {
+		httpClient, err := appendCaCerts(a.caCerts)
+		if err != nil {
+			return nil, fmt.Errorf("unable to create http client with passed in CA certificates: %w", err)
+		}
+		c.HttpClient = httpClient
+	} else {
+		c.HttpClient = new(http.Client)
+	}
 	c.Repositories = &Repositories{
 		c:                  c,
 		PullRequests:       &PullRequests{c: c},
@@ -249,14 +299,6 @@ func injectClient(a *auth) (*Client, error) {
 	c.User = &User{c: c}
 	c.Teams = &Teams{c: c}
 	c.Workspaces = &Workspace{c: c, Repositories: c.Repositories, Permissions: &Permission{c: c}}
-	if a.caCerts != nil {
-		c.HttpClient, err = appendCaCerts(a.caCerts)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		c.HttpClient = new(http.Client)
-	}
 	return c, nil
 }
 

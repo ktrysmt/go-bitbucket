@@ -7,18 +7,22 @@ import (
 	"testing"
 
 	"github.com/ktrysmt/go-bitbucket"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestBranchRestrictionsKindPush(t *testing.T) {
 
-	c := setup(t)
+	c, err := setupBasicAuthTest(t)
+	if err != nil {
+		assert.Nilf(t, err, "failed to setup basic auth test: %w", err)
+	}
 	var pushRestrictionID int
 
 	t.Run("create", func(t *testing.T) {
 		opt := &bitbucket.BranchRestrictionsOptions{
-			Owner:    owner,
+			Owner:    ownerEnv,
 			Pattern:  "develop",
-			RepoSlug: repo,
+			RepoSlug: repoEnv,
 			Kind:     "push",
 		}
 		res, err := c.Repositories.BranchRestrictions.Create(opt)
@@ -33,8 +37,8 @@ func TestBranchRestrictionsKindPush(t *testing.T) {
 
 	t.Run("delete", func(t *testing.T) {
 		opt := &bitbucket.BranchRestrictionsOptions{
-			Owner:    owner,
-			RepoSlug: repo,
+			Owner:    ownerEnv,
+			RepoSlug: repoEnv,
 			ID:       strconv.Itoa(pushRestrictionID),
 		}
 		_, err := c.Repositories.BranchRestrictions.Delete(opt)
@@ -46,14 +50,17 @@ func TestBranchRestrictionsKindPush(t *testing.T) {
 
 func TestBranchRestrictionsKindRequirePassingBuilds(t *testing.T) {
 
-	c := setup(t)
+	c, err := setupBasicAuthTest(t)
+	if err != nil {
+		assert.Nilf(t, err, "failed to setup basic auth test: %w", err)
+	}
 	var pushRestrictionID int
 
 	t.Run("create", func(t *testing.T) {
 		opt := &bitbucket.BranchRestrictionsOptions{
-			Owner:    owner,
+			Owner:    ownerEnv,
 			Pattern:  "master",
-			RepoSlug: repo,
+			RepoSlug: repoEnv,
 			Kind:     "require_passing_builds_to_merge",
 			Value:    2,
 		}
@@ -69,8 +76,8 @@ func TestBranchRestrictionsKindRequirePassingBuilds(t *testing.T) {
 
 	t.Run("delete", func(t *testing.T) {
 		opt := &bitbucket.BranchRestrictionsOptions{
-			Owner:    owner,
-			RepoSlug: repo,
+			Owner:    ownerEnv,
+			RepoSlug: repoEnv,
 			ID:       strconv.Itoa(pushRestrictionID),
 		}
 		_, err := c.Repositories.BranchRestrictions.Delete(opt)
@@ -81,7 +88,10 @@ func TestBranchRestrictionsKindRequirePassingBuilds(t *testing.T) {
 }
 
 func TestBranchRestrictionsGets(t *testing.T) {
-	c := setup(t)
+	c, err := setupBasicAuthTest(t)
+	if err != nil {
+		assert.Nilf(t, err, "failed to setup basic auth test: %w", err)
+	}
 
 	t.Run("gets", func(t *testing.T) {
 		const expectedNumberOfRestrictions = 20
@@ -90,8 +100,8 @@ func TestBranchRestrictionsGets(t *testing.T) {
 		defer func() {
 			for i := 0; i < len(restrictionIDs); i++ {
 				opt := &bitbucket.BranchRestrictionsOptions{
-					Owner:    owner,
-					RepoSlug: repo,
+					Owner:    ownerEnv,
+					RepoSlug: repoEnv,
 					ID:       strconv.Itoa(restrictionIDs[i]),
 				}
 				_, err := c.Repositories.BranchRestrictions.Delete(opt)
@@ -103,9 +113,9 @@ func TestBranchRestrictionsGets(t *testing.T) {
 
 		for i := 0; i < expectedNumberOfRestrictions; i++ {
 			opt := &bitbucket.BranchRestrictionsOptions{
-				Owner:    owner,
+				Owner:    ownerEnv,
 				Pattern:  fmt.Sprintf("branch-restrictions-gets-%d", i),
-				RepoSlug: repo,
+				RepoSlug: repoEnv,
 				Kind:     "push",
 			}
 			res, err := c.Repositories.BranchRestrictions.Create(opt)
@@ -120,8 +130,8 @@ func TestBranchRestrictionsGets(t *testing.T) {
 		c.Pagelen = 5
 
 		opt := &bitbucket.BranchRestrictionsOptions{
-			Owner:    owner,
-			RepoSlug: repo,
+			Owner:    ownerEnv,
+			RepoSlug: repoEnv,
 		}
 
 		res, err := c.Repositories.BranchRestrictions.Gets(opt)

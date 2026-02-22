@@ -17,6 +17,11 @@ ifndef BITBUCKET_TEST_ACCESS_TOKEN
 	$(error `BITBUCKET_TEST_ACCESS_TOKEN` is not set)
 endif
 
+test: env test/unit test/mock test/e2e
+
+test/unit:
+	go test -v *.go
+
 test/e2e: env ## run go test all
 	go test -v ./tests
 
