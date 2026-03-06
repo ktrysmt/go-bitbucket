@@ -45,6 +45,24 @@ func TestSSHKeysCreate_Success(t *testing.T) {
 	assert.Equal(t, "my-key", key.Label)
 }
 
+func TestSSHKeysCreate_Error(t *testing.T) {
+	t.Parallel()
+	client, server := setupMockServer(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusBadRequest)
+	})
+	defer server.Close()
+
+	opts := &SSHKeyOptions{
+		Owner: "testuser",
+		Label: "bad-key",
+		Key:   "invalid",
+	}
+	result, err := client.Users.SSHKeys.Create(opts)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
 func TestSSHKeysGet_Success(t *testing.T) {
 	t.Parallel()
 	var receivedPath string
@@ -80,11 +98,26 @@ func TestSSHKeysDelete_Success(t *testing.T) {
 	defer server.Close()
 
 	opts := &SSHKeyOptions{Owner: "testuser", Uuid: "{key-uuid}"}
-	_, err := client.Users.SSHKeys.Delete(opts)
+	result, err := client.Users.SSHKeys.Delete(opts)
 
 	require.NoError(t, err)
 	assert.Equal(t, "DELETE", receivedMethod)
 	assert.Equal(t, "/2.0/users/testuser/ssh-keys/{key-uuid}", receivedPath)
+	assert.Nil(t, result)
+}
+
+func TestSSHKeysDelete_Error(t *testing.T) {
+	t.Parallel()
+	client, server := setupMockServer(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+	})
+	defer server.Close()
+
+	opts := &SSHKeyOptions{Owner: "testuser", Uuid: "bad-uuid"}
+	result, err := client.Users.SSHKeys.Delete(opts)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
 }
 
 func TestSSHKeysGet_ErrorResponse(t *testing.T) {
@@ -105,9 +138,13 @@ func TestSSHKeysGet_ErrorResponse(t *testing.T) {
 func TestDecodeSSHKey_Success(t *testing.T) {
 	t.Parallel()
 	response := map[string]interface{}{
-		"uuid":  "{key-uuid}",
-		"label": "my-key",
-		"key":   "ssh-rsa AAAA...",
+		"uuid":    "{key-uuid}",
+		"label":   "my-key",
+		"key":     "ssh-rsa AAAA...",
+		"comment": "user@host",
+		// Note: the SSHKey struct has a typo: field is "CreatedOm" (should be "CreatedOn").
+		// mapstructure maps by field name, so "created_on" in JSON does not map to "CreatedOm".
+		// The json tag "created_on" is only used for json.Marshal/Unmarshal, not mapstructure.
 	}
 
 	key, err := decodeSSHKey(response)
@@ -115,6 +152,8 @@ func TestDecodeSSHKey_Success(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "{key-uuid}", key.Uuid)
 	assert.Equal(t, "my-key", key.Label)
+	assert.Equal(t, "ssh-rsa AAAA...", key.Key)
+	assert.Equal(t, "user@host", key.Comment)
 }
 
 func TestDecodeSSHKey_ErrorType(t *testing.T) {
@@ -138,8 +177,8 @@ func TestDecodeSSHKeys_Success(t *testing.T) {
 		"pagelen": float64(10),
 		"size":    float64(2),
 		"values": []interface{}{
-			map[string]interface{}{"uuid": "{key-1}", "label": "key1", "key": "ssh-rsa A"},
-			map[string]interface{}{"uuid": "{key-2}", "label": "key2", "key": "ssh-rsa B"},
+			map[string]interface{}{"uuid": "{key-1}", "label": "key1", "key": "ssh-rsa A", "comment": "c1"},
+			map[string]interface{}{"uuid": "{key-2}", "label": "key2", "key": "ssh-rsa B", "comment": "c2"},
 		},
 	}
 
@@ -147,8 +186,18 @@ func TestDecodeSSHKeys_Success(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.Equal(t, int32(1), result.Page)
+	assert.Equal(t, int32(10), result.Pagelen)
 	assert.Equal(t, int32(2), result.Size)
-	assert.Len(t, result.Items, 2)
+	require.Len(t, result.Items, 2)
+	// Verify individual item fields
+	assert.Equal(t, "{key-1}", result.Items[0].Uuid)
+	assert.Equal(t, "key1", result.Items[0].Label)
+	assert.Equal(t, "ssh-rsa A", result.Items[0].Key)
+	assert.Equal(t, "c1", result.Items[0].Comment)
+	assert.Equal(t, "{key-2}", result.Items[1].Uuid)
+	assert.Equal(t, "key2", result.Items[1].Label)
+	assert.Equal(t, "ssh-rsa B", result.Items[1].Key)
+	assert.Equal(t, "c2", result.Items[1].Comment)
 }
 
 func TestDecodeSSHKeys_InvalidFormat(t *testing.T) {

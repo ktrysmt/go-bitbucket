@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestDecodeError_ValidError(t *testing.T) {
@@ -31,11 +32,8 @@ func TestDecodeError_EmptyMessage(t *testing.T) {
 
 	err := DecodeError(errorMap)
 
-	// mapstructure.Decode fails when input doesn't match expected structure
-	// The actual behavior depends on the mapstructure implementation
-	if err != nil {
-		assert.Error(t, err)
-	}
+	require.Error(t, err)
+	assert.Equal(t, "", err.Error())
 }
 
 func TestDecodeError_MissingErrorKey(t *testing.T) {
@@ -44,8 +42,37 @@ func TestDecodeError_MissingErrorKey(t *testing.T) {
 
 	err := DecodeError(errorMap)
 
-	// When "error" key is nil, mapstructure.Decode returns an error
-	assert.Error(t, err)
+	require.Error(t, err)
+	assert.Equal(t, "", err.Error())
+}
+
+func TestDecodeError_InvalidStructure(t *testing.T) {
+	t.Parallel()
+	errorMap := map[string]interface{}{
+		"error": "not a map",
+	}
+
+	err := DecodeError(errorMap)
+
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "expected a map")
+}
+
+func TestDecodeError_WithFields(t *testing.T) {
+	t.Parallel()
+	errorMap := map[string]interface{}{
+		"error": map[string]interface{}{
+			"message": "Bad request",
+			"fields": map[string][]string{
+				"username": {"Username is required"},
+			},
+		},
+	}
+
+	err := DecodeError(errorMap)
+
+	require.Error(t, err)
+	assert.Equal(t, "Bad request", err.Error())
 }
 
 func TestUnexpectedResponseStatusError_Error(t *testing.T) {

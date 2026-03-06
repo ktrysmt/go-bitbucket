@@ -5,10 +5,12 @@ import (
 	"encoding/pem"
 	"fmt"
 	"net"
+	"net/http"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // fetchCACertsForTest connects to the given host:port and returns the CA certs in PEM format.
@@ -48,8 +50,23 @@ func TestAppendCaCerts_util_test(t *testing.T) {
 		t.Fatalf("Error fetching CA certs using `fetchCACertsForTest`: %v", err)
 	}
 	httpClient, err := appendCaCerts(caCerts)
-	if err != nil {
-		t.Fatalf("Error returned from `appendCaCerts` failed to create the http client: %v", err)
-	}
-	assert.NotNil(t, httpClient)
+	require.NoError(t, err)
+	require.NotNil(t, httpClient)
+
+	transport, ok := httpClient.Transport.(*http.Transport)
+	require.True(t, ok, "Transport should be *http.Transport")
+	require.NotNil(t, transport.TLSClientConfig, "TLSClientConfig should be set")
+	assert.NotNil(t, transport.TLSClientConfig.RootCAs, "RootCAs cert pool should be set")
+	assert.Equal(t, uint16(tls.VersionTLS12), transport.TLSClientConfig.MinVersion, "MinVersion should be TLS 1.2")
+}
+
+func TestAppendCaCerts_InvalidCert(t *testing.T) {
+	t.Parallel()
+	invalidPEM := []byte("this is not a valid PEM certificate")
+
+	httpClient, err := appendCaCerts(invalidPEM)
+
+	assert.Error(t, err)
+	assert.Nil(t, httpClient)
+	assert.Contains(t, err.Error(), "unable to append CA Certs")
 }

@@ -41,8 +41,29 @@ func TestDeployKeysCreate_Success(t *testing.T) {
 	assert.Equal(t, "POST", receivedMethod)
 	assert.Equal(t, "/2.0/repositories/owner/repo/deploy-keys", receivedPath)
 	assert.Equal(t, "deploy-key", receivedBody["label"])
+	assert.Equal(t, "ssh-rsa AAAA...", receivedBody["key"])
 	assert.Equal(t, 123, key.Id)
 	assert.Equal(t, "deploy-key", key.Label)
+	assert.Equal(t, "ssh-rsa AAAA...", key.Key)
+}
+
+func TestDeployKeysCreate_Error(t *testing.T) {
+	t.Parallel()
+	client, server := setupMockServer(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusBadRequest)
+	})
+	defer server.Close()
+
+	opts := &DeployKeyOptions{
+		Owner:    "owner",
+		RepoSlug: "repo",
+		Label:    "bad-key",
+		Key:      "invalid",
+	}
+	result, err := client.Repositories.DeployKeys.Create(opts)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
 }
 
 func TestDeployKeysGet_Success(t *testing.T) {
@@ -80,11 +101,26 @@ func TestDeployKeysDelete_Success(t *testing.T) {
 	defer server.Close()
 
 	opts := &DeployKeyOptions{Owner: "owner", RepoSlug: "repo", Id: 123}
-	_, err := client.Repositories.DeployKeys.Delete(opts)
+	result, err := client.Repositories.DeployKeys.Delete(opts)
 
 	require.NoError(t, err)
 	assert.Equal(t, "DELETE", receivedMethod)
 	assert.Equal(t, "/2.0/repositories/owner/repo/deploy-keys/123", receivedPath)
+	assert.Nil(t, result)
+}
+
+func TestDeployKeysDelete_Error(t *testing.T) {
+	t.Parallel()
+	client, server := setupMockServer(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+	})
+	defer server.Close()
+
+	opts := &DeployKeyOptions{Owner: "owner", RepoSlug: "repo", Id: 999}
+	result, err := client.Repositories.DeployKeys.Delete(opts)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
 }
 
 func TestDeployKeysList_Success(t *testing.T) {
@@ -120,9 +156,10 @@ func TestDeployKeysList_Success(t *testing.T) {
 func TestDecodeDeployKey_Success(t *testing.T) {
 	t.Parallel()
 	response := map[string]interface{}{
-		"id":    float64(42),
-		"label": "my-key",
-		"key":   "ssh-rsa AAAA...",
+		"id":      float64(42),
+		"label":   "my-key",
+		"key":     "ssh-rsa AAAA...",
+		"comment": "test@host",
 	}
 
 	key, err := decodeDeployKey(response)
@@ -130,6 +167,8 @@ func TestDecodeDeployKey_Success(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, 42, key.Id)
 	assert.Equal(t, "my-key", key.Label)
+	assert.Equal(t, "ssh-rsa AAAA...", key.Key)
+	assert.Equal(t, "test@host", key.Comment)
 }
 
 func TestDecodeDeployKey_ErrorType(t *testing.T) {
@@ -153,8 +192,8 @@ func TestDecodeDeployKeys_Success(t *testing.T) {
 		"pagelen": float64(10),
 		"size":    float64(2),
 		"values": []interface{}{
-			map[string]interface{}{"id": float64(1), "label": "key1", "key": "ssh-rsa A"},
-			map[string]interface{}{"id": float64(2), "label": "key2", "key": "ssh-rsa B"},
+			map[string]interface{}{"id": float64(1), "label": "key1", "key": "ssh-rsa A", "comment": "comment1"},
+			map[string]interface{}{"id": float64(2), "label": "key2", "key": "ssh-rsa B", "comment": "comment2"},
 		},
 	}
 
@@ -162,8 +201,18 @@ func TestDecodeDeployKeys_Success(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.Equal(t, int32(1), result.Page)
+	assert.Equal(t, int32(10), result.Pagelen)
 	assert.Equal(t, int32(2), result.Size)
-	assert.Len(t, result.Items, 2)
+	require.Len(t, result.Items, 2)
+	// Verify individual item fields
+	assert.Equal(t, 1, result.Items[0].Id)
+	assert.Equal(t, "key1", result.Items[0].Label)
+	assert.Equal(t, "ssh-rsa A", result.Items[0].Key)
+	assert.Equal(t, "comment1", result.Items[0].Comment)
+	assert.Equal(t, 2, result.Items[1].Id)
+	assert.Equal(t, "key2", result.Items[1].Label)
+	assert.Equal(t, "ssh-rsa B", result.Items[1].Key)
+	assert.Equal(t, "comment2", result.Items[1].Comment)
 }
 
 func TestDecodeDeployKeys_InvalidFormat(t *testing.T) {
