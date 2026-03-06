@@ -13,21 +13,37 @@ func TestGetDiff_Success(t *testing.T) {
 	t.Parallel()
 	var receivedPath string
 	var receivedMethod string
+	diffContent := "diff --git a/file.txt b/file.txt\nindex 1234567..abcdefg 100644\n--- a/file.txt\n+++ b/file.txt\n@@ -1,3 +1,4 @@\n+new line\n existing\n"
 
 	client, server := setupMockServer(func(w http.ResponseWriter, r *http.Request) {
 		receivedPath = r.URL.Path
 		receivedMethod = r.Method
 		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte("diff --git a/file.txt b/file.txt\n"))
+		_, _ = w.Write([]byte(diffContent))
 	})
 	defer server.Close()
 
 	opts := &DiffOptions{Owner: "owner", RepoSlug: "repo", Spec: "abc123"}
-	_, err := client.Repositories.Diff.GetDiff(opts)
+	result, err := client.Repositories.Diff.GetDiff(opts)
 
 	require.NoError(t, err)
 	assert.Equal(t, "GET", receivedMethod)
 	assert.Equal(t, "/2.0/repositories/owner/repo/diff/abc123", receivedPath)
+	assert.NotNil(t, result)
+}
+
+func TestGetDiff_ErrorResponse(t *testing.T) {
+	t.Parallel()
+	client, server := setupMockServer(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+		_, _ = w.Write([]byte("not found"))
+	})
+	defer server.Close()
+
+	opts := &DiffOptions{Owner: "owner", RepoSlug: "repo", Spec: "bad-spec"}
+	_, err := client.Repositories.Diff.GetDiff(opts)
+
+	assert.Error(t, err)
 }
 
 func TestGetDiff_WithOptions(t *testing.T) {
@@ -62,19 +78,35 @@ func TestGetDiff_WithOptions(t *testing.T) {
 func TestGetPatch_Success(t *testing.T) {
 	t.Parallel()
 	var receivedPath string
+	patchContent := "From abc123\nSubject: [PATCH] fix bug\n---\n file.txt | 2 +-\n 1 file changed\n"
 
 	client, server := setupMockServer(func(w http.ResponseWriter, r *http.Request) {
 		receivedPath = r.URL.Path
 		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte("patch content"))
+		_, _ = w.Write([]byte(patchContent))
 	})
 	defer server.Close()
 
 	opts := &DiffOptions{Owner: "owner", RepoSlug: "repo", Spec: "abc123"}
-	_, err := client.Repositories.Diff.GetPatch(opts)
+	result, err := client.Repositories.Diff.GetPatch(opts)
 
 	require.NoError(t, err)
 	assert.Equal(t, "/2.0/repositories/owner/repo/patch/abc123", receivedPath)
+	assert.NotNil(t, result)
+}
+
+func TestGetPatch_ErrorResponse(t *testing.T) {
+	t.Parallel()
+	client, server := setupMockServer(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+		_, _ = w.Write([]byte("not found"))
+	})
+	defer server.Close()
+
+	opts := &DiffOptions{Owner: "owner", RepoSlug: "repo", Spec: "bad-spec"}
+	_, err := client.Repositories.Diff.GetPatch(opts)
+
+	assert.Error(t, err)
 }
 
 func TestGetDiffStat_Success(t *testing.T) {
@@ -94,6 +126,14 @@ func TestGetDiffStat_Success(t *testing.T) {
 					"status":        "modified",
 					"lines_removed": 5,
 					"lines_added":   10,
+					"old": map[string]interface{}{
+						"path": "src/main.go",
+						"type": "commit_file",
+					},
+					"new": map[string]interface{}{
+						"path": "src/main.go",
+						"type": "commit_file",
+					},
 				},
 			},
 		})
@@ -105,11 +145,20 @@ func TestGetDiffStat_Success(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.Equal(t, "/2.0/repositories/owner/repo/diffstat/abc123", receivedPath)
+	assert.Equal(t, 1, result.Page)
+	assert.Equal(t, 10, result.Pagelen)
 	assert.Equal(t, 2, result.Size)
 	assert.Len(t, result.DiffStats, 1)
-	assert.Equal(t, "modified", result.DiffStats[0].Status)
-	assert.Equal(t, 5, result.DiffStats[0].LinesRemoved)
-	assert.Equal(t, 10, result.DiffStats[0].LinedAdded)
+
+	ds := result.DiffStats[0]
+	assert.Equal(t, "diffstat", ds.Type)
+	assert.Equal(t, "modified", ds.Status)
+	assert.Equal(t, 5, ds.LinesRemoved)
+	assert.Equal(t, 10, ds.LinedAdded)
+	assert.Equal(t, "src/main.go", ds.Old["path"])
+	assert.Equal(t, "commit_file", ds.Old["type"])
+	assert.Equal(t, "src/main.go", ds.New["path"])
+	assert.Equal(t, "commit_file", ds.New["type"])
 }
 
 func TestGetDiffStat_WithOptions(t *testing.T) {
@@ -159,14 +208,27 @@ func TestGetDiffStat_ErrorResponse(t *testing.T) {
 
 func TestDecodeDiffStat_Success(t *testing.T) {
 	t.Parallel()
-	input := `{"page":1,"pagelen":10,"size":1,"values":[{"type":"diffstat","status":"added","lines_removed":0,"lines_added":5}]}`
+	input := `{"page":1,"pagelen":10,"size":1,"next":"https://api.bitbucket.org/next","previous":"https://api.bitbucket.org/prev","values":[{"type":"diffstat","status":"added","lines_removed":0,"lines_added":5,"old":{"path":"old.go","type":"commit_file"},"new":{"path":"new.go","type":"commit_file"}}]}`
 
 	result, err := decodeDiffStat(input)
 
 	require.NoError(t, err)
 	assert.Equal(t, 1, result.Page)
-	assert.Len(t, result.DiffStats, 1)
-	assert.Equal(t, "added", result.DiffStats[0].Status)
+	assert.Equal(t, 10, result.Pagelen)
+	assert.Equal(t, 1, result.Size)
+	assert.Equal(t, "https://api.bitbucket.org/next", result.Next)
+	assert.Equal(t, "https://api.bitbucket.org/prev", result.Previous)
+	require.Len(t, result.DiffStats, 1)
+
+	ds := result.DiffStats[0]
+	assert.Equal(t, "diffstat", ds.Type)
+	assert.Equal(t, "added", ds.Status)
+	assert.Equal(t, 0, ds.LinesRemoved)
+	assert.Equal(t, 5, ds.LinedAdded)
+	assert.Equal(t, "old.go", ds.Old["path"])
+	assert.Equal(t, "commit_file", ds.Old["type"])
+	assert.Equal(t, "new.go", ds.New["path"])
+	assert.Equal(t, "commit_file", ds.New["type"])
 }
 
 func TestDecodeDiffStat_InvalidJSON(t *testing.T) {

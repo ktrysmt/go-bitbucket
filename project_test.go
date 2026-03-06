@@ -199,7 +199,29 @@ func TestBuildProjectBody_MinimalFields(t *testing.T) {
 	require.NoError(t, err)
 	var body map[string]interface{}
 	require.NoError(t, json.Unmarshal([]byte(data), &body))
-	assert.Nil(t, body["key"])
-	assert.Nil(t, body["name"])
-	assert.Equal(t, false, body["is_private"])
+	assert.Nil(t, body["key"], "key should be absent when empty")
+	assert.Nil(t, body["name"], "name should be absent when empty")
+	assert.Nil(t, body["description"], "description should be absent when empty")
+	assert.Equal(t, false, body["is_private"], "is_private should default to false")
+	assert.Len(t, body, 1, "only is_private should be present")
+}
+
+func TestDecodeProject_AllFields(t *testing.T) {
+	t.Parallel()
+	response := map[string]interface{}{
+		"uuid":        "{full-proj-uuid}",
+		"key":         "ALLF",
+		"name":        "All Fields Project",
+		"description": "A fully populated project",
+		"is_private":  true,
+	}
+
+	project, err := decodeProject(response)
+
+	require.NoError(t, err)
+	assert.Equal(t, "{full-proj-uuid}", project.Uuid)
+	assert.Equal(t, "ALLF", project.Key)
+	assert.Equal(t, "All Fields Project", project.Name)
+	assert.Equal(t, "A fully populated project", project.Description)
+	assert.Equal(t, true, project.Is_private)
 }

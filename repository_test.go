@@ -90,6 +90,9 @@ func TestRepositoryUpdate_Success(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "PUT", receivedMethod)
 	assert.Equal(t, "updated", repo.Description)
+	assert.Equal(t, "my-repo", repo.Slug)
+	assert.Equal(t, "updated", receivedBody["description"])
+	assert.Equal(t, "my-repo", receivedBody["name"])
 }
 
 func TestRepositoryUpdate_WithUuid(t *testing.T) {
@@ -103,10 +106,11 @@ func TestRepositoryUpdate_WithUuid(t *testing.T) {
 	defer server.Close()
 
 	opts := &RepositoryOptions{Owner: "owner", RepoSlug: "my-repo", Uuid: "{repo-uuid}"}
-	_, err := client.Repositories.Repository.Update(opts)
+	repo, err := client.Repositories.Repository.Update(opts)
 
 	require.NoError(t, err)
 	assert.Equal(t, "/2.0/repositories/owner/{repo-uuid}", receivedPath)
+	assert.Equal(t, "my-repo", repo.Slug)
 }
 
 func TestRepositoryDelete_Success(t *testing.T) {
@@ -121,11 +125,12 @@ func TestRepositoryDelete_Success(t *testing.T) {
 	defer server.Close()
 
 	opts := &RepositoryOptions{Owner: "owner", RepoSlug: "my-repo"}
-	_, err := client.Repositories.Repository.Delete(opts)
+	result, err := client.Repositories.Repository.Delete(opts)
 
 	require.NoError(t, err)
 	assert.Equal(t, "DELETE", receivedMethod)
 	assert.Equal(t, "/2.0/repositories/owner/my-repo", receivedPath)
+	assert.Nil(t, result)
 }
 
 func TestRepositoryFork_Success(t *testing.T) {
@@ -157,6 +162,10 @@ func TestRepositoryFork_Success(t *testing.T) {
 	assert.Equal(t, "POST", receivedMethod)
 	assert.Equal(t, "/2.0/repositories/orig-owner/orig-repo/forks", receivedPath)
 	assert.Equal(t, "forked-repo", repo.Slug)
+	assert.Equal(t, "new-owner/forked-repo", repo.Full_name)
+	assert.Equal(t, "forked-repo", receivedBody["name"])
+	workspace := receivedBody["workspace"].(map[string]interface{})
+	assert.Equal(t, "new-owner", workspace["slug"])
 }
 
 func TestRepositoryListWatchers_Success(t *testing.T) {
@@ -175,6 +184,8 @@ func TestRepositoryListWatchers_Success(t *testing.T) {
 	resultMap := result.(map[string]interface{})
 	values := resultMap["values"].([]interface{})
 	assert.Len(t, values, 1)
+	watcher := values[0].(map[string]interface{})
+	assert.Equal(t, "watcher1", watcher["nickname"])
 }
 
 func TestRepositoryListForks_Success(t *testing.T) {
@@ -193,6 +204,8 @@ func TestRepositoryListForks_Success(t *testing.T) {
 	resultMap := result.(map[string]interface{})
 	values := resultMap["values"].([]interface{})
 	assert.Len(t, values, 1)
+	fork := values[0].(map[string]interface{})
+	assert.Equal(t, "fork1", fork["slug"])
 }
 
 func TestRepositoryGet_Error(t *testing.T) {
@@ -205,9 +218,14 @@ func TestRepositoryGet_Error(t *testing.T) {
 	defer server.Close()
 
 	opts := &RepositoryOptions{Owner: "owner", RepoSlug: "bad"}
-	_, err := client.Repositories.Repository.Get(opts)
+	repo, err := client.Repositories.Repository.Get(opts)
 
-	assert.Error(t, err)
+	require.Error(t, err)
+	assert.Nil(t, repo)
+	var unexpectedErr *UnexpectedResponseStatusError
+	require.ErrorAs(t, err, &unexpectedErr)
+	assert.Equal(t, "404 Not Found", unexpectedErr.Status)
+	assert.Contains(t, string(unexpectedErr.Body), "not found")
 }
 
 func TestRepositoryDelete_WithUuid(t *testing.T) {
@@ -221,10 +239,11 @@ func TestRepositoryDelete_WithUuid(t *testing.T) {
 	defer server.Close()
 
 	opts := &RepositoryOptions{Owner: "owner", RepoSlug: "repo", Uuid: "{repo-uuid}"}
-	_, err := client.Repositories.Repository.Delete(opts)
+	result, err := client.Repositories.Repository.Delete(opts)
 
 	require.NoError(t, err)
 	assert.Equal(t, "/2.0/repositories/owner/{repo-uuid}", receivedPath)
+	assert.Nil(t, result)
 }
 
 // --- File Operations ---
@@ -279,6 +298,10 @@ func TestListFiles_Success(t *testing.T) {
 	require.NoError(t, err)
 	assert.Len(t, files, 2)
 	assert.Equal(t, "file1.go", files[0].Path)
+	assert.Equal(t, "commit_file", files[0].Type)
+	assert.Equal(t, 100, files[0].Size)
+	assert.Equal(t, "file2.go", files[1].Path)
+	assert.Equal(t, 200, files[1].Size)
 }
 
 func TestGetFileBlob_Success(t *testing.T) {
@@ -550,6 +573,12 @@ func TestListRefs_Success(t *testing.T) {
 	require.NoError(t, err)
 	assert.Len(t, refs.Refs, 2)
 	assert.Equal(t, 1, refs.Page)
+	assert.Equal(t, 10, refs.Pagelen)
+	assert.Equal(t, 2, refs.Size)
+	assert.Equal(t, "main", refs.Refs[0]["name"])
+	assert.Equal(t, "branch", refs.Refs[0]["type"])
+	assert.Equal(t, "v1.0", refs.Refs[1]["name"])
+	assert.Equal(t, "tag", refs.Refs[1]["type"])
 }
 
 func TestListRefs_WithParams(t *testing.T) {
@@ -657,11 +686,12 @@ func TestDeleteDefaultReviewer_Success(t *testing.T) {
 	defer server.Close()
 
 	opts := &RepositoryDefaultReviewerOptions{Owner: "owner", RepoSlug: "repo", Username: "reviewer1"}
-	_, err := client.Repositories.Repository.DeleteDefaultReviewer(opts)
+	result, err := client.Repositories.Repository.DeleteDefaultReviewer(opts)
 
 	require.NoError(t, err)
 	assert.Equal(t, "DELETE", receivedMethod)
 	assert.Equal(t, "/2.0/repositories/owner/repo/default-reviewers/reviewer1", receivedPath)
+	assert.Nil(t, result)
 }
 
 func TestListEffectiveDefaultReviewers_Success(t *testing.T) {
@@ -829,11 +859,12 @@ func TestDeletePipelineVariable_Success(t *testing.T) {
 	defer server.Close()
 
 	opts := &RepositoryPipelineVariableDeleteOptions{Owner: "owner", RepoSlug: "repo", Uuid: "{var-uuid}"}
-	_, err := client.Repositories.Repository.DeletePipelineVariable(opts)
+	result, err := client.Repositories.Repository.DeletePipelineVariable(opts)
 
 	require.NoError(t, err)
 	assert.Equal(t, "DELETE", receivedMethod)
 	assert.Contains(t, receivedPath, "/pipelines_config/variables/{var-uuid}")
+	assert.Nil(t, result)
 }
 
 // --- Pipeline KeyPair ---
@@ -890,10 +921,11 @@ func TestDeletePipelineKeyPair_Success(t *testing.T) {
 	defer server.Close()
 
 	opts := &RepositoryPipelineKeyPairOptions{Owner: "owner", RepoSlug: "repo"}
-	_, err := client.Repositories.Repository.DeletePipelineKeyPair(opts)
+	result, err := client.Repositories.Repository.DeletePipelineKeyPair(opts)
 
 	require.NoError(t, err)
 	assert.Equal(t, "DELETE", receivedMethod)
+	assert.Nil(t, result)
 }
 
 // --- Pipeline Build Number ---
@@ -1006,6 +1038,8 @@ func TestAddEnvironment_Success(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "POST", receivedMethod)
 	assert.Equal(t, "staging", env.Name)
+	assert.Equal(t, "{new-env}", env.Uuid)
+	assert.Equal(t, "deployment_environment", env.Type)
 }
 
 func TestGetEnvironment_Success(t *testing.T) {
@@ -1028,6 +1062,8 @@ func TestGetEnvironment_Success(t *testing.T) {
 	require.NoError(t, err)
 	assert.Contains(t, receivedPath, "/environments/{env-uuid}")
 	assert.Equal(t, "production", env.Name)
+	assert.Equal(t, "{env-uuid}", env.Uuid)
+	assert.Equal(t, "deployment_environment", env.Type)
 }
 
 func TestDeleteEnvironment_Success(t *testing.T) {
@@ -1041,10 +1077,11 @@ func TestDeleteEnvironment_Success(t *testing.T) {
 	defer server.Close()
 
 	opts := &RepositoryEnvironmentDeleteOptions{Owner: "owner", RepoSlug: "repo", Uuid: "{env-uuid}"}
-	_, err := client.Repositories.Repository.DeleteEnvironment(opts)
+	result, err := client.Repositories.Repository.DeleteEnvironment(opts)
 
 	require.NoError(t, err)
 	assert.Equal(t, "DELETE", receivedMethod)
+	assert.Nil(t, result)
 }
 
 // --- Deployment Variables ---
@@ -1144,11 +1181,12 @@ func TestDeleteDeploymentVariable_Success(t *testing.T) {
 		Environment: &Environment{Uuid: "{env-uuid}"},
 		Uuid:        "{dv-uuid}",
 	}
-	_, err := client.Repositories.Repository.DeleteDeploymentVariable(opts)
+	result, err := client.Repositories.Repository.DeleteDeploymentVariable(opts)
 
 	require.NoError(t, err)
 	assert.Equal(t, "DELETE", receivedMethod)
 	assert.Contains(t, receivedPath, "/deployments_config/environments/{env-uuid}/variables/{dv-uuid}")
+	assert.Nil(t, result)
 }
 
 // --- Group Permissions ---
@@ -1229,10 +1267,11 @@ func TestDeleteGroupPermissions_Success(t *testing.T) {
 	defer server.Close()
 
 	opts := &RepositoryGroupPermissionsOptions{Owner: "owner", RepoSlug: "repo", Group: "devs"}
-	_, err := client.Repositories.Repository.DeleteGroupPermissions(opts)
+	result, err := client.Repositories.Repository.DeleteGroupPermissions(opts)
 
 	require.NoError(t, err)
 	assert.Equal(t, "DELETE", receivedMethod)
+	assert.Nil(t, result)
 }
 
 // --- User Permissions ---
@@ -1310,10 +1349,11 @@ func TestDeleteUserPermissions_Success(t *testing.T) {
 	defer server.Close()
 
 	opts := &RepositoryUserPermissionsOptions{Owner: "owner", RepoSlug: "repo", User: "jdoe"}
-	_, err := client.Repositories.Repository.DeleteUserPermissions(opts)
+	result, err := client.Repositories.Repository.DeleteUserPermissions(opts)
 
 	require.NoError(t, err)
 	assert.Equal(t, "DELETE", receivedMethod)
+	assert.Nil(t, result)
 }
 
 // --- Build Body Functions ---
@@ -2090,9 +2130,13 @@ func TestGetPipelineConfig_Error(t *testing.T) {
 	defer server.Close()
 
 	opts := &RepositoryPipelineOptions{Owner: "owner", RepoSlug: "repo"}
-	_, err := client.Repositories.Repository.GetPipelineConfig(opts)
+	pipeline, err := client.Repositories.Repository.GetPipelineConfig(opts)
 
-	assert.Error(t, err)
+	require.Error(t, err)
+	assert.Nil(t, pipeline)
+	var unexpectedErr *UnexpectedResponseStatusError
+	require.ErrorAs(t, err, &unexpectedErr)
+	assert.Equal(t, "404 Not Found", unexpectedErr.Status)
 }
 
 func TestGetPipelineKeyPair_Error(t *testing.T) {
@@ -2150,9 +2194,13 @@ func TestGetEnvironment_Error(t *testing.T) {
 	defer server.Close()
 
 	opts := &RepositoryEnvironmentOptions{Owner: "owner", RepoSlug: "repo", Uuid: "{bad}"}
-	_, err := client.Repositories.Repository.GetEnvironment(opts)
+	env, err := client.Repositories.Repository.GetEnvironment(opts)
 
-	assert.Error(t, err)
+	require.Error(t, err)
+	assert.Nil(t, env)
+	var unexpectedErr *UnexpectedResponseStatusError
+	require.ErrorAs(t, err, &unexpectedErr)
+	assert.Equal(t, "404 Not Found", unexpectedErr.Status)
 }
 
 func TestGetDefaultReviewer_Error(t *testing.T) {
@@ -2225,9 +2273,13 @@ func TestListGroupPermissions_Error(t *testing.T) {
 	defer server.Close()
 
 	opts := &RepositoryOptions{Owner: "owner", RepoSlug: "repo"}
-	_, err := client.Repositories.Repository.ListGroupPermissions(opts)
+	perms, err := client.Repositories.Repository.ListGroupPermissions(opts)
 
-	assert.Error(t, err)
+	require.Error(t, err)
+	assert.Nil(t, perms)
+	var unexpectedErr *UnexpectedResponseStatusError
+	require.ErrorAs(t, err, &unexpectedErr)
+	assert.Equal(t, "403 Forbidden", unexpectedErr.Status)
 }
 
 func TestListUserPermissions_Error(t *testing.T) {
@@ -2333,9 +2385,14 @@ func TestCreateBranch_Error(t *testing.T) {
 		Owner: "owner", RepoSlug: "repo",
 		Name: "bad", Target: RepositoryBranchTarget{Hash: "invalid"},
 	}
-	_, err := client.Repositories.Repository.CreateBranch(opts)
+	branch, err := client.Repositories.Repository.CreateBranch(opts)
 
-	assert.Error(t, err)
+	require.Error(t, err)
+	assert.Nil(t, branch)
+	var unexpectedErr *UnexpectedResponseStatusError
+	require.ErrorAs(t, err, &unexpectedErr)
+	assert.Equal(t, "400 Bad Request", unexpectedErr.Status)
+	assert.Contains(t, string(unexpectedErr.Body), "bad request")
 }
 
 func TestCreateTag_Error(t *testing.T) {

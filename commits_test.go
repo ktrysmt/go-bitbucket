@@ -1,6 +1,8 @@
 package bitbucket
 
 import (
+	"encoding/json"
+	"io"
 	"net/http"
 	"testing"
 
@@ -17,7 +19,19 @@ func TestGetCommits_Success(t *testing.T) {
 		receivedPath = r.URL.Path
 		receivedMethod = r.Method
 		respondJSON(w, http.StatusOK, paginatedResponse([]interface{}{
-			map[string]interface{}{"hash": "abc123", "message": "initial commit"},
+			map[string]interface{}{
+				"hash":    "abc123def456",
+				"message": "initial commit",
+				"date":    "2025-01-15T10:00:00+00:00",
+				"author": map[string]interface{}{
+					"raw":  "Test User <test@example.com>",
+					"type": "author",
+					"user": map[string]interface{}{"display_name": "Test User", "uuid": "{user-1}"},
+				},
+				"parents": []interface{}{
+					map[string]interface{}{"hash": "parent123"},
+				},
+			},
 		}))
 	})
 	defer server.Close()
@@ -34,7 +48,16 @@ func TestGetCommits_Success(t *testing.T) {
 	assert.Equal(t, "/2.0/repositories/owner/repo/commits/main", receivedPath)
 	resultMap := result.(map[string]interface{})
 	values := resultMap["values"].([]interface{})
-	assert.Len(t, values, 1)
+	require.Len(t, values, 1)
+
+	commit := values[0].(map[string]interface{})
+	assert.Equal(t, "abc123def456", commit["hash"])
+	assert.Equal(t, "initial commit", commit["message"])
+	assert.Equal(t, "2025-01-15T10:00:00+00:00", commit["date"])
+	author := commit["author"].(map[string]interface{})
+	assert.Equal(t, "Test User <test@example.com>", author["raw"])
+	parents := commit["parents"].([]interface{})
+	assert.Len(t, parents, 1)
 }
 
 func TestGetCommits_WithIncludeExclude(t *testing.T) {
@@ -70,7 +93,14 @@ func TestGetCommit_Success(t *testing.T) {
 		respondJSON(w, http.StatusOK, map[string]interface{}{
 			"hash":    "abc123",
 			"message": "test commit",
-			"author":  map[string]interface{}{"raw": "Test User <test@example.com>"},
+			"date":    "2025-01-15T10:00:00+00:00",
+			"author": map[string]interface{}{
+				"raw":  "Test User <test@example.com>",
+				"type": "author",
+			},
+			"parents": []interface{}{
+				map[string]interface{}{"hash": "parent456"},
+			},
 		})
 	})
 	defer server.Close()
@@ -86,6 +116,34 @@ func TestGetCommit_Success(t *testing.T) {
 	assert.Equal(t, "/2.0/repositories/owner/repo/commit/abc123", receivedPath)
 	resultMap := result.(map[string]interface{})
 	assert.Equal(t, "abc123", resultMap["hash"])
+	assert.Equal(t, "test commit", resultMap["message"])
+	assert.Equal(t, "2025-01-15T10:00:00+00:00", resultMap["date"])
+	author := resultMap["author"].(map[string]interface{})
+	assert.Equal(t, "Test User <test@example.com>", author["raw"])
+	assert.Equal(t, "author", author["type"])
+	parents := resultMap["parents"].([]interface{})
+	require.Len(t, parents, 1)
+	parent := parents[0].(map[string]interface{})
+	assert.Equal(t, "parent456", parent["hash"])
+}
+
+func TestGetCommit_ErrorResponse(t *testing.T) {
+	t.Parallel()
+	client, server := setupMockServer(func(w http.ResponseWriter, r *http.Request) {
+		respondJSON(w, http.StatusNotFound, map[string]interface{}{
+			"error": map[string]interface{}{"message": "Commit not found"},
+		})
+	})
+	defer server.Close()
+
+	opts := &CommitsOptions{
+		Owner:    "owner",
+		RepoSlug: "repo",
+		Revision: "nonexistent",
+	}
+	_, err := client.Repositories.Commits.GetCommit(opts)
+
+	assert.Error(t, err)
 }
 
 func TestGetCommitComments_Success(t *testing.T) {
@@ -105,10 +163,36 @@ func TestGetCommitComments_Success(t *testing.T) {
 		RepoSlug: "repo",
 		Revision: "abc123",
 	}
-	_, err := client.Repositories.Commits.GetCommitComments(opts)
+	result, err := client.Repositories.Commits.GetCommitComments(opts)
 
 	require.NoError(t, err)
 	assert.Equal(t, "/2.0/repositories/owner/repo/commit/abc123/comments", receivedPath)
+	resultMap := result.(map[string]interface{})
+	values := resultMap["values"].([]interface{})
+	require.Len(t, values, 1)
+	comment := values[0].(map[string]interface{})
+	assert.Equal(t, float64(1), comment["id"])
+	content := comment["content"].(map[string]interface{})
+	assert.Equal(t, "nice commit", content["raw"])
+}
+
+func TestGetCommitComments_ErrorResponse(t *testing.T) {
+	t.Parallel()
+	client, server := setupMockServer(func(w http.ResponseWriter, r *http.Request) {
+		respondJSON(w, http.StatusNotFound, map[string]interface{}{
+			"error": map[string]interface{}{"message": "Not found"},
+		})
+	})
+	defer server.Close()
+
+	opts := &CommitsOptions{
+		Owner:    "owner",
+		RepoSlug: "repo",
+		Revision: "nonexistent",
+	}
+	_, err := client.Repositories.Commits.GetCommitComments(opts)
+
+	assert.Error(t, err)
 }
 
 func TestGetCommitComment_Success(t *testing.T) {
@@ -129,10 +213,14 @@ func TestGetCommitComment_Success(t *testing.T) {
 		Revision:  "abc123",
 		CommentID: "42",
 	}
-	_, err := client.Repositories.Commits.GetCommitComment(opts)
+	result, err := client.Repositories.Commits.GetCommitComment(opts)
 
 	require.NoError(t, err)
 	assert.Equal(t, "/2.0/repositories/owner/repo/commit/abc123/comments/42", receivedPath)
+	resultMap := result.(map[string]interface{})
+	assert.Equal(t, float64(42), resultMap["id"])
+	content := resultMap["content"].(map[string]interface{})
+	assert.Equal(t, "a comment", content["raw"])
 }
 
 func TestGetCommitStatuses_Success(t *testing.T) {
@@ -152,10 +240,16 @@ func TestGetCommitStatuses_Success(t *testing.T) {
 		RepoSlug: "repo",
 		Revision: "abc123",
 	}
-	_, err := client.Repositories.Commits.GetCommitStatuses(opts)
+	result, err := client.Repositories.Commits.GetCommitStatuses(opts)
 
 	require.NoError(t, err)
 	assert.Equal(t, "/2.0/repositories/owner/repo/commit/abc123/statuses", receivedPath)
+	resultMap := result.(map[string]interface{})
+	values := resultMap["values"].([]interface{})
+	require.Len(t, values, 1)
+	status := values[0].(map[string]interface{})
+	assert.Equal(t, "build", status["key"])
+	assert.Equal(t, "SUCCESSFUL", status["state"])
 }
 
 func TestGetCommitStatus_Success(t *testing.T) {
@@ -175,10 +269,32 @@ func TestGetCommitStatus_Success(t *testing.T) {
 		RepoSlug: "repo",
 		Revision: "abc123",
 	}
-	_, err := client.Repositories.Commits.GetCommitStatus(opts, "build-key")
+	result, err := client.Repositories.Commits.GetCommitStatus(opts, "build-key")
 
 	require.NoError(t, err)
 	assert.Equal(t, "/2.0/repositories/owner/repo/commit/abc123/statuses/build/build-key", receivedPath)
+	resultMap := result.(map[string]interface{})
+	assert.Equal(t, "build-key", resultMap["key"])
+	assert.Equal(t, "SUCCESSFUL", resultMap["state"])
+}
+
+func TestGetCommitStatus_ErrorResponse(t *testing.T) {
+	t.Parallel()
+	client, server := setupMockServer(func(w http.ResponseWriter, r *http.Request) {
+		respondJSON(w, http.StatusNotFound, map[string]interface{}{
+			"error": map[string]interface{}{"message": "Status not found"},
+		})
+	})
+	defer server.Close()
+
+	opts := &CommitsOptions{
+		Owner:    "owner",
+		RepoSlug: "repo",
+		Revision: "abc123",
+	}
+	_, err := client.Repositories.Commits.GetCommitStatus(opts, "nonexistent")
+
+	assert.Error(t, err)
 }
 
 func TestGiveApprove_Success(t *testing.T) {
@@ -198,11 +314,13 @@ func TestGiveApprove_Success(t *testing.T) {
 		RepoSlug: "repo",
 		Revision: "abc123",
 	}
-	_, err := client.Repositories.Commits.GiveApprove(opts)
+	result, err := client.Repositories.Commits.GiveApprove(opts)
 
 	require.NoError(t, err)
 	assert.Equal(t, "POST", receivedMethod)
 	assert.Equal(t, "/2.0/repositories/owner/repo/commit/abc123/approve", receivedPath)
+	resultMap := result.(map[string]interface{})
+	assert.Equal(t, true, resultMap["approved"])
 }
 
 func TestRemoveApprove_Success(t *testing.T) {
@@ -220,22 +338,26 @@ func TestRemoveApprove_Success(t *testing.T) {
 		RepoSlug: "repo",
 		Revision: "abc123",
 	}
-	_, err := client.Repositories.Commits.RemoveApprove(opts)
+	result, err := client.Repositories.Commits.RemoveApprove(opts)
 
 	require.NoError(t, err)
 	assert.Equal(t, "DELETE", receivedMethod)
+	assert.Nil(t, result)
 }
 
 func TestCreateCommitStatus_Success(t *testing.T) {
 	t.Parallel()
 	var receivedMethod string
 	var receivedPath string
+	var receivedBody map[string]interface{}
 
 	client, server := setupMockServer(func(w http.ResponseWriter, r *http.Request) {
 		receivedMethod = r.Method
 		receivedPath = r.URL.Path
+		body, _ := io.ReadAll(r.Body)
+		_ = json.Unmarshal(body, &receivedBody)
 		respondJSON(w, http.StatusCreated, map[string]interface{}{
-			"key": "build", "state": "INPROGRESS",
+			"key": "build", "state": "INPROGRESS", "url": "https://ci.example.com/build/1", "name": "Build #1",
 		})
 	})
 	defer server.Close()
@@ -251,11 +373,46 @@ func TestCreateCommitStatus_Success(t *testing.T) {
 		Url:   "https://ci.example.com/build/1",
 		Name:  "Build #1",
 	}
-	_, err := client.Repositories.Commits.CreateCommitStatus(cmo, cso)
+	result, err := client.Repositories.Commits.CreateCommitStatus(cmo, cso)
 
 	require.NoError(t, err)
 	assert.Equal(t, "POST", receivedMethod)
 	assert.Equal(t, "/2.0/repositories/owner/repo/commit/abc123/statuses/build", receivedPath)
+
+	// Verify request body contains the expected fields
+	assert.Equal(t, "build", receivedBody["key"])
+	assert.Equal(t, "INPROGRESS", receivedBody["state"])
+	assert.Equal(t, "https://ci.example.com/build/1", receivedBody["url"])
+	assert.Equal(t, "Build #1", receivedBody["name"])
+
+	// Verify response
+	resultMap := result.(map[string]interface{})
+	assert.Equal(t, "build", resultMap["key"])
+	assert.Equal(t, "INPROGRESS", resultMap["state"])
+	assert.Equal(t, "https://ci.example.com/build/1", resultMap["url"])
+}
+
+func TestCreateCommitStatus_ErrorResponse(t *testing.T) {
+	t.Parallel()
+	client, server := setupMockServer(func(w http.ResponseWriter, r *http.Request) {
+		respondJSON(w, http.StatusBadRequest, map[string]interface{}{
+			"error": map[string]interface{}{"message": "Invalid state"},
+		})
+	})
+	defer server.Close()
+
+	cmo := &CommitsOptions{
+		Owner:    "owner",
+		RepoSlug: "repo",
+		Revision: "abc123",
+	}
+	cso := &CommitStatusOptions{
+		Key:   "build",
+		State: "INVALID",
+	}
+	_, err := client.Repositories.Commits.CreateCommitStatus(cmo, cso)
+
+	assert.Error(t, err)
 }
 
 func TestBuildCommitsQuery(t *testing.T) {

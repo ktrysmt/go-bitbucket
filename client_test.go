@@ -4,10 +4,11 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
+	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
-	"encoding/json"
 	"encoding/pem"
+	"fmt"
 	"io"
 	"math/big"
 	"net/http"
@@ -67,6 +68,22 @@ func TestRequestUrl_NoArgs(t *testing.T) {
 	assert.Contains(t, result, "/2.0/workspaces")
 }
 
+func TestRequestUrl_WithSpecialCharacters(t *testing.T) {
+	t.Parallel()
+	client, server := setupMockServer(func(w http.ResponseWriter, r *http.Request) {})
+	defer server.Close()
+
+	result := client.requestUrl("/repositories/%s/%s/refs/branches/%s", "owner", "my-repo", "feature/special~chars")
+	assert.Contains(t, result, "/2.0/repositories/owner/my-repo/refs/branches/feature/special~chars")
+
+	resultWithSpaces := client.requestUrl("/repositories/%s/%s", "my owner", "my repo")
+	assert.Contains(t, resultWithSpaces, "my owner")
+	assert.Contains(t, resultWithSpaces, "my repo")
+
+	resultWithUnicode := client.requestUrl("/repositories/%s/%s", "owner", "repo-\u00e9")
+	assert.Contains(t, resultWithUnicode, "repo-\u00e9")
+}
+
 func TestAuthenticateRequest_BasicAuth(t *testing.T) {
 	t.Parallel()
 	var receivedUser, receivedPass string
@@ -123,8 +140,13 @@ func TestExecute_Success(t *testing.T) {
 	result, err := client.execute("GET", urlStr, "")
 
 	require.NoError(t, err)
-	resultMap := result.(map[string]interface{})
+	resultMap, ok := result.(map[string]interface{})
+	require.True(t, ok, "result should be a map[string]interface{}")
+	assert.Len(t, resultMap, 2)
+	assert.Contains(t, resultMap, "username")
+	assert.Contains(t, resultMap, "type")
 	assert.Equal(t, "testuser", resultMap["username"])
+	assert.Equal(t, "user", resultMap["type"])
 }
 
 func TestExecute_PostWithBody(t *testing.T) {
@@ -231,6 +253,10 @@ func TestExecutePaginated_MultiplePages(t *testing.T) {
 	values := resultMap["values"].([]interface{})
 	assert.Len(t, values, 2)
 	assert.Equal(t, 2, callCount)
+	firstItem := values[0].(map[string]interface{})
+	assert.Equal(t, "item1", firstItem["name"])
+	secondItem := values[1].(map[string]interface{})
+	assert.Equal(t, "item2", secondItem["name"])
 }
 
 func TestExecutePaginated_DisableAutoPaging(t *testing.T) {
@@ -265,7 +291,7 @@ func TestExecutePaginated_LimitPages(t *testing.T) {
 		resp := paginatedResponse([]interface{}{
 			map[string]interface{}{"name": "item"},
 		})
-		resp["next"] = "http://" + r.Host + r.URL.Path + "?page=" + string(rune('0'+callCount+1))
+		resp["next"] = "http://" + r.Host + r.URL.Path + "?page=" + fmt.Sprintf("%d", callCount+1)
 		respondJSON(w, http.StatusOK, resp)
 	})
 	defer server.Close()
@@ -423,21 +449,36 @@ func TestGetApiBaseURL(t *testing.T) {
 
 func TestDoRequest_JsonUnmarshal(t *testing.T) {
 	t.Parallel()
+	var receivedContentType string
+
 	client, server := setupMockServer(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		_ = json.NewEncoder(w).Encode(map[string]interface{}{
-			"key": "value",
+		receivedContentType = r.Header.Get("Content-Type")
+		respondJSON(w, http.StatusOK, map[string]interface{}{
+			"owner": map[string]interface{}{
+				"username": "nested-user",
+				"links": map[string]interface{}{
+					"self": "https://api.bitbucket.org/2.0/users/nested-user",
+				},
+			},
+			"full_name": "owner/repo",
 		})
 	})
 	defer server.Close()
 
 	urlStr := client.requestUrl("/test")
-	result, err := client.execute("GET", urlStr, "")
+	result, err := client.execute("POST", urlStr, `{"name":"test"}`)
 
 	require.NoError(t, err)
-	resultMap := result.(map[string]interface{})
-	assert.Equal(t, "value", resultMap["key"])
+	assert.Equal(t, "application/json", receivedContentType)
+	resultMap, ok := result.(map[string]interface{})
+	require.True(t, ok)
+	assert.Equal(t, "owner/repo", resultMap["full_name"])
+	owner, ok := resultMap["owner"].(map[string]interface{})
+	require.True(t, ok, "owner should be a nested map")
+	assert.Equal(t, "nested-user", owner["username"])
+	links, ok := owner["links"].(map[string]interface{})
+	require.True(t, ok, "links should be a nested map")
+	assert.Equal(t, "https://api.bitbucket.org/2.0/users/nested-user", links["self"])
 }
 
 func TestNewBasicAuth(t *testing.T) {
@@ -449,9 +490,25 @@ func TestNewBasicAuth(t *testing.T) {
 	assert.Equal(t, "pass", client.Auth.password)
 	assert.Equal(t, DEFAULT_PAGE_LENGTH, client.Pagelen)
 	assert.Equal(t, DEFAULT_MAX_DEPTH, client.MaxDepth)
+	assert.Equal(t, DEFAULT_LIMIT_PAGES, client.LimitPages)
+	assert.False(t, client.DisableAutoPaging)
 	assert.NotNil(t, client.Repositories)
+	assert.NotNil(t, client.Repositories.PullRequests)
+	assert.NotNil(t, client.Repositories.Pipelines)
+	assert.NotNil(t, client.Repositories.Repository)
+	assert.NotNil(t, client.Repositories.Issues)
+	assert.NotNil(t, client.Repositories.Commits)
+	assert.NotNil(t, client.Repositories.Diff)
+	assert.NotNil(t, client.Repositories.BranchRestrictions)
+	assert.NotNil(t, client.Repositories.Webhooks)
+	assert.NotNil(t, client.Repositories.Downloads)
+	assert.NotNil(t, client.Repositories.DeployKeys)
 	assert.NotNil(t, client.Users)
+	assert.NotNil(t, client.Users.SSHKeys)
+	assert.NotNil(t, client.User)
 	assert.NotNil(t, client.Workspaces)
+	assert.NotNil(t, client.Workspaces.Permissions)
+	assert.NotNil(t, client.HttpClient)
 }
 
 func TestNewBasicAuthWithBaseUrlStr(t *testing.T) {
@@ -475,6 +532,13 @@ func TestNewOAuthbearerToken(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.Equal(t, "my-token", client.Auth.bearerToken)
+	assert.Equal(t, DEFAULT_PAGE_LENGTH, client.Pagelen)
+	assert.Equal(t, DEFAULT_LIMIT_PAGES, client.LimitPages)
+	assert.False(t, client.DisableAutoPaging)
+	assert.NotNil(t, client.HttpClient)
+	assert.NotNil(t, client.Repositories)
+	assert.NotNil(t, client.Users)
+	assert.NotNil(t, client.Workspaces)
 }
 
 func TestNewOAuthbearerTokenWithBaseUrlStr(t *testing.T) {
@@ -483,6 +547,11 @@ func TestNewOAuthbearerTokenWithBaseUrlStr(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.Contains(t, client.GetApiBaseURL(), "custom.example.com")
+	assert.Equal(t, "token", client.Auth.bearerToken)
+	assert.Equal(t, DEFAULT_PAGE_LENGTH, client.Pagelen)
+	assert.Equal(t, DEFAULT_LIMIT_PAGES, client.LimitPages)
+	assert.False(t, client.DisableAutoPaging)
+	assert.NotNil(t, client.HttpClient)
 }
 
 func TestSetApiBaseURL(t *testing.T) {
@@ -503,7 +572,12 @@ func TestNewBasicAuthWithCaCert(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.Equal(t, "user", client.Auth.user)
-	assert.NotNil(t, client.HttpClient)
+	require.NotNil(t, client.HttpClient)
+	transport, ok := client.HttpClient.Transport.(*http.Transport)
+	require.True(t, ok, "transport should be *http.Transport")
+	require.NotNil(t, transport.TLSClientConfig)
+	assert.NotNil(t, transport.TLSClientConfig.RootCAs)
+	assert.Equal(t, uint16(tls.VersionTLS12), transport.TLSClientConfig.MinVersion)
 }
 
 func TestNewBasicAuthWithBaseUrlStrCaCert(t *testing.T) {
@@ -530,7 +604,12 @@ func TestNewOAuthbearerTokenWithCaCert(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.Equal(t, "my-token", client.Auth.bearerToken)
-	assert.NotNil(t, client.HttpClient)
+	require.NotNil(t, client.HttpClient)
+	transport, ok := client.HttpClient.Transport.(*http.Transport)
+	require.True(t, ok, "transport should be *http.Transport")
+	require.NotNil(t, transport.TLSClientConfig)
+	assert.NotNil(t, transport.TLSClientConfig.RootCAs)
+	assert.Equal(t, uint16(tls.VersionTLS12), transport.TLSClientConfig.MinVersion)
 }
 
 func TestNewOAuthbearerTokenWithBaseUrlStrCaCert(t *testing.T) {
