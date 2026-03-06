@@ -40,6 +40,9 @@ func fetchCACertsForTest(host string, port string) ([]byte, error) {
 }
 
 func TestAppendCaCerts_util_test(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test requiring network access")
+	}
 	caCerts, err := fetchCACertsForTest("bitbucket.org", "443")
 	if err != nil {
 		t.Fatalf("Error fetching CA certs using `fetchCACertsForTest`: %v", err)
