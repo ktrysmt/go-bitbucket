@@ -40,9 +40,10 @@ func TestMockPullRequests_List_Success(t *testing.T) {
 
 	actualPullRequestList, actualErr := mockPullRequestInst.List(inPullRequestOpts)
 
-	assert.Nil(t, actualErr, "No error should have been returned, but got: %v", actualErr)
+	assert.Nilf(t, actualErr, "No error should have been returned, but got: %v", actualErr)
 	assert.NotNil(t, actualPullRequestList, "Pull requests should be returned.")
-	assert.Equal(t, expectedPullRequestList, actualPullRequestList, "Actual and Expected pull request lists should be equal.")
+	assert.Equal(t, expectedPullRequestList, actualPullRequestList, "Actual and Expected pull request lists"+
+		" should be equal.")
 }
 
 func TestMockPullRequests_List_Error(t *testing.T) {
@@ -66,5 +67,6 @@ func TestMockPullRequests_List_Error(t *testing.T) {
 	actualPullRequestList, actualErr := mockPullRequestInst.List(inPullRequestOpts)
 
 	assert.NotNil(t, actualErr)
-	assert.Nil(t, actualPullRequestList, "The returned list of pull requests should be nil, but got: %v", actualPullRequestList)
+	assert.Nilf(t, actualPullRequestList, "The returned list of pull requests should be nil, but got: %v",
+		actualPullRequestList)
 }
