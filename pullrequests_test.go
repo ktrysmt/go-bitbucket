@@ -937,3 +937,69 @@ func TestPullRequestsDecline_NotFound(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, result)
 }
+func TestBuildPullRequestBody_MergeStrategy(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		strategy PullRequestsMergeStrategy
+		expected string
+	}{
+		"MergeCommit":       {MergeCommit, "merge_commit"},
+		"Squash":            {Squash, "squash"},
+		"FastForward":       {FastForward, "fast_forward"},
+		"SquashFastForward": {SquashFastForward, "squash_fast_forward"},
+		"RebaseFastForward": {RebaseFastForward, "rebase_fast_forward"},
+		"RebaseMerge":       {RebaseMerge, "rebase_merge"},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			pr := &PullRequests{}
+			opts := &PullRequestsOptions{
+				Title:         "Merge Strategy",
+				MergeStrategy: tc.strategy,
+			}
+
+			data, err := pr.buildPullRequestBody(opts)
+			require.NoError(t, err)
+
+			var body map[string]interface{}
+			require.NoError(t, json.Unmarshal([]byte(data), &body))
+
+			assert.Equal(t, tc.expected, body["merge_strategy"], "Strategy %s did not serialize correctly", name)
+		})
+	}
+}
+
+func TestPullRequestsMerge_WithStrategy(t *testing.T) {
+	t.Parallel()
+	var receivedBody map[string]interface{}
+
+	client, server := setupMockServer(func(w http.ResponseWriter, r *http.Request) {
+		bodyBytes, _ := io.ReadAll(r.Body)
+		_ = json.Unmarshal(bodyBytes, &receivedBody)
+
+		mergedPR := realisticPRResponse()
+		mergedPR["state"] = "MERGED"
+		respondJSON(w, http.StatusOK, mergedPR)
+	})
+	defer server.Close()
+
+	opts := &PullRequestsOptions{
+		Owner:         "owner",
+		RepoSlug:      "repo",
+		ID:            "1",
+		MergeStrategy: FastForward,
+		Message:       "Fast-forwarding this PR",
+	}
+
+	result, err := client.Repositories.PullRequests.Merge(opts)
+
+	require.NoError(t, err)
+	assert.Equal(t, string(FastForward), receivedBody["merge_strategy"])
+	assert.Equal(t, "Fast-forwarding this PR", receivedBody["message"])
+
+	resultMap := result.(map[string]interface{})
+	assert.Equal(t, "MERGED", resultMap["state"])
+}
