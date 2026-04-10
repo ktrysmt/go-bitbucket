@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	_ "github.com/k0kubun/pp"
-	"github.com/ktrysmt/go-bitbucket"
+	"github.com/trufflesecurity/go-bitbucket"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -71,7 +71,7 @@ func (t *Permission) GetUserPermissionsByUuid(organization, member string) (*Per
 }
 
 func (t *Workspace) List() (*WorkspaceList, error) {
-	urlStr := t.c.requestUrl("/workspaces")
+	urlStr := t.c.requestUrl("/user/workspaces")
 	response, err := t.c.executePaginated("GET", urlStr, "", nil)
 	if err != nil {
 		return nil, err
@@ -135,7 +135,13 @@ func decodeWorkspace(workspace interface{}) (*Workspace, error) {
 		return nil, DecodeError(workspaceResponseMap)
 	}
 
-	err := mapstructure.Decode(workspace, &workspaceEntry)
+	// /user/workspaces returns a permission wrapper with the workspace nested
+	// under a "workspace" key. Extract it so decoding works for both endpoints.
+	if nested, ok := workspaceResponseMap["workspace"].(map[string]interface{}); ok {
+		workspaceResponseMap = nested
+	}
+
+	err := mapstructure.Decode(workspaceResponseMap, &workspaceEntry)
 	return &workspaceEntry, err
 }
 

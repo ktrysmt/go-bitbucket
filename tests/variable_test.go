@@ -7,7 +7,7 @@ import (
 	"time"
 
 	_ "github.com/k0kubun/pp"
-	"github.com/ktrysmt/go-bitbucket"
+	"github.com/trufflesecurity/go-bitbucket"
 )
 
 func TestEndToEndDeploymentVariables(t *testing.T) {

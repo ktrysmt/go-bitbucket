@@ -1,12 +1,12 @@
-module github.com/ktrysmt/go-bitbucket
+module github.com/trufflesecurity/go-bitbucket
 
 go 1.25.0
 
 // You can uncomment this for local testing and development.
 // Ref: https://thewebivore.com/using-replace-in-go-mod-to-point-to-your-local-module/
 //replace (
-//	github.com/ktrysmt/go-bitbucket => ./
-//	github.com/ktrysmt/go-bitbucket/tests => ./tests
+//	github.com/trufflesecurity/go-bitbucket => ./
+//	github.com/trufflesecurity/go-bitbucket/tests => ./tests
 //)
 
 require (
