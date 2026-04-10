@@ -1,38 +1,58 @@
 # go-bitbucket
 
-<a class="repo-badge" href="https://godoc.org/github.com/ktrysmt/go-bitbucket"><img src="https://godoc.org/github.com/ktrysmt/go-bitbucket?status.svg" alt="go-bitbucket?status"></a>
-<a href="https://goreportcard.com/report/github.com/ktrysmt/go-bitbucket"><img class="badge" tag="github.com/ktrysmt/go-bitbucket" src="https://goreportcard.com/badge/github.com/ktrysmt/go-bitbucket"></a>
+> **This is a temporary fork of [ktrysmt/go-bitbucket](https://github.com/ktrysmt/go-bitbucket).**
+> It exists to adopt Bitbucket Cloud API changes (deprecated endpoint migration, safer error handling)
+> ahead of upstream. We intend to return to the upstream module once it incorporates these changes.
 
-> Bitbucket-API library for golang.
-
-Support Bitbucket API v2.0.
-
-And the response type is json format defined Bitbucket API.
+Bitbucket API v2.0 library for Go.
 
 - Bitbucket API v2.0 <https://developer.atlassian.com/bitbucket/api/2/reference/resource/>
 - Swagger for API v2.0 <https://api.bitbucket.org/swagger.json>
 
+## Changes from upstream
+
+This fork introduces the following breaking and non-breaking changes relative to `ktrysmt/go-bitbucket v0.9.x`:
+
+### Breaking
+
+- **Constructor signatures changed**: All client constructors (`NewBasicAuth`, `NewOAuthbearerToken`, `NewOAuthClientCredentials`, etc.) now return `(*Client, error)` instead of `*Client`. Callers must handle the error.
+- `NewOAuthWithCode` and `NewOAuthWithRefreshToken` return three values: `(*Client, string, error)`.
+- **`log.Fatal` removed**: All `log.Fatal` calls in constructors have been replaced with returned errors, so the library no longer terminates the calling process on failure.
+
+### Non-breaking
+
+- **Workspace listing**: Uses `GET /user/workspaces` instead of the deprecated `GET /workspaces`. Response decoding handles the `workspace_access` envelope from the new endpoint.
+- **Custom CA certificate support**: New constructor variants (`NewBasicAuthWithCaCert`, `NewOAuthbearerTokenWithCaCert`, etc.) accept custom CA certificates for Bitbucket Server / Data Center deployments with self-signed certs.
+- **Base URL constructors**: New variants (`NewBasicAuthWithBaseUrlStr`, `NewOAuthbearerTokenWithBaseUrlStr`, etc.) accept the API base URL as a parameter instead of relying on the `BITBUCKET_API_BASE_URL` environment variable.
+- **`PullRequests.List()`**: Added as the properly named method; `Gets()` is kept as a backward-compatible alias.
+- **`PullRequestsMergeStrategy` type**: New string enum for merge strategy options.
+- **Pipeline variable methods**: `GetPipelineVariable` and `UpdatePipelineVariable` added to the repository interface.
+
 ## Install
 
 ```sh
-go get github.com/ktrysmt/go-bitbucket
+go get github.com/trufflesecurity/go-bitbucket
 ```
 
 ## Usage
 
-### create a pullrequest
+### Create a pull request
 
 ```go
 package main
 
 import (
         "fmt"
+        "log"
 
-        "github.com/ktrysmt/go-bitbucket"
+        "github.com/trufflesecurity/go-bitbucket"
 )
 
 func main() {
-        c := bitbucket.NewBasicAuth("username", "password")
+        c, err := bitbucket.NewBasicAuth("username", "password")
+        if err != nil {
+                log.Fatal(err)
+        }
 
         opt := &bitbucket.PullRequestsOptions{
                 Owner:             "your-team",
@@ -45,26 +65,30 @@ func main() {
 
         res, err := c.Repositories.PullRequests.Create(opt)
         if err != nil {
-                panic(err)
+                log.Fatal(err)
         }
 
         fmt.Println(res)
 }
 ```
 
-### create a repository
+### Create a repository
 
 ```go
 package main
 
 import (
         "fmt"
+        "log"
 
-        "github.com/ktrysmt/go-bitbucket"
+        "github.com/trufflesecurity/go-bitbucket"
 )
 
 func main() {
-        c := bitbucket.NewBasicAuth("username", "password")
+        c, err := bitbucket.NewBasicAuth("username", "password")
+        if err != nil {
+                log.Fatal(err)
+        }
 
         opt := &bitbucket.RepositoryOptions{
                 Owner:    "project_name",
@@ -74,7 +98,7 @@ func main() {
 
         res, err := c.Repositories.Repository.Create(opt)
         if err != nil {
-                panic(err)
+                log.Fatal(err)
         }
 
         fmt.Println(res)
@@ -152,4 +176,4 @@ For documented workflow of the go:qmock test structure in ```/mock_tests/reposit
 
 ## Author
 
-[ktrysmt](https://github.com/ktrysmt)
+Originally created by [ktrysmt](https://github.com/ktrysmt). Forked and maintained by [TruffleSecurity](https://github.com/trufflesecurity).
