@@ -135,23 +135,34 @@ func decodeWorkspace(workspace interface{}) (*Workspace, error) {
 		return nil, DecodeError(workspaceResponseMap)
 	}
 
-	// /user/workspaces returns a permission wrapper with the workspace nested
-	// under a "workspace" key. Extract it so decoding works for both endpoints.
-	if nested, ok := workspaceResponseMap["workspace"].(map[string]interface{}); ok {
-		workspaceResponseMap = nested
-	}
-
 	err := mapstructure.Decode(workspaceResponseMap, &workspaceEntry)
 	return &workspaceEntry, err
 }
 
 func decodeWorkspaceList(workspaceResponse interface{}) (*WorkspaceList, error) {
 	workspaceResponseMap := workspaceResponse.(map[string]interface{})
-	workspaceMapList := workspaceResponseMap["values"].([]interface{})
+	valuesRaw, ok := workspaceResponseMap["values"]
+	if !ok || valuesRaw == nil {
+		return &WorkspaceList{}, nil
+	}
+	workspaceMapList, ok := valuesRaw.([]interface{})
+	if !ok {
+		return &WorkspaceList{}, nil
+	}
 
 	var workspaces []Workspace
-	for _, workspaceMap := range workspaceMapList {
-		workspaceEntry, err := decodeWorkspace(workspaceMap)
+	for _, item := range workspaceMapList {
+		// GET /user/workspaces returns workspace_access objects; the workspace
+		// is nested under the "workspace" key.
+		itemMap, ok := item.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		nested, ok := itemMap["workspace"].(map[string]interface{})
+		if !ok {
+			continue
+		}
+		workspaceEntry, err := decodeWorkspace(nested)
 		if err != nil {
 			return nil, err
 		}
