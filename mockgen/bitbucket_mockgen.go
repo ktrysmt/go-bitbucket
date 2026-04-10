@@ -12,7 +12,7 @@ package mockgen
 import (
 	reflect "reflect"
 
-	bitbucket "github.com/ktrysmt/go-bitbucket"
+	bitbucket "github.com/trufflesecurity/go-bitbucket"
 	gomock "go.uber.org/mock/gomock"
 )
 

@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/ktrysmt/go-bitbucket"
+	"github.com/trufflesecurity/go-bitbucket"
 )
 
 const (

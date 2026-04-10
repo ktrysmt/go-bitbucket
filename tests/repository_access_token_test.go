@@ -3,7 +3,7 @@ package tests
 import (
 	"testing"
 
-	"github.com/ktrysmt/go-bitbucket"
+	"github.com/trufflesecurity/go-bitbucket"
 	"github.com/stretchr/testify/assert"
 )
 

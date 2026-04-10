@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	go_bitbucket "github.com/ktrysmt/go-bitbucket"
-	"github.com/ktrysmt/go-bitbucket/mockgen"
+	go_bitbucket "github.com/trufflesecurity/go-bitbucket"
+	"github.com/trufflesecurity/go-bitbucket/mockgen"
 	"github.com/stretchr/testify/assert"
 
 	"go.uber.org/mock/gomock"
