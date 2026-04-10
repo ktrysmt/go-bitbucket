@@ -135,20 +135,13 @@ func decodeWorkspace(workspace interface{}) (*Workspace, error) {
 		return nil, DecodeError(workspaceResponseMap)
 	}
 
-	err := mapstructure.Decode(workspaceResponseMap, &workspaceEntry)
+	err := mapstructure.Decode(workspace, &workspaceEntry)
 	return &workspaceEntry, err
 }
 
 func decodeWorkspaceList(workspaceResponse interface{}) (*WorkspaceList, error) {
 	workspaceResponseMap := workspaceResponse.(map[string]interface{})
-	valuesRaw, ok := workspaceResponseMap["values"]
-	if !ok || valuesRaw == nil {
-		return &WorkspaceList{}, nil
-	}
-	workspaceMapList, ok := valuesRaw.([]interface{})
-	if !ok {
-		return &WorkspaceList{}, nil
-	}
+	workspaceMapList := workspaceResponseMap["values"].([]interface{})
 
 	var workspaces []Workspace
 	for _, item := range workspaceMapList {
