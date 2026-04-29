@@ -1596,6 +1596,97 @@ func TestBuildRepositoryUserPermissionBody(t *testing.T) {
 	assert.Equal(t, "admin", body["permission"])
 }
 
+// --- Regression: returned *Repository must carry a usable client ---
+// https://github.com/ktrysmt/go-bitbucket/issues/347
+
+func TestRepositoryGet_ReturnedRepoHasClient(t *testing.T) {
+	t.Parallel()
+	client, server := setupMockServer(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/2.0/repositories/owner/my-repo":
+			respondJSON(w, http.StatusOK, map[string]interface{}{
+				"slug": "my-repo", "full_name": "owner/my-repo", "name": "my-repo",
+			})
+		case "/2.0/repositories/owner/my-repo/src/main/README.md":
+			w.Header().Set("Content-Type", "text/plain")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte("hello"))
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+	})
+	defer server.Close()
+
+	repo, err := client.Repositories.Repository.Get(&RepositoryOptions{Owner: "owner", RepoSlug: "my-repo"})
+	require.NoError(t, err)
+	require.NotNil(t, repo)
+
+	content, err := repo.GetFileContent(&RepositoryFilesOptions{
+		Owner: "owner", RepoSlug: "my-repo", Ref: "main", Path: "README.md",
+	})
+	require.NoError(t, err)
+	assert.Equal(t, "hello", string(content))
+}
+
+func TestRepositoryCreate_ReturnedRepoHasClient(t *testing.T) {
+	t.Parallel()
+	client, server := setupMockServer(func(w http.ResponseWriter, r *http.Request) {
+		respondJSON(w, http.StatusOK, map[string]interface{}{"slug": "my-repo"})
+	})
+	defer server.Close()
+
+	repo, err := client.Repositories.Repository.Create(&RepositoryOptions{Owner: "owner", RepoSlug: "my-repo"})
+	require.NoError(t, err)
+	require.NotNil(t, repo)
+	assert.Same(t, client, repo.c)
+}
+
+func TestRepositoryFork_ReturnedRepoHasClient(t *testing.T) {
+	t.Parallel()
+	client, server := setupMockServer(func(w http.ResponseWriter, r *http.Request) {
+		respondJSON(w, http.StatusOK, map[string]interface{}{"slug": "forked"})
+	})
+	defer server.Close()
+
+	repo, err := client.Repositories.Repository.Fork(&RepositoryForkOptions{
+		FromOwner: "orig", FromSlug: "orig-repo", Owner: "new", Name: "forked",
+	})
+	require.NoError(t, err)
+	require.NotNil(t, repo)
+	assert.Same(t, client, repo.c)
+}
+
+func TestRepositoryUpdate_ReturnedRepoHasClient(t *testing.T) {
+	t.Parallel()
+	client, server := setupMockServer(func(w http.ResponseWriter, r *http.Request) {
+		respondJSON(w, http.StatusOK, map[string]interface{}{"slug": "my-repo"})
+	})
+	defer server.Close()
+
+	repo, err := client.Repositories.Repository.Update(&RepositoryOptions{Owner: "owner", RepoSlug: "my-repo"})
+	require.NoError(t, err)
+	require.NotNil(t, repo)
+	assert.Same(t, client, repo.c)
+}
+
+func TestRepositoriesList_ItemsHaveClient(t *testing.T) {
+	t.Parallel()
+	client, server := setupMockServer(func(w http.ResponseWriter, r *http.Request) {
+		respondJSON(w, http.StatusOK, paginatedResponse([]interface{}{
+			map[string]interface{}{"slug": "repo1", "full_name": "owner/repo1"},
+			map[string]interface{}{"slug": "repo2", "full_name": "owner/repo2"},
+		}))
+	})
+	defer server.Close()
+
+	res, err := client.Repositories.ListForAccount(&RepositoriesOptions{Owner: "owner"})
+	require.NoError(t, err)
+	require.Len(t, res.Items, 2)
+	for i := range res.Items {
+		assert.Same(t, client, res.Items[i].c, "item %d should have client wired", i)
+	}
+}
+
 // --- Decode Functions ---
 
 func TestDecodeRepository_Success(t *testing.T) {
