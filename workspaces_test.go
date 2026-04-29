@@ -20,18 +20,22 @@ func TestWorkspaceList_Success(t *testing.T) {
 			"size":    float64(2),
 			"values": []interface{}{
 				map[string]interface{}{
-					"slug":       "workspace1",
-					"name":       "Workspace One",
-					"uuid":       "{ws-1}",
-					"type":       "workspace",
-					"is_private": false,
+					"workspace": map[string]interface{}{
+						"slug":       "workspace1",
+						"name":       "Workspace One",
+						"uuid":       "{ws-1}",
+						"type":       "workspace",
+						"is_private": false,
+					},
 				},
 				map[string]interface{}{
-					"slug":       "workspace2",
-					"name":       "Workspace Two",
-					"uuid":       "{ws-2}",
-					"type":       "workspace",
-					"is_private": true,
+					"workspace": map[string]interface{}{
+						"slug":       "workspace2",
+						"name":       "Workspace Two",
+						"uuid":       "{ws-2}",
+						"type":       "workspace",
+						"is_private": true,
+					},
 				},
 			},
 		})
@@ -41,7 +45,7 @@ func TestWorkspaceList_Success(t *testing.T) {
 	result, err := client.Workspaces.List()
 
 	require.NoError(t, err)
-	assert.Equal(t, "/2.0/workspaces", receivedPath)
+	assert.Equal(t, "/2.0/user/workspaces", receivedPath)
 	assert.Len(t, result.Workspaces, 2)
 	assert.Equal(t, 1, result.Page)
 	assert.Equal(t, 10, result.Pagelen)
@@ -273,9 +277,11 @@ func TestDecodeWorkspaceList_Success(t *testing.T) {
 		"size":    float64(1),
 		"values": []interface{}{
 			map[string]interface{}{
-				"slug": "ws1",
-				"name": "Workspace 1",
-				"type": "workspace",
+				"workspace": map[string]interface{}{
+					"slug": "ws1",
+					"name": "Workspace 1",
+					"type": "workspace",
+				},
 			},
 		},
 	}
