@@ -230,6 +230,11 @@ func NewOAuthbearerTokenWithBaseUrlStrCaCert(t, u string, c []byte) (*Client, er
 	return injectClient(a)
 }
 
+// NewBasicAuth returns a Client authenticated via HTTP Basic auth.
+//
+// Atlassian has deprecated Bitbucket Cloud app passwords in favor of
+// Atlassian API tokens. For new integrations, prefer NewAPITokenAuth, which
+// delegates to NewBasicAuth but documents the email + API token usage.
 func NewBasicAuth(u, p string) (*Client, error) {
 	a := &auth{user: u, password: p}
 	return injectClient(a)
@@ -256,6 +261,36 @@ func NewBasicAuthWithBaseUrlStrCaCert(u, p, urlStr string, c []byte) (*Client, e
 	}
 	a := &auth{user: u, password: p, apiBaseUrl: apiBaseURL, caCerts: c}
 	return injectClient(a)
+}
+
+// NewAPITokenAuth returns a Client authenticated with an Atlassian API token.
+// Pass the Atlassian account email as the first argument and the API token as
+// the second. Bitbucket Cloud accepts API tokens via HTTP Basic auth, so this
+// is a thin alias over NewBasicAuth that makes the intent explicit.
+//
+// See https://support.atlassian.com/bitbucket-cloud/docs/using-api-tokens/
+func NewAPITokenAuth(email, token string) (*Client, error) {
+	return NewBasicAuth(email, token)
+}
+
+// NewAPITokenAuthWithBaseUrlStr is like NewAPITokenAuth but targets a custom
+// API base URL (e.g. an Isolated Cloud Instance with a customer-specific
+// hostname). Equivalent to BITBUCKET_API_BASE_URL but configured per client.
+func NewAPITokenAuthWithBaseUrlStr(email, token, urlStr string) (*Client, error) {
+	return NewBasicAuthWithBaseUrlStr(email, token, urlStr)
+}
+
+// NewAPITokenAuthWithCaCert is like NewAPITokenAuth but trusts the supplied
+// PEM-encoded CA certificates in addition to the system roots.
+func NewAPITokenAuthWithCaCert(email, token string, caCerts []byte) (*Client, error) {
+	return NewBasicAuthWithCaCert(email, token, caCerts)
+}
+
+// NewAPITokenAuthWithBaseUrlStrCaCert combines a custom API base URL with
+// extra trusted CA certificates. Suited for Isolated Cloud Instances behind
+// an internal certificate authority.
+func NewAPITokenAuthWithBaseUrlStrCaCert(email, token, urlStr string, caCerts []byte) (*Client, error) {
+	return NewBasicAuthWithBaseUrlStrCaCert(email, token, urlStr, caCerts)
 }
 
 func injectClient(a *auth) (*Client, error) {
