@@ -18,6 +18,67 @@ And the response type is json format defined Bitbucket API.
 go get github.com/ktrysmt/go-bitbucket
 ```
 
+## Authentication
+
+Bitbucket Cloud accepts several credential types. Pick the constructor that
+matches your credential.
+
+### API token (recommended)
+
+Atlassian has deprecated app passwords; use an Atlassian API token instead.
+Pass your Atlassian account email as the username and the API token as the
+password.
+
+```go
+c := bitbucket.NewAPITokenAuth("you@example.com", "your-api-token")
+```
+
+`NewAPITokenAuth` is a thin alias over `NewBasicAuth` that documents the
+intended usage. See the
+[Atlassian API token guide](https://support.atlassian.com/bitbucket-cloud/docs/using-api-tokens/).
+
+### App password (legacy)
+
+```go
+c := bitbucket.NewBasicAuth("username", "app-password")
+```
+
+### OAuth bearer token
+
+```go
+c, err := bitbucket.NewOAuthbearerToken("access-token")
+```
+
+### Custom API base URL (Isolated Cloud Instances, self-hosted, proxies)
+
+When the API is reachable under a customer-specific hostname, pass the base
+URL alongside the credential:
+
+```go
+c, err := bitbucket.NewAPITokenAuthWithBaseUrlStr(
+    "you@example.com",
+    "your-api-token",
+    "https://api.your-isolated-instance.example.com/2.0",
+)
+```
+
+If the endpoint uses a private CA, supply the PEM bundle:
+
+```go
+caBundle, _ := os.ReadFile("/etc/ssl/private-ca.pem")
+c, err := bitbucket.NewAPITokenAuthWithBaseUrlStrCaCert(
+    "you@example.com",
+    "your-api-token",
+    "https://api.your-isolated-instance.example.com/2.0",
+    caBundle,
+)
+```
+
+The same `*WithBaseUrlStr` and `*WithBaseUrlStrCaCert` variants exist for
+`NewBasicAuth` and `NewOAuthbearerToken`. Alternatively, set
+`BITBUCKET_API_BASE_URL` in the environment to override the default for any
+constructor that does not take a URL argument.
+
 ## Usage
 
 ### create a pullrequest
@@ -32,7 +93,7 @@ import (
 )
 
 func main() {
-        c := bitbucket.NewBasicAuth("username", "password")
+        c := bitbucket.NewAPITokenAuth("you@example.com", "your-api-token")
 
         opt := &bitbucket.PullRequestsOptions{
                 Owner:             "your-team",
@@ -64,7 +125,7 @@ import (
 )
 
 func main() {
-        c := bitbucket.NewBasicAuth("username", "password")
+        c := bitbucket.NewAPITokenAuth("you@example.com", "your-api-token")
 
         opt := &bitbucket.RepositoryOptions{
                 Owner:    "project_name",

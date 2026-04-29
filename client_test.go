@@ -526,6 +526,65 @@ func TestNewBasicAuthWithBaseUrlStr_InvalidURL(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestNewAPITokenAuth(t *testing.T) {
+	t.Parallel()
+	client, err := NewAPITokenAuth("user@example.com", "api-token")
+
+	require.NoError(t, err)
+	assert.Equal(t, "user@example.com", client.Auth.user)
+	assert.Equal(t, "api-token", client.Auth.password)
+	assert.NotNil(t, client.HttpClient)
+	assert.NotNil(t, client.Repositories)
+}
+
+func TestNewAPITokenAuthWithBaseUrlStr(t *testing.T) {
+	t.Parallel()
+	client, err := NewAPITokenAuthWithBaseUrlStr("user@example.com", "api-token", "https://custom.example.com/2.0")
+
+	require.NoError(t, err)
+	assert.Equal(t, "user@example.com", client.Auth.user)
+	assert.Equal(t, "api-token", client.Auth.password)
+	assert.Contains(t, client.GetApiBaseURL(), "custom.example.com")
+}
+
+func TestNewAPITokenAuthWithBaseUrlStr_InvalidURL(t *testing.T) {
+	t.Parallel()
+	_, err := NewAPITokenAuthWithBaseUrlStr("user@example.com", "api-token", "://invalid")
+
+	assert.Error(t, err)
+}
+
+func TestNewAPITokenAuthWithCaCert(t *testing.T) {
+	t.Parallel()
+	cert := generateSelfSignedCert(t)
+	client, err := NewAPITokenAuthWithCaCert("user@example.com", "api-token", cert)
+
+	require.NoError(t, err)
+	assert.Equal(t, "user@example.com", client.Auth.user)
+	require.NotNil(t, client.HttpClient)
+	transport, ok := client.HttpClient.Transport.(*http.Transport)
+	require.True(t, ok, "transport should be *http.Transport")
+	require.NotNil(t, transport.TLSClientConfig)
+	assert.NotNil(t, transport.TLSClientConfig.RootCAs)
+}
+
+func TestNewAPITokenAuthWithBaseUrlStrCaCert(t *testing.T) {
+	t.Parallel()
+	cert := generateSelfSignedCert(t)
+	client, err := NewAPITokenAuthWithBaseUrlStrCaCert("user@example.com", "api-token", "https://custom.example.com/2.0", cert)
+
+	require.NoError(t, err)
+	assert.Contains(t, client.GetApiBaseURL(), "custom.example.com")
+}
+
+func TestNewAPITokenAuthWithBaseUrlStrCaCert_InvalidURL(t *testing.T) {
+	t.Parallel()
+	cert := generateSelfSignedCert(t)
+	_, err := NewAPITokenAuthWithBaseUrlStrCaCert("user@example.com", "api-token", "://invalid", cert)
+
+	assert.Error(t, err)
+}
+
 func TestNewOAuthbearerToken(t *testing.T) {
 	t.Parallel()
 	client, err := NewOAuthbearerToken("my-token")
