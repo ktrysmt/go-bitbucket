@@ -5,11 +5,10 @@
 
 > Bitbucket-API library for golang.
 
-Support Bitbucket API v2.0.
+Supports Bitbucket Cloud REST API v2.0. Responses follow the JSON shape
+documented by the official API.
 
-And the response type is json format defined Bitbucket API.
-
-- Bitbucket API v2.0 <https://developer.atlassian.com/bitbucket/api/2/reference/resource/>
+- Bitbucket Cloud REST API v2.0 <https://developer.atlassian.com/cloud/bitbucket/rest/intro/>
 - Swagger for API v2.0 <https://api.bitbucket.org/swagger.json>
 
 ## Install
@@ -49,10 +48,43 @@ c := bitbucket.NewBasicAuth("username", "app-password")
 c, err := bitbucket.NewOAuthbearerToken("access-token")
 ```
 
+### OAuth flow (client credentials, authorization code, refresh token)
+
+If you obtain tokens through the OAuth handshake yourself, use one of:
+
+```go
+c, err := bitbucket.NewOAuthClientCredentials("client-id", "client-secret")
+c, accessToken, err := bitbucket.NewOAuthWithCode("client-id", "client-secret", "auth-code")
+c, accessToken, err := bitbucket.NewOAuthWithRefreshToken("client-id", "client-secret", "refresh-token")
+```
+
+For Isolated Cloud Instances whose OAuth token endpoint lives under a
+customer-specific hostname, the matching `*WithEndpoint` variants override the
+default `bitbucket.Endpoint`:
+
+```go
+import "golang.org/x/oauth2"
+
+ep := oauth2.Endpoint{
+    AuthURL:  "https://auth.your-isolated-instance.example.com/site/oauth2/authorize",
+    TokenURL: "https://auth.your-isolated-instance.example.com/site/oauth2/access_token",
+}
+
+c, err := bitbucket.NewOAuthClientCredentialsWithEndpoint(
+    "client-id", "client-secret", ep.TokenURL,
+)
+c, accessToken, err := bitbucket.NewOAuthWithCodeWithEndpoint(
+    "client-id", "client-secret", "auth-code", ep,
+)
+c, accessToken, err := bitbucket.NewOAuthWithRefreshTokenWithEndpoint(
+    "client-id", "client-secret", "refresh-token", ep,
+)
+```
+
 ### Custom API base URL (Isolated Cloud Instances, self-hosted, proxies)
 
-When the API is reachable under a customer-specific hostname, pass the base
-URL alongside the credential:
+When the REST API is reachable under a customer-specific hostname, pass the
+base URL alongside the credential:
 
 ```go
 c, err := bitbucket.NewAPITokenAuthWithBaseUrlStr(
@@ -75,7 +107,9 @@ c, err := bitbucket.NewAPITokenAuthWithBaseUrlStrCaCert(
 ```
 
 The same `*WithBaseUrlStr` and `*WithBaseUrlStrCaCert` variants exist for
-`NewBasicAuth` and `NewOAuthbearerToken`. Alternatively, set
+`NewBasicAuth` and `NewOAuthbearerToken`. For OAuth-handshake constructors,
+combine the `*WithEndpoint` variant above with `client.SetApiBaseURL` to
+redirect REST traffic to the same host. Alternatively, set
 `BITBUCKET_API_BASE_URL` in the environment to override the default for any
 constructor that does not take a URL argument.
 
@@ -203,7 +237,7 @@ Individually;
 go test ./mock_tests/repository_mock_test.go
 ```
 
-For documented workflow of the go:qmock test structure in ```/mock_tests/repository_mock_test.go``` refer to;
+For documented workflow of the gomock test structure in ```/mock_tests/repository_mock_test.go``` refer to;
 - TestMockRepositoryPipelineVariables_List_Success
 - TestMockRepositoryPipelineVariables_List_Error
 

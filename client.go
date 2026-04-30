@@ -99,12 +99,19 @@ type Response struct {
 
 // Uses the Client Credentials Grant oauth2 flow to authenticate to Bitbucket
 func NewOAuthClientCredentials(i, s string) (*Client, error) {
+	return NewOAuthClientCredentialsWithEndpoint(i, s, bitbucket.Endpoint.TokenURL)
+}
+
+// NewOAuthClientCredentialsWithEndpoint is like NewOAuthClientCredentials but
+// targets a custom OAuth token endpoint (e.g. an Isolated Cloud Instance with
+// a customer-specific hostname).
+func NewOAuthClientCredentialsWithEndpoint(i, s, tokenURL string) (*Client, error) {
 	a := &auth{appID: i, secret: s}
 	ctx := context.Background()
 	conf := &clientcredentials.Config{
 		ClientID:     i,
 		ClientSecret: s,
-		TokenURL:     bitbucket.Endpoint.TokenURL,
+		TokenURL:     tokenURL,
 	}
 
 	tok, err := conf.Token(ctx)
@@ -123,12 +130,21 @@ func NewOAuthClientCredentials(i, s string) (*Client, error) {
 // NewOAuthWithCode after obtaining the authorization code through your own UI/CLI.
 // You can generate the authorization URL using oauth2.Config.AuthCodeURL() directly.
 func NewOAuth(i, s string) (*Client, error) {
+	return NewOAuthWithEndpoint(i, s, bitbucket.Endpoint)
+}
+
+// NewOAuthWithEndpoint is like NewOAuth but targets a custom OAuth endpoint
+// (e.g. an Isolated Cloud Instance with a customer-specific hostname).
+//
+// Deprecated: This function uses stdin/stdout directly, making it unsuitable
+// for non-interactive environments. Prefer NewOAuthWithCodeWithEndpoint.
+func NewOAuthWithEndpoint(i, s string, ep oauth2.Endpoint) (*Client, error) {
 	a := &auth{appID: i, secret: s}
 	ctx := context.Background()
 	conf := &oauth2.Config{
 		ClientID:     i,
 		ClientSecret: s,
-		Endpoint:     bitbucket.Endpoint,
+		Endpoint:     ep,
 	}
 
 	// Redirect user to consent page to ask for permission
@@ -156,12 +172,19 @@ func NewOAuth(i, s string) (*Client, error) {
 // NewOAuthWithCode finishes the OAuth handshake with a given code
 // and returns a *Client
 func NewOAuthWithCode(i, s, c string) (*Client, string, error) {
+	return NewOAuthWithCodeWithEndpoint(i, s, c, bitbucket.Endpoint)
+}
+
+// NewOAuthWithCodeWithEndpoint is like NewOAuthWithCode but targets a custom
+// OAuth endpoint (e.g. an Isolated Cloud Instance with a customer-specific
+// hostname).
+func NewOAuthWithCodeWithEndpoint(i, s, c string, ep oauth2.Endpoint) (*Client, string, error) {
 	a := &auth{appID: i, secret: s}
 	ctx := context.Background()
 	conf := &oauth2.Config{
 		ClientID:     i,
 		ClientSecret: s,
-		Endpoint:     bitbucket.Endpoint,
+		Endpoint:     ep,
 	}
 
 	tok, err := conf.Exchange(ctx, c)
@@ -179,12 +202,19 @@ func NewOAuthWithCode(i, s, c string) (*Client, string, error) {
 // NewOAuthWithRefreshToken obtains a new access token with a given refresh token
 // and returns a *Client
 func NewOAuthWithRefreshToken(i, s, rt string) (*Client, string, error) {
+	return NewOAuthWithRefreshTokenWithEndpoint(i, s, rt, bitbucket.Endpoint)
+}
+
+// NewOAuthWithRefreshTokenWithEndpoint is like NewOAuthWithRefreshToken but
+// targets a custom OAuth endpoint (e.g. an Isolated Cloud Instance with a
+// customer-specific hostname).
+func NewOAuthWithRefreshTokenWithEndpoint(i, s, rt string, ep oauth2.Endpoint) (*Client, string, error) {
 	a := &auth{appID: i, secret: s}
 	ctx := context.Background()
 	conf := &oauth2.Config{
 		ClientID:     i,
 		ClientSecret: s,
-		Endpoint:     bitbucket.Endpoint,
+		Endpoint:     ep,
 	}
 
 	tokenSource := conf.TokenSource(ctx, &oauth2.Token{
