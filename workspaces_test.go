@@ -355,10 +355,7 @@ func TestDecodeProjects_Success(t *testing.T) {
 	assert.Equal(t, "{proj-uuid-1}", result.Items[0].Uuid)
 }
 
-// TestDecodeProjects_MaxDepthBug documents a known bug in decodeProjects:
-// line 214 of workspaces.go reads "max_width" instead of "max_depth",
-// so MaxDepth is always 0 even when "max_depth" is provided in the response.
-func TestDecodeProjects_MaxDepthBug(t *testing.T) {
+func TestDecodeProjects_MaxDepth(t *testing.T) {
 	t.Parallel()
 	response := map[string]interface{}{
 		"page":      float64(1),
@@ -371,8 +368,7 @@ func TestDecodeProjects_MaxDepthBug(t *testing.T) {
 	result, err := decodeProjects(response)
 
 	require.NoError(t, err)
-	// BUG: MaxDepth should be 5 but the code reads "max_width" instead of "max_depth"
-	assert.Equal(t, int32(0), result.MaxDepth, "MaxDepth is always 0 because code reads 'max_width' instead of 'max_depth'")
+	assert.Equal(t, int32(5), result.MaxDepth)
 }
 
 func TestDecodeProjects_InvalidFormat(t *testing.T) {
@@ -383,10 +379,7 @@ func TestDecodeProjects_InvalidFormat(t *testing.T) {
 	assert.Contains(t, err.Error(), "Not a valid format")
 }
 
-// TestDecodeMembers_PaginationFieldsAreZero documents that decodeMembers
-// expects page/pagelen/size as int, but JSON unmarshal produces float64,
-// so pagination fields are always 0 in practice.
-func TestDecodeMembers_PaginationFieldsAreZero(t *testing.T) {
+func TestDecodeMembers_PaginationFields(t *testing.T) {
 	t.Parallel()
 	response := map[string]interface{}{
 		"page":    float64(3),
@@ -411,9 +404,7 @@ func TestDecodeMembers_PaginationFieldsAreZero(t *testing.T) {
 	assert.Equal(t, "testuser", result.Members[0].Username)
 	assert.Equal(t, "Test User", result.Members[0].DisplayName)
 	assert.Equal(t, "{user-uuid}", result.Members[0].Uuid)
-	// BUG: decodeMembers uses type assertion .(int) but JSON produces float64,
-	// so the assertion always fails and pagination fields default to 0.
-	assert.Equal(t, 0, result.Page, "Page is 0 because .(int) type assertion fails on float64")
-	assert.Equal(t, 0, result.Pagelen, "Pagelen is 0 because .(int) type assertion fails on float64")
-	assert.Equal(t, 0, result.Size, "Size is 0 because .(int) type assertion fails on float64")
+	assert.Equal(t, 3, result.Page)
+	assert.Equal(t, 25, result.Pagelen)
+	assert.Equal(t, 1, result.Size)
 }

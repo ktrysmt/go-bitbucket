@@ -269,9 +269,9 @@ type RepositoryBranchCreationOptions struct {
 type RepositoryBranchDeleteOptions struct {
 	Owner    string `json:"owner"`
 	RepoSlug string `json:"repo_slug"`
-	RepoUUID string `json:"uuid"`
+	RepoUUID string `json:"repo_uuid"`
 	RefName  string `json:"name"`
-	RefUUID  string `json:"uuid"`
+	RefUUID  string `json:"ref_uuid"`
 }
 
 type RepositoryBranchTarget struct {
