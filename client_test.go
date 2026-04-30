@@ -19,6 +19,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/oauth2"
 )
 
 func generateSelfSignedCert(t *testing.T) []byte {
@@ -709,4 +710,65 @@ func TestAppendCaCerts_InvalidPEM(t *testing.T) {
 	_, err := appendCaCerts([]byte("not a valid PEM"))
 
 	assert.Error(t, err)
+}
+
+func TestNewOAuthClientCredentialsWithEndpoint(t *testing.T) {
+	t.Parallel()
+	var receivedPath string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		receivedPath = r.URL.Path
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = io.WriteString(w, `{"access_token":"custom-cc-token","token_type":"bearer","expires_in":3600}`)
+	}))
+	defer server.Close()
+
+	client, err := NewOAuthClientCredentialsWithEndpoint("id", "secret", server.URL+"/site/oauth2/access_token")
+
+	require.NoError(t, err)
+	assert.Equal(t, "/site/oauth2/access_token", receivedPath)
+	assert.Equal(t, "custom-cc-token", client.Auth.token.AccessToken)
+}
+
+func TestNewOAuthWithCodeWithEndpoint(t *testing.T) {
+	t.Parallel()
+	var receivedPath string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		receivedPath = r.URL.Path
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = io.WriteString(w, `{"access_token":"custom-code-token","token_type":"bearer","expires_in":3600}`)
+	}))
+	defer server.Close()
+
+	ep := oauth2.Endpoint{
+		AuthURL:  server.URL + "/site/oauth2/authorize",
+		TokenURL: server.URL + "/site/oauth2/access_token",
+	}
+	client, accessToken, err := NewOAuthWithCodeWithEndpoint("id", "secret", "code", ep)
+
+	require.NoError(t, err)
+	assert.Equal(t, "/site/oauth2/access_token", receivedPath)
+	assert.Equal(t, "custom-code-token", accessToken)
+	assert.Equal(t, "custom-code-token", client.Auth.token.AccessToken)
+}
+
+func TestNewOAuthWithRefreshTokenWithEndpoint(t *testing.T) {
+	t.Parallel()
+	var receivedPath string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		receivedPath = r.URL.Path
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = io.WriteString(w, `{"access_token":"custom-refresh-token","token_type":"bearer","expires_in":3600}`)
+	}))
+	defer server.Close()
+
+	ep := oauth2.Endpoint{
+		AuthURL:  server.URL + "/site/oauth2/authorize",
+		TokenURL: server.URL + "/site/oauth2/access_token",
+	}
+	client, accessToken, err := NewOAuthWithRefreshTokenWithEndpoint("id", "secret", "rt", ep)
+
+	require.NoError(t, err)
+	assert.Equal(t, "/site/oauth2/access_token", receivedPath)
+	assert.Equal(t, "custom-refresh-token", accessToken)
+	assert.Equal(t, "custom-refresh-token", client.Auth.token.AccessToken)
 }
