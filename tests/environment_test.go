@@ -40,7 +40,7 @@ func TestListEnvironments(t *testing.T) {
 
 	res, err := c.Repositories.Repository.ListEnvironments(opt)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	if res == nil {
@@ -82,7 +82,7 @@ func TestEndToEndEnvironments(t *testing.T) {
 
 	environment, err := c.Repositories.Repository.AddEnvironment(opt)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	if environment.Uuid == "" {
@@ -94,7 +94,7 @@ func TestEndToEndEnvironments(t *testing.T) {
 
 	foundEnvironment, err := c.Repositories.Repository.GetEnvironment(opt)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	if foundEnvironment.Name != "foo" {
@@ -110,6 +110,6 @@ func TestEndToEndEnvironments(t *testing.T) {
 	// On success the delete API doesn't return any content (HTTP status 204)
 	_, err = c.Repositories.Repository.DeleteEnvironment(deleteOpt)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 }

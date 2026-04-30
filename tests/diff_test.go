@@ -37,7 +37,7 @@ func TestDiff(t *testing.T) {
 	}
 	res, err := c.Repositories.Diff.GetDiff(opt)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	pp.Println(res)
@@ -76,7 +76,7 @@ func TestGetDiffStat(t *testing.T) {
 	}
 	res, err := c.Repositories.Diff.GetDiffStat(opt)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	pp.Println(res)
@@ -123,7 +123,7 @@ func TestGetDiffStatWithFields(t *testing.T) {
 
 	res, err := c.Repositories.Diff.GetDiffStat(opt)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	pp.Println(res)

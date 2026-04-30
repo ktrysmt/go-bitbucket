@@ -48,7 +48,7 @@ func TestProjectCreate_isPrivateTrue(t *testing.T) {
 	}
 	project, err := c.Workspaces.CreateProject(opt)
 	if err != nil {
-		t.Error("The project could not be created.")
+		t.Fatal("The project could not be created.")
 	}
 
 	if project.Name != projectName {
@@ -64,7 +64,7 @@ func TestProjectCreate_isPrivateTrue(t *testing.T) {
 	// Delete the project, so we can keep a clean test environment
 	_, err = c.Workspaces.DeleteProject(opt)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 }
 
@@ -81,7 +81,7 @@ func TestProjectCreate_isPrivateFalse(t *testing.T) {
 	}
 	project, err := c.Workspaces.CreateProject(opt)
 	if err != nil {
-		t.Error("The project could not be created.")
+		t.Fatal("The project could not be created.")
 	}
 
 	if project.Name != projectName {
@@ -97,6 +97,6 @@ func TestProjectCreate_isPrivateFalse(t *testing.T) {
 	// Delete the project, so we can keep a clean test environment
 	_, err = c.Workspaces.DeleteProject(opt)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 }

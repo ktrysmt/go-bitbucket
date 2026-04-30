@@ -26,7 +26,7 @@ func TestList(t *testing.T) {
 	repos, err := c.Repositories.ListForAccount(opt)
 
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	for _, repo := range repos.Items {
@@ -38,7 +38,7 @@ func TestList(t *testing.T) {
 		res, err := c.Repositories.Repository.ListTags(tagOpt)
 
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 		}
 
 		if len(res.Tags) != 0 {

@@ -82,7 +82,7 @@ func TestGetWorkspaceRepository(t *testing.T) {
 
 	res, err := c.Workspaces.Repositories.Repository.Get(opt)
 	if err != nil {
-		t.Error("The repository is not found.")
+		t.Fatal("The repository is not found.")
 	}
 
 	if res.Full_name != workspaceName+"/"+repositoryName {
@@ -96,7 +96,7 @@ func TestGetWorkspacePermissionForUser(t *testing.T) {
 
 	user, err := c.User.Profile()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	res, err := c.Workspaces.Permissions.GetUserPermissionsByUuid(workspaceName, user.Uuid)

@@ -35,7 +35,7 @@ func TestListForAccount(t *testing.T) {
 		Owner: owner,
 	})
 	if err != nil {
-		t.Error("Unable to fetch repositories")
+		t.Fatal("Unable to fetch repositories")
 	}
 
 	found := false
@@ -79,7 +79,7 @@ func TestListForAccountWithKeyword(t *testing.T) {
 			Keyword: &repo,
 		})
 		if err != nil {
-			t.Error("Unable to fetch repositories")
+			t.Fatal("Unable to fetch repositories")
 		}
 
 		found := false
@@ -100,7 +100,7 @@ func TestListForAccountWithKeyword(t *testing.T) {
 			Role:    "member",
 		})
 		if err != nil {
-			t.Error("Unable to fetch repositories")
+			t.Fatal("Unable to fetch repositories")
 		}
 
 		found := false
@@ -146,7 +146,7 @@ func TestListForTeam(t *testing.T) {
 		Owner: owner,
 	})
 	if err != nil {
-		t.Error("Unable to fetch repositories")
+		t.Fatal("Unable to fetch repositories")
 	}
 
 	found := false
