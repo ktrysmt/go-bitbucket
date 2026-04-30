@@ -28,13 +28,16 @@ make test/swagger
 ```
 
 If `docker run` does not come up (connection refused, daemon errors), verify
-that OrbStack is running before retrying:
+that the Docker daemon (this repo's primary maintainer runs Rancher Desktop)
+is up before retrying:
 
 ```sh
-docker info >/dev/null 2>&1 || open -a OrbStack
+docker info >/dev/null 2>&1 || open -a "Rancher Desktop"
 ```
 
-Re-run the `docker run` command once OrbStack reports a healthy daemon.
+Re-run the `docker run` command once `docker info` reports a healthy daemon.
+The same step works for Docker Desktop or OrbStack — substitute the app name
+in the `open -a` invocation.
 
 ## Release policy
 
