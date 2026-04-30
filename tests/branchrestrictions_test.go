@@ -27,7 +27,7 @@ func TestBranchRestrictionsKindPush(t *testing.T) {
 		}
 		res, err := c.Repositories.BranchRestrictions.Create(opt)
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 		}
 		if res.Kind != "push" {
 			t.Error("did not match branchrestriction kind")
@@ -43,7 +43,7 @@ func TestBranchRestrictionsKindPush(t *testing.T) {
 		}
 		_, err := c.Repositories.BranchRestrictions.Delete(opt)
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 		}
 	})
 }
@@ -66,7 +66,7 @@ func TestBranchRestrictionsKindRequirePassingBuilds(t *testing.T) {
 		}
 		res, err := c.Repositories.BranchRestrictions.Create(opt)
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 		}
 		if res.Kind != "require_passing_builds_to_merge" {
 			t.Error("did not match branchrestriction kind")
@@ -82,7 +82,7 @@ func TestBranchRestrictionsKindRequirePassingBuilds(t *testing.T) {
 		}
 		_, err := c.Repositories.BranchRestrictions.Delete(opt)
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 		}
 	})
 }
@@ -106,7 +106,7 @@ func TestBranchRestrictionsGets(t *testing.T) {
 				}
 				_, err := c.Repositories.BranchRestrictions.Delete(opt)
 				if err != nil {
-					t.Error(err)
+					t.Fatal(err)
 				}
 			}
 		}()
@@ -120,7 +120,7 @@ func TestBranchRestrictionsGets(t *testing.T) {
 			}
 			res, err := c.Repositories.BranchRestrictions.Create(opt)
 			if err != nil {
-				t.Error(err)
+				t.Fatal(err)
 				return
 			}
 
@@ -136,7 +136,7 @@ func TestBranchRestrictionsGets(t *testing.T) {
 
 		res, err := c.Repositories.BranchRestrictions.Gets(opt)
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 			return
 		}
 

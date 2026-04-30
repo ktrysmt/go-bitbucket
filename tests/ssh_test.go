@@ -28,7 +28,7 @@ func TestUserSSHKey(t *testing.T) {
 	}
 	userProfile, err := c.User.Profile()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	var sshKeyResourceUuid string
@@ -43,7 +43,7 @@ func TestUserSSHKey(t *testing.T) {
 		}
 		sshUserKey, err := c.Users.SSHKeys.Create(keyOptions)
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 		}
 		if sshUserKey == nil {
 			t.Error("The User SSH Key could not be created.")
@@ -57,7 +57,7 @@ func TestUserSSHKey(t *testing.T) {
 		}
 		sshKey, err := c.Users.SSHKeys.Get(keyOptions)
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 		}
 		if sshKey == nil {
 			t.Error("The Deploy Key could not be retrieved.")
@@ -80,7 +80,7 @@ func TestUserSSHKey(t *testing.T) {
 		}
 		_, err := c.Users.SSHKeys.Delete(keyOptions)
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 		}
 	})
 }

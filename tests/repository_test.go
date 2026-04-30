@@ -41,7 +41,7 @@ func TestGetRepositoryRepositories(t *testing.T) {
 
 	res, err := c.Repositories.Repository.Get(opt)
 	if err != nil {
-		t.Error("The repository is not found.")
+		t.Fatal("The repository is not found.")
 	}
 
 	if res.Full_name != owner+"/"+repo {
@@ -78,7 +78,7 @@ func TestCreateRepositoryRepositories(t *testing.T) {
 	}
 	project, err := c.Workspaces.CreateProject(projOpt)
 	if err != nil {
-		t.Error("The project could not be created.", err)
+		t.Fatal("The project could not be created.", err)
 	}
 
 	repoSlug := "go-bb-test-repo-create"
@@ -93,7 +93,7 @@ func TestCreateRepositoryRepositories(t *testing.T) {
 
 	res, err := c.Repositories.Repository.Create(repoOpt)
 	if err != nil {
-		t.Error("The project could not be created.", err)
+		t.Fatal("The project could not be created.", err)
 	}
 
 	if res.Full_name != owner+"/"+repoSlug {
@@ -146,7 +146,7 @@ func TestRepositoryUpdateForkPolicy(t *testing.T) {
 
 	res, err := c.Repositories.Repository.Get(opt)
 	if err != nil {
-		t.Error("The repository is not found.", err)
+		t.Fatal("The repository is not found.", err)
 	}
 
 	if res.Is_private != true {
@@ -162,7 +162,7 @@ func TestRepositoryUpdateForkPolicy(t *testing.T) {
 	}
 	res, err = c.Repositories.Repository.Update(opt)
 	if err != nil {
-		t.Error("The repository could not be updated.", err)
+		t.Fatal("The repository could not be updated.", err)
 	}
 
 	if res.Fork_policy != forkPolicy {
@@ -178,7 +178,7 @@ func TestRepositoryUpdateForkPolicy(t *testing.T) {
 	}
 	res, err = c.Repositories.Repository.Update(opt)
 	if err != nil {
-		t.Error("The repository could not be updated.", err)
+		t.Fatal("The repository could not be updated.", err)
 	}
 
 	if res.Fork_policy != forkPolicy {
@@ -194,7 +194,7 @@ func TestRepositoryUpdateForkPolicy(t *testing.T) {
 	}
 	res, err = c.Repositories.Repository.Update(opt)
 	if err != nil {
-		t.Error("The repository could not be updated.", err)
+		t.Fatal("The repository could not be updated.", err)
 	}
 
 	if res.Fork_policy != forkPolicy {
@@ -233,7 +233,7 @@ func TestGetRepositoryPipelineConfig(t *testing.T) {
 
 	res, err := c.Repositories.Repository.GetPipelineConfig(opt)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	if res == nil {
@@ -276,7 +276,7 @@ func TestUpdateRepositoryPipelineConfig(t *testing.T) {
 
 	res, err := c.Repositories.Repository.UpdatePipelineConfig(opt)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	if res == nil {
@@ -294,7 +294,7 @@ func TestUpdateRepositoryPipelineConfig(t *testing.T) {
 
 	res, err = c.Repositories.Repository.UpdatePipelineConfig(opt)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	if res == nil {
@@ -337,7 +337,7 @@ func TestGetRepositoryPipelineVariables(t *testing.T) {
 
 	res, err := c.Repositories.Repository.ListPipelineVariables(opt)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	if res == nil {
@@ -380,7 +380,7 @@ func TestDeleteRepositoryPipelineVariables(t *testing.T) {
 
 	res, err := c.Repositories.Repository.AddPipelineVariable(variable)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	opt := &bitbucket.RepositoryPipelineVariableDeleteOptions{
@@ -392,7 +392,7 @@ func TestDeleteRepositoryPipelineVariables(t *testing.T) {
 	// On success the delete API doesn't return any content (HTTP status 204)
 	_, err = c.Repositories.Repository.DeletePipelineVariable(opt)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 }
 
@@ -442,7 +442,7 @@ func TestGetRepositoryRefs(t *testing.T) {
 
 	branchList, err := c.Repositories.Repository.ListBranches(getOps)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	// If the branch being created already exists, delete it.
@@ -468,7 +468,7 @@ func TestGetRepositoryRefs(t *testing.T) {
 
 	resRefs, err := c.Repositories.Repository.ListRefs(refOpts)
 	if err != nil {
-		t.Error("The refs is not found.")
+		t.Fatal("The refs is not found.")
 	}
 
 	expected := struct {
@@ -537,7 +537,7 @@ func TestListRepositoryGroupPermissions(t *testing.T) {
 	res, err := c.Repositories.Repository.ListGroupPermissions(opt)
 
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	if res == nil {
 		t.Error("Cannot list repository group permissions")
@@ -579,7 +579,7 @@ func TestSetRepositoryGroupPermissions(t *testing.T) {
 
 	res, err := c.Repositories.Repository.SetGroupPermissions(opt)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	if res == nil {
 		t.Error("Cannot set repository group permissions")
@@ -620,7 +620,7 @@ func TestDeleteRepositoryGroupPermissions(t *testing.T) {
 
 	_, err = c.Repositories.Repository.DeleteGroupPermissions(opt)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 }
 
@@ -657,7 +657,7 @@ func TestGetRepositoryGroupPermissions(t *testing.T) {
 
 	res, err := c.Repositories.Repository.GetGroupPermissions(opt)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	if res == nil {
 		t.Error("Cannot get repository group permissions")
@@ -697,7 +697,7 @@ func TestListRepositoryUserPermissions(t *testing.T) {
 	res, err := c.Repositories.Repository.ListUserPermissions(opt)
 
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	if res == nil {
 		t.Error("Cannot list repository user permissions")
@@ -737,7 +737,7 @@ func TestGetRepositoryUserPermissions(t *testing.T) {
 
 	res, err := c.Repositories.Repository.GetUserPermissions(opt)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	t.Log(res)
 	if res == nil {
@@ -778,7 +778,7 @@ func TestDeleteRepositoryUserPermissions(t *testing.T) {
 
 	_, err = c.Repositories.Repository.DeleteUserPermissions(opt)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 }
 
@@ -816,7 +816,7 @@ func TestSetRepositoryUserPermissions(t *testing.T) {
 
 	res, err := c.Repositories.Repository.SetUserPermissions(opt)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	if res == nil {
 		t.Error("Cannot set repository user permissions")

@@ -21,12 +21,12 @@ var (
 func checkOwnerRepoSet(t *testing.T) error {
 	if ownerEnv == "" {
 		err := errors.New("BITBUCKET_TEST_OWNER is empty.")
-		t.Error(err)
+		t.Fatal(err)
 		return err
 	}
 	if repoEnv == "" {
 		err := errors.New("BITBUCKET_TEST_REPOSLUG is empty.")
-		t.Error(err)
+		t.Fatal(err)
 		return err
 	}
 	return nil
@@ -57,23 +57,23 @@ func setupBasicAuthTest(t *testing.T) (*bitbucket.Client, error) {
 
 	if userEnv == "" {
 		err := errors.New("BITBUCKET_TEST_USERNAME is empty.")
-		t.Error(err)
+		t.Fatal(err)
 		return nil, err
 	}
 	if passEnv == "" {
 		err := errors.New("BITBUCKET_TEST_PASSWORD is empty.")
-		t.Error(err)
+		t.Fatal(err)
 		return nil, err
 	}
 	err := checkOwnerRepoSet(t)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 		return nil, err
 	}
 
 	c, err := bitbucket.NewBasicAuth(userEnv, passEnv)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 		return nil, err
 	}
 	return c, nil
@@ -83,13 +83,13 @@ func SetupBearerToken(t *testing.T) (*bitbucket.Client, error) {
 
 	err := checkOwnerRepoSet(t)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 		return nil, err
 	}
 
 	c, err := bitbucket.NewOAuthbearerToken(accessTokenEnv)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 		return nil, err
 	}
 	return c, nil
@@ -98,19 +98,19 @@ func SetupBearerToken(t *testing.T) (*bitbucket.Client, error) {
 func SetupBearerTokenWithBaseUrlStr(t *testing.T, baseUrlStr string) (*bitbucket.Client, error) {
 	err := checkAccessTokenSet(t)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 		return nil, err
 	}
 
 	baseUrlStr, err = checkBaseUrlStrSet(t, baseUrlStr)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 		return nil, err
 	}
 
 	c, err := bitbucket.NewOAuthbearerTokenWithBaseUrlStr(accessTokenEnv, baseUrlStr)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 		return nil, err
 	}
 	return c, nil
@@ -119,13 +119,13 @@ func SetupBearerTokenWithBaseUrlStr(t *testing.T, baseUrlStr string) (*bitbucket
 func SetupBearerTokenWithBaseUrlStrCaCert(t *testing.T, baseUrlStr string, caCerts []byte) (*bitbucket.Client, error) {
 	err := checkAccessTokenSet(t)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 		return nil, err
 	}
 
 	baseUrlStr, err = checkBaseUrlStrSet(t, baseUrlStr)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 		return nil, err
 	}
 
@@ -150,7 +150,7 @@ func SetupBearerTokenWithBaseUrlStrCaCert(t *testing.T, baseUrlStr string, caCer
 
 	c, err := bitbucket.NewOAuthbearerTokenWithBaseUrlStrCaCert(accessTokenEnv, baseUrlStr, caCerts)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 		return nil, err
 	}
 	return c, nil

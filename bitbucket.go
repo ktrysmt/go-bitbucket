@@ -430,10 +430,15 @@ type BranchRestrictionsOptions struct {
 	Pattern  string            `json:"pattern"`
 	Users    []string          `json:"users"`
 	Kind     string            `json:"kind"`
-	FullSlug string            `json:"full_slug"`
-	Name     string            `json:"name"`
-	Value    interface{}       `json:"value"`
-	ctx      context.Context
+	// BranchMatchKind controls how Pattern is matched against branches.
+	// Allowed values are "glob" (default when empty) and "branching_model".
+	BranchMatchKind string `json:"branch_match_kind"`
+	// BranchType is required when BranchMatchKind is "branching_model".
+	BranchType string      `json:"branch_type"`
+	FullSlug   string      `json:"full_slug"`
+	Name       string      `json:"name"`
+	Value      interface{} `json:"value"`
+	ctx        context.Context
 }
 
 func (b *BranchRestrictionsOptions) WithContext(ctx context.Context) *BranchRestrictionsOptions {

@@ -49,7 +49,7 @@ func TestDeployKey(t *testing.T) {
 
 		deployKey, err := c.Repositories.DeployKeys.Create(opt)
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 		}
 
 		if deployKey == nil {
@@ -74,7 +74,7 @@ func TestDeployKey(t *testing.T) {
 		}
 		deployKey, err := c.Repositories.DeployKeys.Get(opt)
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 		}
 
 		if deployKey == nil {
@@ -100,7 +100,7 @@ func TestDeployKey(t *testing.T) {
 		}
 		_, err := c.Repositories.DeployKeys.Delete(opt)
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 		}
 	})
 }
@@ -145,7 +145,7 @@ func TestDeployKeyWithComment(t *testing.T) {
 
 		deployKey, err := c.Repositories.DeployKeys.Create(opt)
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 		}
 
 		if deployKey == nil {
@@ -173,7 +173,7 @@ func TestDeployKeyWithComment(t *testing.T) {
 		}
 		deployKey, err := c.Repositories.DeployKeys.Get(opt)
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 		}
 
 		if deployKey == nil {
@@ -202,7 +202,7 @@ func TestDeployKeyWithComment(t *testing.T) {
 		}
 		_, err := c.Repositories.DeployKeys.Delete(opt)
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 		}
 	})
 }
@@ -246,7 +246,7 @@ func TestListDeployKeys(t *testing.T) {
 
 		deployKey, err := c.Repositories.DeployKeys.Create(opt)
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 		}
 
 		if deployKey == nil {
@@ -275,7 +275,7 @@ func TestListDeployKeys(t *testing.T) {
 
 		deployKey, err := c.Repositories.DeployKeys.Create(opt)
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 		}
 
 		if deployKey == nil {
@@ -300,7 +300,7 @@ func TestListDeployKeys(t *testing.T) {
 		}
 		deployKeys, err := c.Repositories.DeployKeys.List(opt)
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 		}
 		found := false
 		for _, r := range deployKeys.Items {
@@ -323,7 +323,7 @@ func TestListDeployKeys(t *testing.T) {
 		}
 		_, err := c.Repositories.DeployKeys.Delete(opt)
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 		}
 	})
 	t.Run("delete", func(t *testing.T) {
@@ -334,7 +334,7 @@ func TestListDeployKeys(t *testing.T) {
 		}
 		_, err := c.Repositories.DeployKeys.Delete(opt)
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 		}
 	})
 }

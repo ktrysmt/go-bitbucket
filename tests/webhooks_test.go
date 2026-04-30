@@ -48,7 +48,7 @@ func TestWebhook(t *testing.T) {
 
 		webhook, err := c.Repositories.Webhooks.Create(opt)
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 		}
 
 		if webhook == nil {
@@ -82,7 +82,7 @@ func TestWebhook(t *testing.T) {
 		}
 		webhook, err := c.Repositories.Webhooks.Get(opt)
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 		}
 
 		if webhook == nil {
@@ -118,7 +118,7 @@ func TestWebhook(t *testing.T) {
 		}
 		webhook, err := c.Repositories.Webhooks.Update(opt)
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 		}
 
 		if webhook == nil {
@@ -150,7 +150,7 @@ func TestWebhook(t *testing.T) {
 		}
 		_, err := c.Repositories.Webhooks.Delete(opt)
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 		}
 	})
 

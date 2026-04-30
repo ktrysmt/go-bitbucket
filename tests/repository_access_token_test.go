@@ -16,7 +16,7 @@ func TestAddGetandDeletePipelineVariableAccess(t *testing.T) {
 
 	client, err := SetupBearerToken(t)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 		return
 	}
 
@@ -35,14 +35,14 @@ func TestAddGetandDeletePipelineVariableAccessWithTokenBaseUrlCaCert(t *testing.
 
 	client0, err := SetupBearerTokenWithBaseUrlStr(t, "")
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 		assert.Nilf(t, err, "expected no error returned, but got %v", err)
 	}
 
 	expectedBaseUrlStr := "https://api.bitbucket.org/2.0"
 	client1, err := SetupBearerTokenWithBaseUrlStrCaCert(t, expectedBaseUrlStr, nil)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 		assert.Nilf(t, err, "expected no error returned, but got %v", err)
 	}
 	assert.Equal(t, client0.GetApiBaseURL(), expectedBaseUrlStr)
@@ -62,7 +62,7 @@ func TestAddGetandDeletePipelineVariableAccessWithTokenBaseUrlCaCert(t *testing.
 func testApiCalls(t *testing.T, c *bitbucket.Client, v *bitbucket.RepositoryPipelineVariableOptions) {
 	res, err := c.Repositories.Repository.AddPipelineVariable(v)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	opt := &bitbucket.RepositoryPipelineVariableOptions{
@@ -79,14 +79,14 @@ func testApiCalls(t *testing.T, c *bitbucket.Client, v *bitbucket.RepositoryPipe
 
 	res, err = c.Repositories.Repository.GetPipelineVariable(opt)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	assert.Equal(t, opt.Uuid, res.Uuid)
 
 	// On success the delete API doesn't return any content (HTTP status 204)
 	_, err = c.Repositories.Repository.DeletePipelineVariable(optd)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 		assert.Nilf(t, err, "expected no error returned, but got %v", err)
 	}
 }

@@ -302,11 +302,35 @@ func TestBuildBranchRestrictionsBody_Empty(t *testing.T) {
 	err = json.Unmarshal([]byte(data), &body)
 	require.NoError(t, err)
 
+	assert.Equal(t, "branchrestriction", body["type"])
 	assert.Equal(t, "push", body["kind"])
 	assert.Equal(t, "main", body["pattern"])
-	// Users and Groups should be null when not provided
-	assert.Nil(t, body["users"])
-	assert.Nil(t, body["groups"])
+	assert.Equal(t, "glob", body["branch_match_kind"])
+	// users/groups serialize as empty arrays so the swagger schema accepts them.
+	assert.Equal(t, []interface{}{}, body["users"])
+	assert.Equal(t, []interface{}{}, body["groups"])
+}
+
+func TestBuildBranchRestrictionsBody_BranchingModel(t *testing.T) {
+	t.Parallel()
+	br := &BranchRestrictions{}
+	opts := &BranchRestrictionsOptions{
+		Kind:            "require_passing_builds_to_merge",
+		Pattern:         "",
+		BranchMatchKind: "branching_model",
+		BranchType:      "production",
+		Value:           2,
+	}
+
+	data, err := br.buildBranchRestrictionsBody(opts)
+
+	require.NoError(t, err)
+	var body map[string]interface{}
+	err = json.Unmarshal([]byte(data), &body)
+	require.NoError(t, err)
+
+	assert.Equal(t, "branching_model", body["branch_match_kind"])
+	assert.Equal(t, "production", body["branch_type"])
 }
 
 func TestDecodeBranchRestriction_Success(t *testing.T) {

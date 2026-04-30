@@ -44,7 +44,7 @@ func TestEndToEndDeploymentVariables(t *testing.T) {
 	expectedEnvName := "Test"
 	environments, err := c.Repositories.Repository.ListEnvironments(environmentOpt)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	if found, _ := findEnvironmentByName(expectedEnvName, environments); found == nil {
@@ -58,17 +58,17 @@ func TestEndToEndDeploymentVariables(t *testing.T) {
 
 		_, err := c.Repositories.Repository.AddEnvironment(envOptAdd)
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 		}
 		environments, err = c.Repositories.Repository.ListEnvironments(environmentOpt)
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 		}
 	}
 
 	environment, err := findEnvironmentByName(expectedEnvName, environments)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	opt := &bitbucket.RepositoryDeploymentVariableOptions{
@@ -81,7 +81,7 @@ func TestEndToEndDeploymentVariables(t *testing.T) {
 
 	variable, err := c.Repositories.Repository.AddDeploymentVariable(opt)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	opt.Key = "bar"
@@ -90,7 +90,7 @@ func TestEndToEndDeploymentVariables(t *testing.T) {
 
 	updatedVariable, err := c.Repositories.Repository.UpdateDeploymentVariable(opt)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	listOpt := &bitbucket.RepositoryDeploymentVariablesOptions{
@@ -104,7 +104,7 @@ func TestEndToEndDeploymentVariables(t *testing.T) {
 
 	err = waitForVariables(updatedVariable.Uuid, "bar", "other value", c, listOpt)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	deleteOpt := &bitbucket.RepositoryDeploymentVariableDeleteOptions{
@@ -116,7 +116,7 @@ func TestEndToEndDeploymentVariables(t *testing.T) {
 
 	_, err = c.Repositories.Repository.DeleteDeploymentVariable(deleteOpt)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	err = waitForDeletion(updatedVariable.Uuid, c, listOpt)
