@@ -221,7 +221,7 @@ func decodeProjects(projectResponse interface{}) (*ProjectsRes, error) {
 	if !ok {
 		pagelen = 0
 	}
-	max_depth, ok := projectsResponseMap["max_width"].(float64)
+	max_depth, ok := projectsResponseMap["max_depth"].(float64)
 	if !ok {
 		max_depth = 0
 	}
@@ -258,23 +258,23 @@ func decodeMembers(membersResponse interface{}) (*WorkspaceMembers, error) {
 		members = append(members, *member)
 	}
 
-	page, ok := responseMap["page"].(int)
+	page, ok := responseMap["page"].(float64)
 	if !ok {
 		page = 0
 	}
-	pagelen, ok := responseMap["pagelen"].(int)
+	pagelen, ok := responseMap["pagelen"].(float64)
 	if !ok {
 		pagelen = 0
 	}
-	size, ok := responseMap["size"].(int)
+	size, ok := responseMap["size"].(float64)
 	if !ok {
 		size = 0
 	}
 
 	workspaceMembers := WorkspaceMembers{
-		Page:    page,
-		Pagelen: pagelen,
-		Size:    size,
+		Page:    int(page),
+		Pagelen: int(pagelen),
+		Size:    int(size),
 		Members: members,
 	}
 	return &workspaceMembers, nil
