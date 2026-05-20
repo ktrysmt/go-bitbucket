@@ -233,6 +233,34 @@ func (ro *RepositoryBlobWriteOptions) WithContext(ctx context.Context) *Reposito
 	return ro
 }
 
+// RepositoryRawFileContent represents a file with its path and raw content.
+// This is used for writing files to a repository without needing actual files on disk.
+type RepositoryRawFileContent struct {
+	Path    string `json:"path"`    // The path of the file in the repository
+	Content string `json:"content"` // The raw content of the file
+}
+
+// RepositoryRawFileWriteOptions represents the options for writing raw file content
+// to a repository using URL-encoded format instead of multipart file upload.
+// This is useful when you have raw content in memory and don't want to create temporary files.
+//
+// Based on https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/src#post
+type RepositoryRawFileWriteOptions struct {
+	Owner         string                     `json:"owner"`
+	RepoSlug      string                     `json:"repo_slug"`
+	Files         []RepositoryRawFileContent `json:"files"`
+	FilesToDelete []string                   `json:"files_to_delete"`
+	Author        string                     `json:"author"`
+	Message       string                     `json:"message"`
+	Branch        string                     `json:"branch"`
+	ctx           context.Context
+}
+
+func (ro *RepositoryRawFileWriteOptions) WithContext(ctx context.Context) *RepositoryRawFileWriteOptions {
+	ro.ctx = ctx
+	return ro
+}
+
 // RepositoryRefOptions represents the options for describing a repository's refs (i.e.
 // tags and branches). The field BranchFlg is a boolean that is indicates whether a specific
 // RepositoryRefOptions instance is meant for Branch specific set of api methods.
