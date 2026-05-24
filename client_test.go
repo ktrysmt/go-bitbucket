@@ -190,6 +190,7 @@ func TestExecute_ErrorResponse(t *testing.T) {
 	assert.Error(t, err)
 	var unexpectedErr *UnexpectedResponseStatusError
 	assert.ErrorAs(t, err, &unexpectedErr)
+	assert.Equal(t, http.StatusNotFound, unexpectedErr.StatusCode)
 }
 
 func TestExecute_NoContentResponse(t *testing.T) {

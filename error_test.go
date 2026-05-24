@@ -78,18 +78,21 @@ func TestDecodeError_WithFields(t *testing.T) {
 func TestUnexpectedResponseStatusError_Error(t *testing.T) {
 	t.Parallel()
 	err := &UnexpectedResponseStatusError{
-		Status: "404 Not Found",
-		Body:   []byte(`{"error": "not found"}`),
+		Status:     "404 Not Found",
+		StatusCode: 404,
+		Body:       []byte(`{"error": "not found"}`),
 	}
 
 	assert.Equal(t, "404 Not Found", err.Error())
+	assert.Equal(t, 404, err.StatusCode)
 }
 
 func TestUnexpectedResponseStatusError_ErrorWithBody(t *testing.T) {
 	t.Parallel()
 	err := &UnexpectedResponseStatusError{
-		Status: "500 Internal Server Error",
-		Body:   []byte(`{"error": "something broke"}`),
+		Status:     "500 Internal Server Error",
+		StatusCode: 500,
+		Body:       []byte(`{"error": "something broke"}`),
 	}
 
 	result := err.ErrorWithBody()
