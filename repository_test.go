@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"testing"
 
@@ -545,6 +546,48 @@ func TestCreateTag_Success(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "v2.0", tag.Name)
 	assert.Equal(t, "v2.0", receivedBody["name"])
+}
+
+func TestDeleteTag_Success(t *testing.T) {
+	t.Parallel()
+	var receivedMethod, receivedPath string
+
+	client, server := setupMockServer(func(w http.ResponseWriter, r *http.Request) {
+		receivedMethod = r.Method
+		receivedPath = r.URL.Path
+		w.WriteHeader(http.StatusNoContent)
+	})
+	defer server.Close()
+
+	opts := &RepositoryTagDeleteOptions{Owner: "owner", RepoSlug: "repo", TagName: "v1.0"}
+	err := client.Repositories.Repository.DeleteTag(opts)
+
+	require.NoError(t, err)
+	assert.Equal(t, "DELETE", receivedMethod)
+	assert.Equal(t, "/2.0/repositories/owner/repo/refs/tags/v1.0", receivedPath)
+}
+
+func TestDeleteTag_WithUUIDs(t *testing.T) {
+	t.Parallel()
+	var receivedPath string
+
+	client, server := setupMockServer(func(w http.ResponseWriter, r *http.Request) {
+		receivedPath = r.URL.Path
+		w.WriteHeader(http.StatusNoContent)
+	})
+	defer server.Close()
+
+	opts := &RepositoryTagDeleteOptions{
+		Owner:    "owner",
+		RepoSlug: "repo",
+		RepoUUID: "{repo-uuid}",
+		TagName:  "v1.0",
+		TagUUID:  "{tag-uuid}",
+	}
+	err := client.Repositories.Repository.DeleteTag(opts)
+
+	require.NoError(t, err)
+	assert.Equal(t, "/2.0/repositories/owner/{repo-uuid}/refs/tags/{tag-uuid}", receivedPath)
 }
 
 // --- Refs ---
@@ -2207,6 +2250,132 @@ func TestWriteFileBlob_FileNotFound(t *testing.T) {
 	err := client.Repositories.Repository.WriteFileBlob(opts)
 
 	assert.Error(t, err)
+}
+
+func TestWriteFileBlob_FilePathUsedAsRepoDestination(t *testing.T) {
+	t.Parallel()
+	var receivedBody []byte
+
+	client, server := setupMockServer(func(w http.ResponseWriter, r *http.Request) {
+		buf, _ := io.ReadAll(r.Body)
+		receivedBody = buf
+		w.WriteHeader(http.StatusCreated)
+	})
+	defer server.Close()
+
+	tmpFile, err := os.CreateTemp("", "blob-filepath-*.txt")
+	require.NoError(t, err)
+	defer func() { _ = os.Remove(tmpFile.Name()) }()
+	_, err = tmpFile.WriteString("content")
+	require.NoError(t, err)
+	require.NoError(t, tmpFile.Close())
+
+	opts := &RepositoryBlobWriteOptions{
+		Owner:    "owner",
+		RepoSlug: "repo",
+		FileName: tmpFile.Name(),
+		FilePath: "src/dest.txt",
+	}
+	err = client.Repositories.Repository.WriteFileBlob(opts)
+	require.NoError(t, err)
+
+	// The multipart form should reference the repo destination (FilePath),
+	// not the local file path.
+	assert.Contains(t, string(receivedBody), `name="src/dest.txt"`)
+	assert.NotContains(t, string(receivedBody), `name="`+tmpFile.Name()+`"`)
+}
+
+// --- WriteFileContent ---
+
+func TestWriteFileContent_Success(t *testing.T) {
+	t.Parallel()
+	var (
+		receivedMethod      string
+		receivedContentType string
+		receivedBody        []byte
+	)
+
+	client, server := setupMockServer(func(w http.ResponseWriter, r *http.Request) {
+		receivedMethod = r.Method
+		receivedContentType = r.Header.Get("Content-Type")
+		receivedBody, _ = io.ReadAll(r.Body)
+		w.WriteHeader(http.StatusCreated)
+	})
+	defer server.Close()
+
+	opts := &RepositoryContentWriteOptions{
+		Owner:    "owner",
+		RepoSlug: "repo",
+		Files: map[string]string{
+			"src/main.go": "package main\n",
+		},
+		Message: "add main",
+		Author:  "Test <test@example.com>",
+		Branch:  "main",
+	}
+	err := client.Repositories.Repository.WriteFileContent(opts)
+	require.NoError(t, err)
+
+	assert.Equal(t, "POST", receivedMethod)
+	assert.Equal(t, "application/x-www-form-urlencoded", receivedContentType)
+
+	values, parseErr := url.ParseQuery(string(receivedBody))
+	require.NoError(t, parseErr)
+	assert.Equal(t, "package main\n", values.Get("src/main.go"))
+	assert.Equal(t, "add main", values.Get("message"))
+	assert.Equal(t, "Test <test@example.com>", values.Get("author"))
+	assert.Equal(t, "main", values.Get("branch"))
+}
+
+func TestWriteFileContent_Empty(t *testing.T) {
+	t.Parallel()
+	client, server := setupMockServer(func(w http.ResponseWriter, r *http.Request) {})
+	defer server.Close()
+
+	err := client.Repositories.Repository.WriteFileContent(&RepositoryContentWriteOptions{
+		Owner:    "owner",
+		RepoSlug: "repo",
+	})
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "at least one file")
+}
+
+func TestWriteFileContent_EmptyPath(t *testing.T) {
+	t.Parallel()
+	client, server := setupMockServer(func(w http.ResponseWriter, r *http.Request) {})
+	defer server.Close()
+
+	err := client.Repositories.Repository.WriteFileContent(&RepositoryContentWriteOptions{
+		Owner:    "owner",
+		RepoSlug: "repo",
+		Files:    map[string]string{"": "x"},
+	})
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "file path must not be empty")
+}
+
+func TestWriteFileContent_Delete(t *testing.T) {
+	t.Parallel()
+	var receivedBody []byte
+
+	client, server := setupMockServer(func(w http.ResponseWriter, r *http.Request) {
+		receivedBody, _ = io.ReadAll(r.Body)
+		w.WriteHeader(http.StatusCreated)
+	})
+	defer server.Close()
+
+	opts := &RepositoryContentWriteOptions{
+		Owner:         "owner",
+		RepoSlug:      "repo",
+		FilesToDelete: []string{"old.txt"},
+		Message:       "remove old",
+	}
+	err := client.Repositories.Repository.WriteFileContent(opts)
+	require.NoError(t, err)
+
+	values, parseErr := url.ParseQuery(string(receivedBody))
+	require.NoError(t, parseErr)
+	assert.Equal(t, "old.txt", values.Get("files"))
 }
 
 // --- Error paths for Pipeline, Environment, etc. ---
