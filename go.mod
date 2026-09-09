@@ -1,6 +1,6 @@
 module github.com/ktrysmt/go-bitbucket
 
-go 1.25.0
+go 1.26.0
 
 // You can uncomment this for local testing and development.
 // Ref: https://thewebivore.com/using-replace-in-go-mod-to-point-to-your-local-module/
@@ -15,7 +15,7 @@ require (
 	github.com/stretchr/testify v1.11.1
 	go.uber.org/mock v0.6.0
 	golang.org/x/net v0.57.0
-	golang.org/x/oauth2 v0.36.0
+	golang.org/x/oauth2 v0.37.0
 )
 
 require (
