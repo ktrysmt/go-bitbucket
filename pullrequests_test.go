@@ -146,6 +146,54 @@ func TestPullRequestsUpdate_Success(t *testing.T) {
 	assert.Equal(t, "2025-01-16T08:00:00.000000+00:00", resultMap["updated_on"])
 }
 
+func TestPullRequestsUpdate_Reviewers(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name      string
+		reviewers []string
+		wantKey   bool
+		want      []interface{}
+	}{
+		{name: "nil omits the key", reviewers: nil, wantKey: false},
+		{name: "empty slice clears", reviewers: []string{}, wantKey: true, want: []interface{}{}},
+		{
+			name:      "uuids are sent",
+			reviewers: []string{"{reviewer-uuid-1}"},
+			wantKey:   true,
+			want:      []interface{}{map[string]interface{}{"uuid": "{reviewer-uuid-1}"}},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			var receivedBody map[string]interface{}
+
+			client, server := setupMockServer(func(w http.ResponseWriter, r *http.Request) {
+				bodyBytes, _ := io.ReadAll(r.Body)
+				_ = json.Unmarshal(bodyBytes, &receivedBody)
+				respondJSON(w, http.StatusOK, realisticPRResponse())
+			})
+			defer server.Close()
+
+			_, err := client.Repositories.PullRequests.Update(&PullRequestsOptions{
+				Owner:       "owner",
+				RepoSlug:    "repo",
+				ID:          "1",
+				Title:       "Add feature X",
+				Description: "Updated description",
+				Reviewers:   tt.reviewers,
+			})
+
+			require.NoError(t, err)
+			got, ok := receivedBody["reviewers"]
+			require.Equal(t, tt.wantKey, ok)
+			if tt.wantKey {
+				assert.Equal(t, tt.want, got)
+			}
+		})
+	}
+}
+
 func TestPullRequestsList_Success(t *testing.T) {
 	t.Parallel()
 	var receivedPath string
