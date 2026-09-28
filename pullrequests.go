@@ -220,17 +220,17 @@ func (p *PullRequests) buildPullRequestBody(po *PullRequestsOptions) (string, er
 	body := map[string]interface{}{}
 	body["source"] = map[string]interface{}{}
 	body["destination"] = map[string]interface{}{}
-	body["reviewers"] = []map[string]string{}
-	body["title"] = ""
-	body["description"] = ""
 	body["message"] = ""
 	body["close_source_branch"] = false
 
-	if n := len(po.Reviewers); n > 0 {
-		body["reviewers"] = make([]map[string]string, n)
+	// A PUT replaces the PR's reviewers with any list it carries, so a nil
+	// Reviewers omits the key to keep them; an empty non-nil slice clears them.
+	if po.Reviewers != nil {
+		reviewers := make([]map[string]string, len(po.Reviewers))
 		for i, uuid := range po.Reviewers {
-			body["reviewers"].([]map[string]string)[i] = map[string]string{"uuid": uuid}
+			reviewers[i] = map[string]string{"uuid": uuid}
 		}
+		body["reviewers"] = reviewers
 	}
 
 	if po.SourceBranch != "" {
@@ -249,12 +249,14 @@ func (p *PullRequests) buildPullRequestBody(po *PullRequestsOptions) (string, er
 		body["destination"].(map[string]interface{})["commit"] = map[string]interface{}{"hash": po.DestinationCommit}
 	}
 
-	if po.Title != "" {
-		body["title"] = po.Title
+	// A PUT overwrites every field it carries, so a nil Title or Description
+	// omits the key to keep the current value; a pointer to "" sets it to empty.
+	if po.Title != nil {
+		body["title"] = *po.Title
 	}
 
-	if po.Description != "" {
-		body["description"] = po.Description
+	if po.Description != nil {
+		body["description"] = *po.Description
 	}
 
 	if po.Message != "" {

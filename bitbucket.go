@@ -344,12 +344,14 @@ const (
 )
 
 type PullRequestsOptions struct {
-	ID                string                    `json:"id"`
-	CommentID         string                    `json:"comment_id"`
-	Owner             string                    `json:"owner"`
-	RepoSlug          string                    `json:"repo_slug"`
-	Title             string                    `json:"title"`
-	Description       string                    `json:"description"`
+	ID        string `json:"id"`
+	CommentID string `json:"comment_id"`
+	Owner     string `json:"owner"`
+	RepoSlug  string `json:"repo_slug"`
+	// Title and Description are pointers so that Update can tell "not set" (nil,
+	// field left unchanged) apart from "set to empty" (pointer to "").
+	Title             *string                   `json:"title"`
+	Description       *string                   `json:"description"`
 	CloseSourceBranch bool                      `json:"close_source_branch"`
 	SourceBranch      string                    `json:"source_branch"`
 	SourceRepository  string                    `json:"source_repository"`
