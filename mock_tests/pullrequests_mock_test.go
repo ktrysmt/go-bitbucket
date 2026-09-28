@@ -26,7 +26,7 @@ func TestMockPullRequests_List_Success(t *testing.T) {
 		ID:       "test-pull-request-id",
 		Owner:    "test-workspace",
 		RepoSlug: "test-repo",
-		Title:    "test-pull-request",
+		Title:    new("test-pull-request"),
 		Commit:   "test-commit",
 	}
 

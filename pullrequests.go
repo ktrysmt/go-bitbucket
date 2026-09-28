@@ -220,8 +220,6 @@ func (p *PullRequests) buildPullRequestBody(po *PullRequestsOptions) (string, er
 	body := map[string]interface{}{}
 	body["source"] = map[string]interface{}{}
 	body["destination"] = map[string]interface{}{}
-	body["title"] = ""
-	body["description"] = ""
 	body["message"] = ""
 	body["close_source_branch"] = false
 
@@ -251,12 +249,14 @@ func (p *PullRequests) buildPullRequestBody(po *PullRequestsOptions) (string, er
 		body["destination"].(map[string]interface{})["commit"] = map[string]interface{}{"hash": po.DestinationCommit}
 	}
 
-	if po.Title != "" {
-		body["title"] = po.Title
+	// A PUT overwrites every field it carries, so a nil Title or Description
+	// omits the key to keep the current value; a pointer to "" sets it to empty.
+	if po.Title != nil {
+		body["title"] = *po.Title
 	}
 
-	if po.Description != "" {
-		body["description"] = po.Description
+	if po.Description != nil {
+		body["description"] = *po.Description
 	}
 
 	if po.Message != "" {

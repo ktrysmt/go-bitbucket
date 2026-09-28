@@ -61,8 +61,8 @@ func TestPullRequestsCreate_Success(t *testing.T) {
 	opts := &PullRequestsOptions{
 		Owner:             "owner",
 		RepoSlug:          "repo",
-		Title:             "Add feature X",
-		Description:       "Implements feature X",
+		Title:             new("Add feature X"),
+		Description:       new("Implements feature X"),
 		SourceBranch:      "feature-x",
 		SourceRepository:  "owner/repo",
 		DestinationBranch: "main",
@@ -124,8 +124,8 @@ func TestPullRequestsUpdate_Success(t *testing.T) {
 		Owner:             "owner",
 		RepoSlug:          "repo",
 		ID:                "1",
-		Title:             "Updated PR title",
-		Description:       "Updated description",
+		Title:             new("Updated PR title"),
+		Description:       new("Updated description"),
 		DestinationBranch: "main",
 	}
 	result, err := client.Repositories.PullRequests.Update(opts)
@@ -179,8 +179,8 @@ func TestPullRequestsUpdate_Reviewers(t *testing.T) {
 				Owner:       "owner",
 				RepoSlug:    "repo",
 				ID:          "1",
-				Title:       "Add feature X",
-				Description: "Updated description",
+				Title:       new("Add feature X"),
+				Description: new("Updated description"),
 				Reviewers:   tt.reviewers,
 			})
 
@@ -189,6 +189,49 @@ func TestPullRequestsUpdate_Reviewers(t *testing.T) {
 			require.Equal(t, tt.wantKey, ok)
 			if tt.wantKey {
 				assert.Equal(t, tt.want, got)
+			}
+		})
+	}
+}
+
+func TestPullRequestsUpdate_TitleAndDescription(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name  string
+		value *string
+		want  interface{}
+	}{
+		{name: "nil omits the key", value: nil, want: nil},
+		{name: "empty string is sent", value: new(""), want: ""},
+		{name: "value is sent", value: new("new"), want: "new"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			var receivedBody map[string]interface{}
+
+			client, server := setupMockServer(func(w http.ResponseWriter, r *http.Request) {
+				bodyBytes, _ := io.ReadAll(r.Body)
+				_ = json.Unmarshal(bodyBytes, &receivedBody)
+				respondJSON(w, http.StatusOK, realisticPRResponse())
+			})
+			defer server.Close()
+
+			_, err := client.Repositories.PullRequests.Update(&PullRequestsOptions{
+				Owner:       "owner",
+				RepoSlug:    "repo",
+				ID:          "1",
+				Title:       tt.value,
+				Description: tt.value,
+			})
+
+			require.NoError(t, err)
+			for _, key := range []string{"title", "description"} {
+				got, ok := receivedBody[key]
+				require.Equal(t, tt.value != nil, ok, key)
+				if tt.value != nil {
+					assert.Equal(t, tt.want, got, key)
+				}
 			}
 		})
 	}
@@ -760,8 +803,8 @@ func TestBuildPullRequestBody(t *testing.T) {
 	t.Parallel()
 	pr := &PullRequests{}
 	opts := &PullRequestsOptions{
-		Title:             "My PR",
-		Description:       "PR description",
+		Title:             new("My PR"),
+		Description:       new("PR description"),
 		SourceBranch:      "feature",
 		DestinationBranch: "main",
 		Reviewers:         []string{"{uuid-1}", "{uuid-2}"},
@@ -900,7 +943,7 @@ func TestPullRequestsCreate_ServerError(t *testing.T) {
 	opts := &PullRequestsOptions{
 		Owner:        "owner",
 		RepoSlug:     "repo",
-		Title:        "My PR",
+		Title:        new("My PR"),
 		SourceBranch: "feature",
 	}
 	result, err := client.Repositories.PullRequests.Create(opts)
@@ -942,7 +985,7 @@ func TestPullRequestsUpdate_Forbidden(t *testing.T) {
 		Owner:    "owner",
 		RepoSlug: "repo",
 		ID:       "1",
-		Title:    "Attempted update",
+		Title:    new("Attempted update"),
 	}
 	result, err := client.Repositories.PullRequests.Update(opts)
 
@@ -1005,7 +1048,7 @@ func TestBuildPullRequestBody_MergeStrategy(t *testing.T) {
 			t.Parallel()
 			pr := &PullRequests{}
 			opts := &PullRequestsOptions{
-				Title:         "Merge Strategy",
+				Title:         new("Merge Strategy"),
 				MergeStrategy: tc.strategy,
 			}
 
