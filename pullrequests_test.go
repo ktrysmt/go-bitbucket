@@ -744,6 +744,53 @@ func TestBuildPullRequestBody(t *testing.T) {
 	assert.Equal(t, "main", destBranch["name"])
 }
 
+func TestBuildPullRequestBody_OmitsEmptyFields(t *testing.T) {
+	t.Parallel()
+	pr := &PullRequests{}
+	opts := &PullRequestsOptions{
+		Owner:             "workspace",
+		RepoSlug:          "repo",
+		Title:             "title",
+		Description:       "body",
+		SourceBranch:      "feature",
+		DestinationBranch: "main",
+	}
+
+	data, err := pr.buildPullRequestBody(opts)
+
+	require.NoError(t, err)
+	var body map[string]interface{}
+	require.NoError(t, json.Unmarshal([]byte(data), &body))
+
+	assert.Equal(t, "title", body["title"])
+	assert.Equal(t, "body", body["description"])
+	assert.NotContains(t, body, "reviewers")
+	assert.NotContains(t, body, "message")
+	assert.NotContains(t, body, "close_source_branch")
+}
+
+func TestBuildPullRequestBody_PrefersReviewerAccountIDs(t *testing.T) {
+	t.Parallel()
+	pr := &PullRequests{}
+	opts := &PullRequestsOptions{
+		Reviewers:          []string{"{uuid-1}"},
+		ReviewerAccountIDs: []string{"account-1", "account-2"},
+	}
+
+	data, err := pr.buildPullRequestBody(opts)
+
+	require.NoError(t, err)
+	var body map[string]interface{}
+	require.NoError(t, json.Unmarshal([]byte(data), &body))
+
+	reviewers := body["reviewers"].([]interface{})
+	require.Len(t, reviewers, 2)
+	firstReviewer := reviewers[0].(map[string]interface{})
+	assert.Equal(t, "user", firstReviewer["type"])
+	assert.Equal(t, "account-1", firstReviewer["account_id"])
+	assert.NotContains(t, firstReviewer, "uuid")
+}
+
 func TestBuildPullRequestCommentBody(t *testing.T) {
 	t.Parallel()
 	pr := &PullRequests{}
