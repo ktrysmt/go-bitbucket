@@ -135,7 +135,7 @@ func main() {
                 SourceBranch:      "develop",
                 DestinationBranch: "master",
                 Title:             new("fix bug. #9999"),
-                CloseSourceBranch: true,
+                CloseSourceBranch: new(true),
         }
 
         res, err := c.Repositories.PullRequests.Create(opt)
