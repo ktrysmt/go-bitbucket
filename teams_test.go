@@ -214,12 +214,12 @@ func TestTeamsRepositories_Success(t *testing.T) {
 			"size":    1,
 			"values": []interface{}{
 				map[string]interface{}{
-					"slug":      "my-repo",
-					"full_name": "myteam/my-repo",
-					"name":      "My Repo",
-					"uuid":      "{repo-uuid}",
-					"type":      "repository",
-					"scm":       "git",
+					"slug":       "my-repo",
+					"full_name":  "myteam/my-repo",
+					"name":       "My Repo",
+					"uuid":       "{repo-uuid}",
+					"type":       "repository",
+					"scm":        "git",
 					"is_private": true,
 				},
 			},

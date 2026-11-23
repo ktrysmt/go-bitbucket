@@ -67,7 +67,7 @@ func TestPullRequestsCreate_Success(t *testing.T) {
 		SourceRepository:  "owner/repo",
 		DestinationBranch: "main",
 		Reviewers:         []string{"{reviewer-uuid-1}", "{reviewer-uuid-2}"},
-		CloseSourceBranch: true,
+		CloseSourceBranch: new(true),
 	}
 	result, err := client.Repositories.PullRequests.Create(opts)
 
@@ -559,6 +559,47 @@ func TestPullRequestsMerge_Success(t *testing.T) {
 	assert.Equal(t, "merged123abc", mergeCommit["hash"])
 }
 
+func TestPullRequestsMerge_CloseSourceBranch(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name  string
+		value *bool
+	}{
+		{name: "nil omits the key", value: nil},
+		{name: "false is sent", value: new(false)},
+		{name: "true is sent", value: new(true)},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			var receivedBody map[string]interface{}
+
+			client, server := setupMockServer(func(w http.ResponseWriter, r *http.Request) {
+				bodyBytes, _ := io.ReadAll(r.Body)
+				_ = json.Unmarshal(bodyBytes, &receivedBody)
+				mergedPR := realisticPRResponse()
+				mergedPR["state"] = "MERGED"
+				respondJSON(w, http.StatusOK, mergedPR)
+			})
+			defer server.Close()
+
+			_, err := client.Repositories.PullRequests.Merge(&PullRequestsOptions{
+				Owner:             "owner",
+				RepoSlug:          "repo",
+				ID:                "1",
+				CloseSourceBranch: tt.value,
+			})
+
+			require.NoError(t, err)
+			got, ok := receivedBody["close_source_branch"]
+			require.Equal(t, tt.value != nil, ok)
+			if tt.value != nil {
+				assert.Equal(t, *tt.value, got)
+			}
+		})
+	}
+}
+
 func TestPullRequestsDecline_Success(t *testing.T) {
 	t.Parallel()
 	var receivedMethod string
@@ -808,7 +849,7 @@ func TestBuildPullRequestBody(t *testing.T) {
 		SourceBranch:      "feature",
 		DestinationBranch: "main",
 		Reviewers:         []string{"{uuid-1}", "{uuid-2}"},
-		CloseSourceBranch: true,
+		CloseSourceBranch: new(true),
 		Draft:             true,
 	}
 

@@ -221,7 +221,6 @@ func (p *PullRequests) buildPullRequestBody(po *PullRequestsOptions) (string, er
 	body["source"] = map[string]interface{}{}
 	body["destination"] = map[string]interface{}{}
 	body["message"] = ""
-	body["close_source_branch"] = false
 
 	// A PUT replaces the PR's reviewers with any list it carries, so a nil
 	// Reviewers omits the key to keep them; an empty non-nil slice clears them.
@@ -263,8 +262,11 @@ func (p *PullRequests) buildPullRequestBody(po *PullRequestsOptions) (string, er
 		body["message"] = po.Message
 	}
 
-	if po.CloseSourceBranch || !po.CloseSourceBranch {
-		body["close_source_branch"] = po.CloseSourceBranch
+	// Without close_source_branch, Merge falls back to the value chosen when the
+	// pull request was created, so a nil CloseSourceBranch omits the key.
+	// https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-pullrequests-pull-request-id-merge-post
+	if po.CloseSourceBranch != nil {
+		body["close_source_branch"] = *po.CloseSourceBranch
 	}
 
 	if po.MergeStrategy != "" {
