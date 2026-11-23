@@ -134,7 +134,7 @@ func main() {
                 RepoSlug:          "awesome-project",
                 SourceBranch:      "develop",
                 DestinationBranch: "master",
-                Title:             "fix bug. #9999",
+                Title:             new("fix bug. #9999"),
                 CloseSourceBranch: true,
         }
 

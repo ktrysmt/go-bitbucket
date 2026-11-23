@@ -1,6 +1,6 @@
 module github.com/ktrysmt/go-bitbucket
 
-go 1.25.0
+go 1.26.0
 
 // You can uncomment this for local testing and development.
 // Ref: https://thewebivore.com/using-replace-in-go-mod-to-point-to-your-local-module/
